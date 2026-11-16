@@ -2,39 +2,39 @@
 
 namespace App\Models;
 
-use App\Enums\Role;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-#[Fillable(['username', 'password_hash', 'role', 'is_active'])]
-#[Hidden(['password_hash'])]
+// Disesuaikan dengan tabel `users` proyek (id_user, username, password_hash, role)
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory;
-
+    protected $table = 'users';
     protected $primaryKey = 'id_user';
+    protected $fillable = ['username', 'password_hash', 'role', 'is_active', 'last_login'];
+    protected $hidden = ['password_hash'];
 
-    public function getAuthPassword()
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean', 'last_login' => 'datetime'];
+    }
+
+    public function getAuthPassword(): string
     {
         return $this->password_hash;
     }
 
+    // Tabel users tidak punya kolom remember_token
     public function getRememberTokenName(): string
     {
         return '';
     }
 
-    protected function casts(): array
+    public function siswa()
     {
-        return [
-            'password_hash' => 'hashed',
-            'role' => Role::class,
-            'is_active' => 'boolean',
-            'last_login' => 'datetime',
-        ];
+        return $this->hasOne(Siswa::class, 'id_user', 'id_user');
+    }
+
+    public function guru()
+    {
+        return $this->hasOne(Guru::class, 'id_user', 'id_user');
     }
 }

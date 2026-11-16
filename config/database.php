@@ -3,6 +3,26 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
+$mysqlRole = fn(string $username, string $password) => [
+    'driver' => 'mysql',
+    'host' => env('DB_HOST', '127.0.0.1'),
+    'port' => env('DB_PORT', '3306'),
+    'database' => env('DB_DATABASE', 'laravel'),
+    'username' => $username,
+    'password' => $password,
+    'unix_socket' => env('DB_SOCKET', ''),
+    'charset' => env('DB_CHARSET', 'utf8mb4'),
+    'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+    'prefix' => '',
+    'prefix_indexes' => true,
+    'strict' => true,
+    'engine' => null,
+    'timezone' => '+07:00', // samakan dengan app timezone (NOW()/CURDATE() MySQL)
+    'options' => extension_loaded('pdo_mysql') ? array_filter([
+        Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+    ]) : [],
+];
+
 return [
 
     /*
@@ -59,10 +79,16 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            'timezone' => '+07:00',
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
+
+        'mysql_admin'    => $mysqlRole(env('DB_USERNAME_ADMIN', 'admin_app'), env('DB_PASSWORD_ADMIN', 'admin_app')),
+        'mysql_guru'     => $mysqlRole(env('DB_USERNAME_GURU', 'guru_app'),   env('DB_PASSWORD_GURU', 'guru_app')),
+        'mysql_siswa'    => $mysqlRole(env('DB_USERNAME_SISWA', 'siswa_app'), env('DB_PASSWORD_SISWA', 'siswa_app')),
+        'mysql_orangtua' => $mysqlRole(env('DB_USERNAME_ORTU', 'ortu_app'),   env('DB_PASSWORD_ORTU', 'ortu_app')),
 
         'mariadb' => [
             'driver' => 'mariadb',
@@ -149,7 +175,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-database-'),
+            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')) . '-database-'),
             'persistent' => env('REDIS_PERSISTENT', false),
         ],
 

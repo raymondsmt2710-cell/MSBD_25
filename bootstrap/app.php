@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\DBDynamicConnection;
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,10 +14,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-    $middleware->alias([
-        'role' => \App\Http\Middleware\EnsureUserHasRole::class,
-    ]);
-})
+        // append => berjalan SETELAH StartSession, sehingga Auth::check() sudah tahu siapa yang login
+        $middleware->web(append: [
+            DBDynamicConnection::class,
+        ]);
+
+        $middleware->alias([
+            'role' => RoleMiddleware::class,
+        ]);
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),

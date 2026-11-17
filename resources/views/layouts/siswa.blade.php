@@ -6,8 +6,8 @@
     <nav class="nav-links">
         <a href="{{ route('siswa.beranda') }}"
            class="{{ request()->routeIs('siswa.beranda') ? 'aktif' : '' }}">Beranda</a>
-        <a href="{{ route('siswa.presensi.riwayat') }}"
-           class="{{ request()->routeIs('siswa.presensi.*') ? 'aktif' : '' }}">Presensi</a>
+        <a href="{{ route('dashboard.presensi.riwayat') }}"
+           class="{{ request()->routeIs('dashboard.presensi.*') ? 'aktif' : '' }}">Presensi</a>
         <a href="{{ route('siswa.perangkat') }}"
            class="{{ request()->routeIs('siswa.perangkat') ? 'aktif' : '' }}">Perangkat</a>
         <a href="{{ route('siswa.pemilihan.index') }}"

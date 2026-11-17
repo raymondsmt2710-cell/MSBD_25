@@ -43,6 +43,7 @@ class AuthController extends Controller
     private function beranda(string $role): string
     {
         return match ($role) {
+            // Dashboard per peran menjadi pendarat; presensi dicapai lewat nav.
             'guru'      => route('guru.beranda'),
             'siswa'     => route('siswa.beranda'),
             'admin'     => route('kelola.pemilihan.index'),

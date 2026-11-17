@@ -61,13 +61,13 @@
         </div>
 
         <div class="ikon-grid">
-            <a class="ikon-kartu" href="{{ route('siswa.presensi.riwayat') }}#ringkasan">
+            <a class="ikon-kartu" href="{{ route('dashboard.presensi.riwayat') }}#ringkasan">
                 <div class="ikon"><x-ikon nama="qr-code-scan" ukuran="21" /></div>
                 <h3>Presensi</h3>
                 <p>Ringkasan kehadiran dan cara memindai QR sesi guru.</p>
             </a>
 
-            <a class="ikon-kartu" href="{{ route('siswa.presensi.riwayat') }}#roster">
+            <a class="ikon-kartu" href="{{ route('dashboard.presensi.riwayat') }}#roster">
                 <div class="ikon"><x-ikon nama="calendar-week" ukuran="21" /></div>
                 <h3>Roster</h3>
                 <p>Jadwal pelajaran pekan ini beserta status kehadiran.</p>

@@ -150,7 +150,7 @@ class DashboardGuruTest extends TestCase
         $this->actingAs($user)
             ->get(route('guru.beranda'))
             ->assertOk()
-            ->assertSee(route('guru.presensi.index'), false)
+            ->assertSee(route('dashboard.presensi.index'), false)
             ->assertDontSee(route('kelola.pemilihan.index'), false)
             ->assertDontSee('Pemilihan')
             // Tidak boleh ada tautan ke fitur guru yang tidak ada.
@@ -344,7 +344,7 @@ class DashboardGuruTest extends TestCase
             ->assertOk()
             ->assertSee('X IPA 1')
             ->assertSee('Matematika')
-            ->assertSee(route('guru.presensi.buka', $idJadwal), false)
+            ->assertSee(route('dashboard.presensi.buka', $idJadwal), false)
             ->assertSee('Buka sesi');
     }
 
@@ -363,7 +363,7 @@ class DashboardGuruTest extends TestCase
             ->get(route('guru.beranda'))
             ->assertOk()
             ->assertSee('Tidak ada jadwal')
-            ->assertDontSee(route('guru.presensi.buka', $idJadwal), false);
+            ->assertDontSee(route('dashboard.presensi.buka', $idJadwal), false);
     }
 
     public function test_sesi_hari_ini_menampilkan_tombol_qr_dan_tutup_bukan_buka(): void
@@ -390,9 +390,9 @@ class DashboardGuruTest extends TestCase
         $this->actingAs($user)
             ->get(route('guru.beranda'))
             ->assertOk()
-            ->assertSee(route('guru.presensi.sesi', $idSesi), false)
-            ->assertSee(route('guru.presensi.tutup', $idSesi), false)
-            ->assertDontSee(route('guru.presensi.buka', $idJadwal), false);
+            ->assertSee(route('dashboard.presensi.sesi', $idSesi), false)
+            ->assertSee(route('dashboard.presensi.tutup', $idSesi), false)
+            ->assertDontSee(route('dashboard.presensi.buka', $idJadwal), false);
     }
 
     public function test_jadwal_guru_lain_tidak_tampil(): void
@@ -642,8 +642,8 @@ class DashboardGuruTest extends TestCase
             ->get(route('guru.beranda'))
             ->assertOk()
             ->assertSee('Sesi Masih Terbuka')
-            ->assertSee(route('guru.presensi.sesi', $idSesiKemarin), false)
-            ->assertSee(route('guru.presensi.tutup', $idSesiKemarin), false);
+            ->assertSee(route('dashboard.presensi.sesi', $idSesiKemarin), false)
+            ->assertSee(route('dashboard.presensi.tutup', $idSesiKemarin), false);
     }
 
     public function test_sesi_terbuka_hari_ini_tidak_dirender_dua_kali(): void
@@ -678,7 +678,7 @@ class DashboardGuruTest extends TestCase
         // Tetap ada tepat satu tombol Tutup, yaitu di baris jadwal hari ini.
         $this->assertSame(
             1,
-            substr_count($html, route('guru.presensi.tutup', $idSesi))
+            substr_count($html, route('dashboard.presensi.tutup', $idSesi))
         );
     }
 

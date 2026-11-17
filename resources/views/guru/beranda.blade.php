@@ -76,15 +76,15 @@
 
                         <div class="aksi-tombol">
                             @if ($j->id_sesi === null)
-                                <form method="POST" action="{{ route('guru.presensi.buka', $j->id_jadwal) }}">
+                                <form method="POST" action="{{ route('dashboard.presensi.buka', $j->id_jadwal) }}">
                                     @csrf
                                     <button class="btn" type="submit">Buka sesi</button>
                                 </form>
                             @else
                                 <span class="status-pil">{{ $j->status_sesi }}</span>
-                                <a class="btn garis" href="{{ route('guru.presensi.sesi', $j->id_sesi) }}">QR</a>
+                                <a class="btn garis" href="{{ route('dashboard.presensi.sesi', $j->id_sesi) }}">QR</a>
                                 @if ($j->status_sesi === 'dibuka')
-                                    <form method="POST" action="{{ route('guru.presensi.tutup', $j->id_sesi) }}">
+                                    <form method="POST" action="{{ route('dashboard.presensi.tutup', $j->id_sesi) }}">
                                         @csrf
                                         <button class="btn oranye" type="submit">Tutup</button>
                                     </form>
@@ -121,8 +121,8 @@
                         </div>
 
                         <div class="aksi-tombol">
-                            <a class="btn garis" href="{{ route('guru.presensi.sesi', $s->id_sesi) }}">QR</a>
-                            <form method="POST" action="{{ route('guru.presensi.tutup', $s->id_sesi) }}">
+                            <a class="btn garis" href="{{ route('dashboard.presensi.sesi', $s->id_sesi) }}">QR</a>
+                            <form method="POST" action="{{ route('dashboard.presensi.tutup', $s->id_sesi) }}">
                                 @csrf
                                 <button class="btn oranye" type="submit">Tutup</button>
                             </form>
@@ -189,7 +189,7 @@
         </div>
 
         <div class="ikon-grid">
-            <a class="ikon-kartu" href="{{ route('guru.presensi.index') }}">
+            <a class="ikon-kartu" href="{{ route('dashboard.presensi.index') }}">
                 <div class="ikon"><x-ikon nama="qr-code-scan" ukuran="21" /></div>
                 <h3>Presensi</h3>
                 <p>Roster mengajar, buka sesi, tampilkan QR, dan catat kehadiran siswa.</p>

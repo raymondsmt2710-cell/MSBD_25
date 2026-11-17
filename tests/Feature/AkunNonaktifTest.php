@@ -101,7 +101,7 @@ class AkunNonaktifTest extends TestCase
 
         $this->loginSebagai($user->username);
 
-        $this->get('/dashboard')->assertRedirect(route('siswa.presensi.riwayat'));
+        $this->get('/dashboard')->assertRedirect(route('dashboard.presensi.riwayat'));
 
         $this->assertAuthenticatedAs($user->fresh());
     }

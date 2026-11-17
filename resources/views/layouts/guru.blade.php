@@ -12,7 +12,7 @@
     <nav class="nav-links">
         <a href="{{ route('guru.beranda') }}"
            class="{{ request()->routeIs('guru.beranda') ? 'aktif' : '' }}">Beranda</a>
-        <a href="{{ route('guru.presensi.index') }}"
-           class="{{ request()->routeIs('guru.presensi.*') ? 'aktif' : '' }}">Presensi</a>
+        <a href="{{ route('dashboard.presensi.index') }}"
+           class="{{ request()->routeIs('dashboard.presensi.*') ? 'aktif' : '' }}">Presensi</a>
     </nav>
 @endsection

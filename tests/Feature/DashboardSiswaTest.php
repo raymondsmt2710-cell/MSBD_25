@@ -69,8 +69,8 @@ class DashboardSiswaTest extends TestCase
         $this->actingAs($user)
             ->get(route('siswa.beranda'))
             ->assertOk()
-            ->assertSee(route('siswa.presensi.riwayat').'#ringkasan', false)
-            ->assertSee(route('siswa.presensi.riwayat').'#roster', false)
+            ->assertSee(route('dashboard.presensi.riwayat').'#ringkasan', false)
+            ->assertSee(route('dashboard.presensi.riwayat').'#roster', false)
             ->assertSee(route('siswa.perangkat'), false)
             ->assertSee(route('siswa.pemilihan.index'), false);
     }
@@ -237,7 +237,7 @@ class DashboardSiswaTest extends TestCase
         $user = $this->buatSiswa();
 
         $this->actingAs($user)
-            ->get(route('siswa.presensi.riwayat'))
+            ->get(route('dashboard.presensi.riwayat'))
             ->assertOk()
             ->assertSee('id="ringkasan"', false)
             ->assertSee('id="roster"', false);

@@ -51,7 +51,7 @@ class NavigasiTest extends TestCase
         $d = $this->seedPemilihanBerlangsung();
 
         $this->actingAs($this->userDari($d['id_siswa_user'][0]))
-            ->get(route('siswa.presensi.riwayat'))
+            ->get(route('dashboard.presensi.riwayat'))
             ->assertOk()
             ->assertSee(route('siswa.pemilihan.index'), false);
     }
@@ -63,7 +63,7 @@ class NavigasiTest extends TestCase
         $d = $this->seedPemilihanDraf();
 
         $this->actingAs($this->userDari($d['id_panitia_user']))
-            ->get(route('guru.presensi.index'))
+            ->get(route('dashboard.presensi.index'))
             ->assertOk()
             ->assertDontSee(route('kelola.pemilihan.index'), false);
     }

@@ -25,8 +25,8 @@
     @auth
         <nav style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
             @if (auth()->user()->role === 'siswa')
-                <a href="{{ route('siswa.presensi.riwayat') }}"
-                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('siswa.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
+                <a href="{{ route('dashboard.presensi.index') }}"
+                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('dashboard.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
                     Presensi
                 </a>
                 <a href="{{ route('siswa.pemilihan.index') }}"
@@ -39,8 +39,8 @@
                     Portal Orang Tua
                 </a>
             @else
-                <a href="{{ route('guru.presensi.index') }}"
-                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('guru.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
+                <a href="{{ route('dashboard.presensi.index') }}"
+                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('dashboard.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
                     Presensi
                 </a>
                 {{-- Guru tidak punya akses voting: tidak ada tautan Pemilihan di sini. --}}

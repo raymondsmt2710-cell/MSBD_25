@@ -142,7 +142,7 @@
                 @if (auth()->user()->role === 'siswa')
                     <a href="{{ route('siswa.pemilihan.index') }}"
                        class="{{ request()->routeIs('siswa.pemilihan.*') ? 'aktif' : '' }}">Pemilihan</a>
-                    <a href="{{ route('siswa.presensi.riwayat') }}">Presensi</a>
+                    <a href="{{ route('dashboard.presensi.index') }}">Presensi</a>
                 @elseif (auth()->user()->role === 'orang_tua')
                     {{-- Tanpa cabang ini akun orang tua jatuh ke @else dan melihat menu
                          "Kelola Pemilihan" yang menuju 403. --}}

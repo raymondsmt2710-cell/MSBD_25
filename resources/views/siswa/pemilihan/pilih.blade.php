@@ -25,15 +25,15 @@
                 </div>
                 <div class="visi">{{ $k->visi ?: 'Belum ada visi.' }}</div>
 
-                <details style="margin-top:2px">
-                    <summary class="kecil" style="cursor:pointer;color:#09656F;font-weight:600">Lihat detail</summary>
-                    <div class="kecil" style="margin-top:8px;line-height:1.6">
-                        <strong>Visi:</strong> {{ $k->visi ?: '—' }}<br>
-                        <strong>Misi:</strong> {{ $k->misi ?: '—' }}
+                <details class="detail-kandidat">
+                    <summary>Lihat detail</summary>
+                    <div class="detail-isi">
+                        <div><strong>Visi:</strong> {{ $k->visi ?: '—' }}</div>
+                        <div><strong>Misi:</strong> {{ $k->misi ?: '—' }}</div>
                     </div>
                 </details>
 
-                <button class="btn" type="button" style="margin-top:auto"
+                <button class="btn" type="button" style="margin-top:4px"
                         onclick="bukaKonfirmasi({{ $k->id_kandidat }}, {{ $k->nomor_urut }}, @js($k->nama_ketua . ($k->nama_wakil ? ' & ' . $k->nama_wakil : '')) )">
                     Pilih
                 </button>

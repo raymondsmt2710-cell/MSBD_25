@@ -50,14 +50,27 @@
         .badge.draf{background:#e5e7eb;color:#374151}
         .badge.berlangsung{background:#dcfce7;color:#166534}
         .badge.selesai{background:#dbeafe;color:#1e40af}
-        .grid{display:grid;gap:14px}
+        .grid{display:grid;gap:14px;align-items:start}
         .grid-3{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
         .grid-2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
         .kandidat-kartu{background:#fff;border:1px solid #eef0f2;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .18s,box-shadow .18s}
         .kandidat-kartu:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(16,24,40,.09)}
-        .kandidat-foto{height:170px;background:linear-gradient(135deg,#043d44,#09656F);display:flex;align-items:center;justify-content:center;color:#fff;font-size:38px;font-weight:800;overflow:hidden}
+        .kandidat-foto{height:170px;flex-shrink:0;background:linear-gradient(135deg,#043d44,#09656F);display:flex;align-items:center;justify-content:center;color:#fff;font-size:38px;font-weight:800;overflow:hidden}
         .kandidat-foto img{width:100%;height:100%;object-fit:cover}
-        .kandidat-isi{padding:14px;flex:1;display:flex;flex-direction:column;gap:8px}
+        .kandidat-isi{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
+        /* Tombol aksi selalu menempel di dasar kartu, sehingga kartu dengan
+           teks lebih pendek tetap terlihat sejajar tanpa memaksa tinggi sama. */
+        .kandidat-isi .btn{width:100%;justify-content:center;margin-top:auto}
+        /* Detail kandidat: ringkasan yang bisa dibuka, bukan <details> polos,
+           supaya teksnya tidak bertabrakan dengan visi di atasnya. */
+        .detail-kandidat{margin-top:2px}
+        .detail-kandidat summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#09656F;padding:4px 0;user-select:none}
+        .detail-kandidat summary::-webkit-details-marker{display:none}
+        .detail-kandidat summary::before{content:'▸';font-size:11px;transition:transform .15s}
+        .detail-kandidat[open] summary::before{transform:rotate(90deg)}
+        .detail-kandidat summary:hover{color:#07535C;text-decoration:underline}
+        .detail-isi{margin-top:8px;padding:10px 12px;background:#f8f9fa;border-radius:10px;font-size:12px;color:#4b5563;line-height:1.65;display:flex;flex-direction:column;gap:6px}
+        .detail-isi strong{color:#374151}
         .nomor{display:inline-block;background:#C97A14;color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;letter-spacing:.04em}
         .nama-pasangan{font-weight:800;font-size:14px;line-height:1.3}
         .visi{font-size:12px;color:#6b7280;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}

@@ -20,6 +20,7 @@ class BerandaController extends Controller
         // kelola pemilihan yang menolaknya dengan 403.
         if (auth()->check()) {
             return redirect()->to(match (auth()->user()->role) {
+                'guru' => route('guru.beranda'),
                 'siswa' => route('siswa.pemilihan.index'),
                 'orang_tua' => route('ortu.index'),
                 default => route('kelola.pemilihan.index'),

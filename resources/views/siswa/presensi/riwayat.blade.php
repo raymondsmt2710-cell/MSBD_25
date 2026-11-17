@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('judul', 'Roster Presensi')
 @section('isi')
-<div class="card">
+<div class="card" id="ringkasan">
     <h2>Ringkasan Kehadiran</h2>
     <p style="font-size:28px;margin:4px 0">{{ number_format($ringkasan['persen'], 2) }}%</p>
     <p>Hadir {{ $ringkasan['hadir'] }} &middot; Izin {{ $ringkasan['izin'] }} &middot; Sakit {{ $ringkasan['sakit'] }} &middot; Alpa {{ $ringkasan['alpa'] }}</p>
@@ -10,7 +10,7 @@
     </p>
 </div>
 
-<div class="card">
+<div class="card" id="roster">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <h3 style="margin:0">Roster Presensi</h3>
         <div style="display:flex;gap:8px;align-items:center">

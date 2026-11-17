@@ -56,13 +56,15 @@ class NavigasiTest extends TestCase
             ->assertSee(route('siswa.pemilihan.index'), false);
     }
 
-    public function test_halaman_presensi_guru_punya_menu_pemilihan(): void
+    public function test_halaman_presensi_guru_tidak_menawarkan_menu_pemilihan(): void
     {
+        // Guru tidak punya akses voting; tautan Pemilihan tidak boleh ditawarkan
+        // di halaman presensi guru.
         $d = $this->seedPemilihanDraf();
 
         $this->actingAs($this->userDari($d['id_panitia_user']))
             ->get(route('guru.presensi.index'))
             ->assertOk()
-            ->assertSee(route('kelola.pemilihan.index'), false);
+            ->assertDontSee(route('kelola.pemilihan.index'), false);
     }
 }

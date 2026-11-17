@@ -29,11 +29,27 @@ class ReviewRegressionTest extends TestCase
         $this->actingAs($this->userDari($d['id_panitia_user']))
             ->get(route('kelola.pemilihan.index'))
             ->assertOk()
-            ->assertSee('Pemilihan Ketua OSIS Uji');
+            ->assertSee('Pemilihan Ketua OSIS Uji')
+            // Tombol "Buat Pemilihan" akan berujung 403 bagi panitia, jadi tidak dirender.
+            ->assertDontSee('Buat Pemilihan')
+            ->assertDontSee(route('kelola.pemilihan.form'), false);
     }
 
-    public function test_panitia_bisa_membuka_form_pemilihan_baru(): void
+    public function test_admin_melihat_tombol_buat_pemilihan(): void
     {
+        $d = $this->seedPemilihanDraf();
+
+        $this->actingAs($this->userDari($d['id_admin']))
+            ->get(route('kelola.pemilihan.index'))
+            ->assertOk()
+            ->assertSee('Buat Pemilihan')
+            ->assertSee(route('kelola.pemilihan.form'), false);
+    }
+
+    public function test_panitia_tidak_bisa_membuka_form_pemilihan_baru(): void
+    {
+        // Keputusan pengguna: hanya admin yang boleh MEMBUAT pemilihan.
+        // Panitia tetap boleh mengelola pemilihan yang sudah ditugaskan.
         $d = $this->seedPemilihanDraf();
         DB::connection('mysql')->table('panitia_pemilihan')->insert([
             'id_pemilihan' => $d['id_pemilihan'],
@@ -42,7 +58,28 @@ class ReviewRegressionTest extends TestCase
 
         $this->actingAs($this->userDari($d['id_panitia_user']))
             ->get(route('kelola.pemilihan.form'))
-            ->assertOk();
+            ->assertForbidden();
+    }
+
+    public function test_panitia_tidak_bisa_menyimpan_pemilihan_baru(): void
+    {
+        $d = $this->seedPemilihanDraf();
+        DB::connection('mysql')->table('panitia_pemilihan')->insert([
+            'id_pemilihan' => $d['id_pemilihan'],
+            'id_user' => $d['id_panitia_user'],
+        ]);
+
+        $this->actingAs($this->userDari($d['id_panitia_user']))
+            ->post(route('kelola.pemilihan.simpan'), [
+                'judul' => 'Pemilihan Buatan Panitia',
+                'id_organisasi' => $d['id_organisasi'],
+                'id_tahun_ajaran' => $d['id_tahun_ajaran'],
+                'waktu_mulai' => now()->addDay()->format('Y-m-d\TH:i'),
+                'waktu_selesai' => now()->addDays(2)->format('Y-m-d\TH:i'),
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('pemilihan', ['judul' => 'Pemilihan Buatan Panitia']);
     }
 
     public function test_panitia_hanya_melihat_pemilihan_yang_ditugaskan(): void

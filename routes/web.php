@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BerandaController;
+use App\Http\Controllers\DashboardGuruController;
+use App\Http\Controllers\DashboardSiswaController;
 use App\Http\Controllers\KelolaPemilihanController;
 use App\Http\Controllers\PortalOrangTuaController;
 use App\Http\Controllers\PresensiGuruController;
@@ -18,6 +20,11 @@ Route::get('/login', [AuthController::class, 'form'])->name('login')->middleware
 Route::post('/login', [AuthController::class, 'login'])->name('login.proses')->middleware('throttle:10,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
+// ---- Fitur 9: Dashboard guru (baca saja; aksi memakai rute presensi di bawah) ----
+Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
+    Route::get('/', [DashboardGuruController::class, 'index'])->name('beranda');
+});
+
 // ---- Fitur 1: Presensi QR sekali pakai ----
 Route::middleware(['auth', 'role:guru'])->prefix('guru/presensi')->name('guru.presensi.')->group(function () {
     Route::get('/', [PresensiGuruController::class, 'index'])->name('index');
@@ -32,6 +39,12 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa/presensi')->name('siswa
     Route::get('/riwayat', [PresensiSiswaController::class, 'riwayat'])->name('riwayat');
     Route::get('/scan/{kode}', [PresensiSiswaController::class, 'konfirmasi'])->name('konfirmasi');
     Route::post('/scan/{kode}', [PresensiSiswaController::class, 'scan'])->name('scan')->middleware('throttle:10,1');
+});
+
+// ---- Fitur 8: Dashboard siswa (hanya-baca) ----
+Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
+    Route::get('/', [DashboardSiswaController::class, 'index'])->name('beranda');
+    Route::get('/perangkat', [DashboardSiswaController::class, 'perangkat'])->name('perangkat');
 });
 
 // ---- Fitur 7: Pemantauan orang tua/wali (hanya-baca, tidak ada rute tulis) ----

@@ -101,7 +101,8 @@ class KelolaPemilihanController extends Controller
         if ($id) {
             $pemilihan = $this->pastikanBoleh($id);
         } else {
-            $this->authorize('kelola', new Pemilihan);
+            // Membuat pemilihan baru: admin saja.
+            $this->authorize('buat', Pemilihan::class);
             $pemilihan = new Pemilihan(['status' => 'draf']);
         }
 
@@ -125,7 +126,8 @@ class KelolaPemilihanController extends Controller
         if ($id) {
             $this->pastikanBoleh($id);
         } else {
-            $this->authorize('kelola', new Pemilihan);
+            // Membuat pemilihan baru: admin saja.
+            $this->authorize('buat', Pemilihan::class);
         }
 
         $status = $this->call(

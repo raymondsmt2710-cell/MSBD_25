@@ -116,9 +116,15 @@
         <nav class="nav-links">
             @auth
                 @if (auth()->user()->role === 'siswa')
+                    {{-- Jalan kembali ke dashboard siswa; layout ini dipakai halaman presensi. --}}
+                    <a href="{{ route('siswa.beranda') }}">Beranda</a>
                     <a href="{{ route('dashboard.presensi.index') }}"
                        class="{{ request()->routeIs('dashboard.presensi.index') ? 'aktif' : '' }}">Presensi</a>
+                    {{-- Siswa punya akses voting; tautan ini ada di layout lama dan dipertahankan. --}}
+                    <a href="{{ route('siswa.pemilihan.index') }}">Pemilihan</a>
                 @elseif (auth()->user()->role === 'guru')
+                    {{-- Jalan kembali ke dashboard guru; layout ini dipakai halaman presensi. --}}
+                    <a href="{{ route('guru.beranda') }}">Beranda</a>
                     <a href="{{ route('dashboard.presensi.index') }}"
                        class="{{ request()->routeIs('dashboard.presensi.*') ? 'aktif' : '' }}">Roster Presensi</a>
                 @elseif (auth()->user()->role === 'orang_tua')

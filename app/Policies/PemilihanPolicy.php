@@ -43,6 +43,19 @@ class PemilihanPolicy
         return $user->role === 'admin';
     }
 
+    /**
+     * Membuat pemilihan BARU hanya boleh admin.
+     *
+     * Panitia (guru) boleh mengelola pemilihan yang sudah ditugaskan kepadanya —
+     * kandidat, pemilih, monitor, buka/tutup — tetapi tidak boleh menggelar
+     * pemilihan baru. Dipisahkan dari kelola() supaya kedua hak itu tidak
+     * tercampur dalam satu nama.
+     */
+    public function buat(User $user): bool
+    {
+        return $user->role === 'admin';
+    }
+
     /** ID pemilihan yang boleh dikelola user ini; null berarti semua (admin). */
     public function idYangBoleh(User $user): ?array
     {

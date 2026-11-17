@@ -43,10 +43,7 @@
                    style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('dashboard.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
                     Presensi
                 </a>
-                <a href="{{ route('kelola.pemilihan.index') }}"
-                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('kelola.pemilihan.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
-                    Pemilihan
-                </a>
+                {{-- Guru tidak punya akses voting: tidak ada tautan Pemilihan di sini. --}}
             @endif
         </nav>
         <form method="POST" action="{{ route('logout') }}">@csrf

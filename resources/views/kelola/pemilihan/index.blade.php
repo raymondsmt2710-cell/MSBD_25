@@ -1,17 +1,32 @@
 @extends('layouts.pemilihan')
 @section('judul', 'Kelola Pemilihan')
 @section('isi')
+@php($bolehBuat = auth()->user()->can('buat', \App\Models\Pemilihan::class))
 <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
     <div>
         <h1>Kelola Pemilihan</h1>
-        <p class="subjudul">Buat pemilihan, atur kandidat, daftarkan pemilih, lalu buka pemungutan suara.</p>
+        <p class="subjudul">
+            @if ($bolehBuat)
+                Buat pemilihan, atur kandidat, daftarkan pemilih, lalu buka pemungutan suara.
+            @else
+                Atur kandidat, daftarkan pemilih, lalu buka pemungutan suara pada pemilihan yang ditugaskan kepada Anda.
+            @endif
+        </p>
     </div>
-    <a class="btn" href="{{ route('kelola.pemilihan.form') }}">+ Buat Pemilihan</a>
+    @if ($bolehBuat)
+        <a class="btn" href="{{ route('kelola.pemilihan.form') }}">+ Buat Pemilihan</a>
+    @endif
 </div>
 
 <div class="kartu">
     @if ($pemilihan->isEmpty())
-        <div class="kosong">Belum ada pemilihan. Mulai dengan menekan "Buat Pemilihan".</div>
+        <div class="kosong">
+            @if ($bolehBuat)
+                Belum ada pemilihan. Mulai dengan menekan "Buat Pemilihan".
+            @else
+                Belum ada pemilihan yang ditugaskan kepada Anda.
+            @endif
+        </div>
     @else
         <table>
             <thead>

@@ -1,8 +1,8 @@
 # Panduan Fitur Pemilihan Suara Elektronik (e-Voting)
 
-Fitur #3 pada `AGENTS.md`: pemilihan pengurus organisasi sekolah. Admin dan panitia
-mengelola pemilihan, siswa memilih tepat satu kali, dan hasil terbuka setelah pemilihan
-ditutup.
+Fitur #3 pada `AGENTS.md`: pemilihan pengurus organisasi sekolah. Admin membuat pemilihan dan
+menunjuk panitia; panitia mengelola pemilihan yang ditugaskan; siswa memilih tepat satu kali,
+dan hasil terbuka setelah pemilihan ditutup.
 
 Rancangan lengkap: `docs/superpowers/specs/2026-11-17-voting-design.md`
 Rencana kerja: `docs/superpowers/plans/2026-11-17-voting-plan.md`
@@ -25,7 +25,7 @@ Buka <http://localhost:8000>.
 | Username | Role | Bisa apa |
 | --- | --- | --- |
 | `admin` | admin | Semua: buat pemilihan, kandidat, pemilih, panitia, buka/tutup |
-| `guru1` | guru | Panitia pemilihan contoh: kandidat, pemilih, monitor, buka/tutup |
+| `guru1` | guru | Panitia pemilihan contoh: kandidat, pemilih, monitor, buka/tutup (tidak bisa **membuat** pemilihan baru) |
 | `siswa1` … `siswa9` | siswa | Melihat pemilihan yang diikuti, memilih, melihat hasil |
 
 ### Alamat halaman
@@ -66,7 +66,7 @@ Buka <http://localhost:8000>.
 | Nama | Fungsi |
 | --- | --- |
 | `sp_rekam_suara` | **Satu-satunya** jalan masuk suara. Memeriksa status, rentang waktu, keanggotaan pemilih, kandidat, dan mencegah suara ganda. |
-| `sp_simpan_pemilihan` | Buat/ubah pemilihan (hanya saat `draf`). |
+| `sp_simpan_pemilihan` | Buat/ubah pemilihan (hanya saat `draf`). Membuat pemilihan baru hanya lewat aplikasi oleh admin; procedure sendiri masih menerima admin atau panitia. |
 | `sp_simpan_kandidat` | Buat/ubah kandidat (hanya saat `draf`). |
 | `sp_hapus_kandidat` | Hapus kandidat (ditolak bila sudah ada suara). |
 | `sp_daftarkan_pemilih_kelas` | Daftarkan semua siswa aktif satu kelas. Idempoten. |
@@ -169,6 +169,10 @@ Tiga lapis, dan yang menentukan ada di database:
   pemilih, menolak pengembalian `sudah_memilih` ke 0, menolak penghapusan pemilihan yang
   sudah bersuara, dan hanya mengizinkan transisi status
   `draf → berlangsung`, `berlangsung → selesai`, `berlangsung → draf`.
+- **Membuat pemilihan baru hanya boleh admin** (lapisan aplikasi). `sp_simpan_pemilihan`
+  sendiri masih menerima admin *atau* panitia, jadi batasan ini ditegakkan oleh
+  `PemilihanPolicy::buat()` di `KelolaPemilihanController::form()`/`simpan()` pada cabang
+  pembuatan. Panitia tetap bisa menyunting pemilihan yang sudah ditugaskan.
 - Waktu selesai terlewat **tidak** menutup pemilihan otomatis. Panitia harus menekan
   Tutup; halaman monitor menampilkan peringatan. Pemungutan suara sendiri sudah berhenti
   karena `sp_rekam_suara` memeriksa rentang waktu.

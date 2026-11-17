@@ -2,15 +2,15 @@
 @section('judul', 'Sesi Presensi')
 @section('isi')
 <div class="card">
-    <h2>{{ $sesi->nama_mapel }} – {{ $sesi->nama_kelas }}</h2>
+    <h2>{{ $sesi->nama_mapel }} - {{ $sesi->nama_kelas }}</h2>
     <p>Tanggal {{ $sesi->tanggal }} · Status: <strong>{{ $sesi->status }}</strong></p>
 
     @if ($sesi->status === 'dibuka')
         <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
-            <div id="qr" style="width:320px;height:320px;background:#fff">Memuat QR…</div>
+            <div id="qr" style="width:320px;height:320px;background:#fff">Memuat QR...</div>
             <div>
                 <p>Siswa memindai QR ini. Setiap QR hanya berlaku sekali dan akan berganti otomatis.</p>
-                <p style="font-size:32px;margin:0"><span id="hadir">0</span> hadir</p>
+                <p style="font-size:32px;margin:0"><span id="hadir">{{ $siswa->where('status', 'hadir')->count() }}</span> hadir</p>
                 <form method="POST" action="{{ route('guru.presensi.tutup', $sesi->id_sesi) }}"
                       onsubmit="return confirm('Tutup sesi? Siswa yang belum tercatat akan otomatis izin/sakit/alpa.')">@csrf
                     <button class="btn merah" type="submit">Tutup Sesi</button>
@@ -28,7 +28,7 @@
             <tr>
                 <td>{{ $s->no_absen }}</td><td>{{ $s->nis }}</td><td>{{ $s->nama_siswa }}</td>
                 <td><span class="badge {{ $s->status }}">{{ $s->status ?? 'belum' }}</span></td>
-                <td>{{ $s->metode ?? '—' }}</td><td>{{ $s->waktu_presensi ?? '—' }}</td>
+                <td>{{ $s->metode ?? '-' }}</td><td>{{ $s->waktu_presensi ?? '-' }}</td>
                 <td>
                     <form method="POST" action="{{ route('guru.presensi.manual', $sesi->id_sesi) }}" style="display:flex;gap:4px">@csrf
                         <input type="hidden" name="id_siswa" value="{{ $s->id_siswa }}">

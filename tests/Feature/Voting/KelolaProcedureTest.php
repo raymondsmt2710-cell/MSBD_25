@@ -186,9 +186,21 @@ class KelolaProcedureTest extends TestCase
     {
         $d = $this->seedPemilihanDraf();
 
+        // Siswa baru, karena siswa yang sudah dipakai kandidat lain kini ditolak.
+        $idSiswaBaru = DB::connection('mysql')->table('siswa')->insertGetId([
+            'id_user' => DB::connection('mysql')->table('users')->insertGetId([
+                'username' => 'uji_proc_kandidat',
+                'password_hash' => bcrypt('password'),
+                'role' => 'siswa',
+                'is_active' => true,
+            ]),
+            'nis' => '9400001', 'nisn' => '9400000001',
+            'nama_siswa' => 'Siswa Proc Baru', 'jenis_kelamin' => 'L', 'status' => 'aktif',
+        ]);
+
         DB::statement(
             'CALL sp_simpan_kandidat(NULL, ?, ?, ?, ?, NULL, ?, ?, NULL, @s, @id)',
-            [$d['id_admin'], $d['id_pemilihan'], 3, $d['id_siswa'][0], 'Visi baru', 'Misi baru']
+            [$d['id_admin'], $d['id_pemilihan'], 3, $idSiswaBaru, 'Visi baru', 'Misi baru']
         );
 
         $this->assertSame('BERHASIL', DB::selectOne('SELECT @s AS s')->s);

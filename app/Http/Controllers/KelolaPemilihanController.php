@@ -22,6 +22,27 @@ class KelolaPemilihanController extends Controller
         return $pemilihan;
     }
 
+    /**
+     * Apakah siswa ini sudah dipakai sebagai ketua atau wakil pada pemilihan ini?
+     * $abaikanIdKandidat dipakai saat mengedit, agar kandidat yang sedang diubah
+     * tidak dianggap "bentrok dengan dirinya sendiri".
+     */
+    private function sudahJadiKandidat(int $idPemilihan, int $idSiswa, $abaikanIdKandidat = null): bool
+    {
+        $query = DB::table('kandidat')
+            ->where('id_pemilihan', $idPemilihan)
+            ->where(function ($q) use ($idSiswa) {
+                $q->where('id_siswa_ketua', $idSiswa)
+                  ->orWhere('id_siswa_wakil', $idSiswa);
+            });
+
+        if ($abaikanIdKandidat) {
+            $query->where('id_kandidat', '!=', (int) $abaikanIdKandidat);
+        }
+
+        return $query->exists();
+    }
+
     /** Pemanggil procedure kelola: mengembalikan nilai @status. */
     private function call(string $sql, array $params): string
     {
@@ -165,8 +186,28 @@ class KelolaPemilihanController extends Controller
                     ->where('id_pemilihan', $id)
                     ->ignore($request->input('id_kandidat'), 'id_kandidat'),
             ],
-            'id_siswa_ketua' => 'required|integer|exists:siswa,id_siswa',
-            'id_siswa_wakil' => 'nullable|integer|exists:siswa,id_siswa|different:id_siswa_ketua',
+            'id_siswa_ketua' => [
+                'required', 'integer', 'exists:siswa,id_siswa',
+                // Satu siswa hanya boleh muncul sekali dalam satu pemilihan,
+                // baik sebagai ketua maupun wakil. Tanpa ini, orang yang sama bisa
+                // "mencalonkan diri" di dua nomor urut sekaligus.
+                function ($attribute, $value, $fail) use ($id, $request) {
+                    if ($this->sudahJadiKandidat($id, (int) $value, $request->input('id_kandidat'))) {
+                        $fail('Siswa ini sudah terdaftar sebagai ketua atau wakil pada kandidat lain.');
+                    }
+                },
+            ],
+            'id_siswa_wakil' => [
+                'nullable', 'integer', 'exists:siswa,id_siswa', 'different:id_siswa_ketua',
+                function ($attribute, $value, $fail) use ($id, $request) {
+                    if ($value === null) {
+                        return;
+                    }
+                    if ($this->sudahJadiKandidat($id, (int) $value, $request->input('id_kandidat'))) {
+                        $fail('Siswa ini sudah terdaftar sebagai ketua atau wakil pada kandidat lain.');
+                    }
+                },
+            ],
             'visi'           => 'nullable|string',
             'misi'           => 'nullable|string',
             'foto'           => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',

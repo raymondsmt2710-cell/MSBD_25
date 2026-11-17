@@ -69,7 +69,11 @@ class PresensiGuruController extends Controller
             return redirect()->route('guru.presensi.sesi', $hasil->id_sesi);
         }
 
-        return back()->with('error', 'Jadwal tidak valid untuk akun Anda.');
+        $pesan = $hasil->status === 'BUKAN_HARI_JADWAL'
+            ? 'Sesi hanya bisa dibuka pada hari jadwal.'
+            : 'Jadwal tidak valid untuk akun Anda.';
+
+        return back()->with('error', $pesan);
     }
 
     public function tampil(int $idSesi)

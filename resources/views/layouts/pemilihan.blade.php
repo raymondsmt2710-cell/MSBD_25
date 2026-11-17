@@ -50,6 +50,11 @@
         .badge.draf{background:#e5e7eb;color:#374151}
         .badge.berlangsung{background:#dcfce7;color:#166534}
         .badge.selesai{background:#dbeafe;color:#1e40af}
+        /* Status presensi — dipakai portal orang tua (fitur 7). Fitur pemilihan tidak
+           memakai kelas ini, jadi penambahannya tidak mengubah tampilan mana pun. */
+        .badge.hadir{background:#dcfce7;color:#166534}
+        .badge.izin,.badge.sakit{background:#fef9c3;color:#854d0e}
+        .badge.alpa{background:#fee2e2;color:#991b1b}
         .grid{display:grid;gap:14px;align-items:start}
         .grid-3{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
         .grid-2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
@@ -107,18 +112,27 @@
 <div class="topbar">
     <div class="topbar-inner">
         <span class="dot"></span>
-        <strong>Pemilihan Elektronik</strong>
-        <span style="opacity:.75">SMA Negeri 1 Kabanjahe — suara Anda rahasia</span>
+        @auth
+            @if (auth()->user()->role === 'orang_tua')
+                <strong>Portal Orang Tua</strong>
+                <span style="opacity:.75">SMA Negeri 1 Kabanjahe — pemantauan wali murid</span>
+            @else
+                <strong>Pemilihan Elektronik</strong>
+                <span style="opacity:.75">SMA Negeri 1 Kabanjahe — suara Anda rahasia</span>
+            @endif
+        @else
+            <strong>Pemilihan Elektronik</strong>
+            <span style="opacity:.75">SMA Negeri 1 Kabanjahe — suara Anda rahasia</span>
+        @endauth
     </div>
 </div>
 
 <header class="nav">
     <div class="nav-inner">
         <a href="{{ url('/') }}" class="brand">
-            <img src="{{ asset('images/logo-sekolah.png') }}" alt="Logo SMAN 1 Kabanjahe"
-                 style="width:34px;height:34px;border-radius:10px;object-fit:contain;background:#fff;padding:2px">
+            <div class="logo">SM</div>
             <div>
-                <div class="nama">E-Learning</div>
+                <div class="nama">SI-SMANSAKA</div>
                 <div class="sub">SMA Negeri 1 Kabanjahe</div>
             </div>
         </a>
@@ -128,26 +142,15 @@
                 @if (auth()->user()->role === 'siswa')
                     <a href="{{ route('siswa.pemilihan.index') }}"
                        class="{{ request()->routeIs('siswa.pemilihan.*') ? 'aktif' : '' }}">Pemilihan</a>
-                    <a href="{{ route('siswa.presensi.riwayat') }}"
-                       class="{{ request()->routeIs('siswa.presensi.*') ? 'aktif' : '' }}">Presensi</a>
-                    <a href="{{ route('kas.index') }}"
-                       class="{{ request()->routeIs('kas.*') ? 'aktif' : '' }}">Kas Kelas</a>
-                    <a href="{{ route('denah.index') }}"
-                       class="{{ request()->routeIs('denah.*') ? 'aktif' : '' }}">Denah</a>
-                @elseif (in_array(auth()->user()->role, ['admin', 'guru'], true))
+                    <a href="{{ route('siswa.presensi.riwayat') }}">Presensi</a>
+                @elseif (auth()->user()->role === 'orang_tua')
+                    {{-- Tanpa cabang ini akun orang tua jatuh ke @else dan melihat menu
+                         "Kelola Pemilihan" yang menuju 403. --}}
+                    <a href="{{ route('ortu.index') }}"
+                       class="{{ request()->routeIs('ortu.*') ? 'aktif' : '' }}">Portal Orang Tua</a>
+                @else
                     <a href="{{ route('kelola.pemilihan.index') }}"
                        class="{{ request()->routeIs('kelola.pemilihan.*') ? 'aktif' : '' }}">Kelola Pemilihan</a>
-                    <a href="{{ route('guru.presensi.index') }}"
-                       class="{{ request()->routeIs('guru.presensi.*') ? 'aktif' : '' }}">Presensi</a>
-                    <a href="{{ route('kas.index') }}"
-                       class="{{ request()->routeIs('kas.*') ? 'aktif' : '' }}">Kas Kelas</a>
-                    <a href="{{ route('denah.index') }}"
-                       class="{{ request()->routeIs('denah.*') ? 'aktif' : '' }}">Denah</a>
-                @else
-                    <a href="{{ route('kas.index') }}"
-                       class="{{ request()->routeIs('kas.*') ? 'aktif' : '' }}">Kas Kelas</a>
-                    <a href="{{ route('denah.index') }}"
-                       class="{{ request()->routeIs('denah.*') ? 'aktif' : '' }}">Denah</a>
                 @endif
             @endauth
         </nav>

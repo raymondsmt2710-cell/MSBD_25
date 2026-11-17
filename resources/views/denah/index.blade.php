@@ -1,15 +1,9 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">Denah Interaktif</h2>
-                <p class="text-sm text-gray-500">Tempat duduk kelas dan peta area sekolah</p>
-            </div>
-        </div>
-    </x-slot>
+<x-app-layout judul="Denah Interaktif">
+    <h1>Denah Interaktif</h1>
+    <p class="subjudul">Tempat duduk kelas dan peta area sekolah</p>
 
-    <div class="py-6" x-data="denahPage(@js($initial))" x-cloak>
-        <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
+    <div x-data="denahPage(@js($initial))" x-cloak>
+        <div class="space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-2">
                     <label class="text-sm text-gray-500">Kelas</label>

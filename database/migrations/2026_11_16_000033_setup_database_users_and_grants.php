@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -23,27 +24,64 @@ return new class extends Migration
         ];
     }
 
+    /**
+     * Host pada akun MySQL. Nilai bawaan 'localhost' hanya bisa login dari mesin yang sama
+     * dengan server MySQL. Set DB_USER_HOST=% (atau IP server aplikasi) bila database
+     * berada di mesin terpisah, misalnya saat deploy.
+     */
+    private function userHost(): string
+    {
+        return env('DB_USER_HOST', 'localhost');
+    }
+
     public function up(): void
     {
         if (! $this->mysql()) {
             return;
         }
 
-        $db = config('database.connections.mysql.database');
-        $a = $this->accounts();
+        // Di shared hosting / akun DB tanpa hak CREATE USER & GRANT, pembuatan user per role
+        // tidak mungkin dilakukan. Migration dilewati dengan peringatan, bukan menggagalkan deploy.
+        // Set DB_SKIP_ROLE_USERS=true untuk melewati secara sengaja.
+        if (filter_var(env('DB_SKIP_ROLE_USERS', false), FILTER_VALIDATE_BOOLEAN)) {
+            Log::warning('Migration 000033 dilewati karena DB_SKIP_ROLE_USERS=true. Hak akses per role tidak dibuat.');
 
-        foreach ($a as [$user, $pass]) {
-            DB::unprepared("CREATE USER IF NOT EXISTS '{$user}'@'localhost' IDENTIFIED BY '{$pass}'");
+            return;
         }
 
-        // Grant dibuat toleran: bila objek (tabel/view/procedure) belum ada karena
-        // urutan migrasi, lewati saja. Grant untuk objek tersebut diberikan ulang
-        // oleh migration yang membuatnya (mis. 001008 setup_pemilihan_grants,
-        // 001014 grant_sessions_to_role_users).
-        $grant = function (string $user, array $map) use ($db) {
+        $db = config('database.connections.mysql.database');
+        $a = $this->accounts();
+        $host = $this->userHost();
+
+        try {
+            foreach ($a as [$user, $pass]) {
+                DB::unprepared("CREATE USER IF NOT EXISTS '{$user}'@'{$host}' IDENTIFIED BY '{$pass}'");
+            }
+
+            $this->beriHak($a, $db, $host);
+        } catch (QueryException $e) {
+            // 1227 = butuh hak CREATE USER/SUPER, 1044/1142 = akses ditolak
+            if (in_array((int) ($e->errorInfo[1] ?? 0), [1044, 1142, 1227], true)) {
+                Log::warning(
+                    'Migration 000033 tidak dapat membuat user MySQL (hak CREATE USER/GRANT tidak tersedia). '.
+                    'Jalankan migration sebagai root, atau buat user & GRANT secara manual. Pesan: '.$e->getMessage()
+                );
+
+                return;
+            }
+
+            throw $e;
+        }
+    }
+
+    private function beriHak(array $a, string $db, string $host): void
+    {
+        $grant = function (string $user, array $map) use ($db, $host) {
             foreach ($map as $object => $privileges) {
+                // Toleran: objek bisa belum ada karena urutan migrasi (grant ulang
+                // diberikan oleh migration yang membuat objek tersebut).
                 try {
-                    DB::unprepared("GRANT {$privileges} ON {$object} TO '{$user}'@'localhost'");
+                    DB::unprepared("GRANT {$privileges} ON {$object} TO '{$user}'@'{$host}'");
                 } catch (\Throwable $e) {
                     Log::warning("Lewati GRANT {$privileges} ON {$object} untuk {$user}: ".$e->getMessage());
                 }
@@ -54,25 +92,13 @@ return new class extends Migration
         $func = fn (string $name) => "FUNCTION `{$db}`.`{$name}`";
 
         // Admin: penuh, hanya pada database aplikasi
-        DB::unprepared("GRANT ALL PRIVILEGES ON `{$db}`.* TO '{$a['admin'][0]}'@'localhost'");
+        DB::unprepared("GRANT ALL PRIVILEGES ON `{$db}`.* TO '{$a['admin'][0]}'@'{$host}'");
 
-        // Cache dipakai throttle/rate limiter setelah koneksi role aktif.
-        // Grant `sessions` sengaja TIDAK di sini: tabel sessions baru dibuat pada
-        // migration 2026_11_16_160541, lihat 2026_11_17_001014_grant_sessions_to_role_users.
-        $cache = [
-            $t('cache') => 'SELECT, INSERT, UPDATE, DELETE',
-            $t('cache_locks') => 'SELECT, INSERT, UPDATE, DELETE',
-        ];
-        $grant($a['guru'][0], $cache);
-        $grant($a['siswa'][0], $cache);
-        $grant($a['orangtua'][0], $cache);
-
-        // Guru: baca data akademik + tulis presensi (koreksi manual)
+        // Guru
         $grant($a['guru'][0], [
             $t('users') => 'SELECT',
             $t('guru') => 'SELECT',
             $t('siswa') => 'SELECT',
-            $t('tahun_ajaran') => 'SELECT',
             $t('kelas') => 'SELECT',
             $t('anggota_kelas') => 'SELECT',
             $t('mata_pelajaran') => 'SELECT',
@@ -82,14 +108,6 @@ return new class extends Migration
             $t('presensi') => 'SELECT, INSERT, UPDATE',   // koreksi manual oleh guru
             $t('pengajuan_izin') => 'SELECT',
             $t('log_presensi') => 'SELECT',
-            $t('transaksi_kas') => 'SELECT',
-            $t('iuran_kas') => 'SELECT',
-            $t('denah_kelas') => 'SELECT',
-            $t('posisi_duduk') => 'SELECT',
-            $t('ruangan_sekolah') => 'SELECT',
-            $t('pengurus_kelas') => 'SELECT',
-            $t('jabatan') => 'SELECT',
-            $t('orang_tua_siswa') => 'SELECT',
             $t('v_rekap_presensi_siswa') => 'SELECT',
             $t('v_rekap_sesi_presensi') => 'SELECT',
             $proc('sp_buka_sesi') => 'EXECUTE',
@@ -99,24 +117,10 @@ return new class extends Migration
             $func('fn_jumlah_presensi') => 'EXECUTE',
         ]);
 
-        // Siswa: baca data kelas; bendahara/ketua kelas menulis kas & denah lewat aplikasi.
-        // Siswa TIDAK punya INSERT langsung ke presensi; hanya EXECUTE sp_scan_presensi.
+        // Siswa
         $grant($a['siswa'][0], [
             $t('users') => 'SELECT',
             $t('siswa') => 'SELECT',
-            $t('guru') => 'SELECT',   // nama wali kelas pada denah
-            $t('tahun_ajaran') => 'SELECT',
-            $t('kelas') => 'SELECT',
-            $t('anggota_kelas') => 'SELECT',
-            $t('mata_pelajaran') => 'SELECT',
-            $t('jadwal_pelajaran') => 'SELECT',
-            $t('pengurus_kelas') => 'SELECT',
-            $t('jabatan') => 'SELECT',
-            $t('transaksi_kas') => 'SELECT, INSERT, UPDATE',
-            $t('iuran_kas') => 'SELECT, INSERT, UPDATE',
-            $t('denah_kelas') => 'SELECT, INSERT, UPDATE',
-            $t('posisi_duduk') => 'SELECT, INSERT, UPDATE, DELETE',
-            $t('ruangan_sekolah') => 'SELECT',
             $t('v_rekap_presensi_siswa') => 'SELECT',
             $proc('sp_scan_presensi') => 'EXECUTE',
             $func('fn_token_valid') => 'EXECUTE',
@@ -124,25 +128,12 @@ return new class extends Migration
             $func('fn_jumlah_presensi') => 'EXECUTE',
         ]);
 
-        // Orang tua / wali: hanya-baca, termasuk kas dan denah kelas anak
+        // Orang tua / wali: hanya-baca
         $grant($a['orangtua'][0], [
             $t('users') => 'SELECT',
             $t('orang_tua') => 'SELECT',
             $t('orang_tua_siswa') => 'SELECT',
             $t('siswa') => 'SELECT',
-            $t('guru') => 'SELECT',   // nama wali kelas pada denah
-            $t('tahun_ajaran') => 'SELECT',
-            $t('kelas') => 'SELECT',
-            $t('anggota_kelas') => 'SELECT',
-            $t('mata_pelajaran') => 'SELECT',
-            $t('jadwal_pelajaran') => 'SELECT',
-            $t('pengurus_kelas') => 'SELECT',
-            $t('jabatan') => 'SELECT',
-            $t('transaksi_kas') => 'SELECT',
-            $t('iuran_kas') => 'SELECT',
-            $t('denah_kelas') => 'SELECT',
-            $t('posisi_duduk') => 'SELECT',
-            $t('ruangan_sekolah') => 'SELECT',
             $t('v_rekap_presensi_siswa') => 'SELECT',
             $func('fn_persentase_kehadiran') => 'EXECUTE',
             $func('fn_jumlah_presensi') => 'EXECUTE',
@@ -158,7 +149,7 @@ return new class extends Migration
         }
 
         foreach ($this->accounts() as [$user]) {
-            DB::unprepared("DROP USER IF EXISTS '{$user}'@'localhost'");
+            DB::unprepared("DROP USER IF EXISTS '{$user}'@'{$this->userHost()}'");
         }
     }
 };

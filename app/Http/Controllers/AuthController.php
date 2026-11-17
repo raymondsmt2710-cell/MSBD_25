@@ -49,6 +49,7 @@ class AuthController extends Controller
             Role::Admin => route('kelola.pemilihan.index'),
             Role::Guru => route('guru.presensi.index'),
             Role::Siswa => route('siswa.pemilihan.index'),
+            Role::OrangTua => route('ortu.index'),
             default => route('beranda'),
         };
     }

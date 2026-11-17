@@ -24,13 +24,14 @@
             <div class="rounded-xl bg-gray-50 p-4">
                 <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Posisi duduk</p>
                 <p class="mt-1 text-sm font-semibold text-gray-800"
-                   x-text="kursiTerpilih ? `Baris ${kursiTerpilih.baris}, kolom ${kursiTerpilih.kolom}` : 'Belum ditempatkan'"></p>
+                   x-text="kursiTerpilih ? `Meja ${kursiTerpilih.baris}.${kursiTerpilih.kolom} — sisi ${kursiTerpilih.sisi === 'kanan' ? 'kanan' : 'kiri'}` : 'Belum ditempatkan'"></p>
             </div>
 
             <div class="rounded-xl border border-indigo-100 bg-indigo-50/60 p-4 text-sm text-indigo-900">
                 <p class="font-medium">Posisi saat ini</p>
                 <p class="mt-1 text-xs text-indigo-700">
-                    Gunakan mode edit untuk menukar posisi dengan siswa lain atau memindahkan ke kursi kosong.
+                    Setiap meja menampung 2 murid (sisi kiri dan kanan). Gunakan mode edit untuk menukar
+                    posisi dengan murid lain atau memindahkan ke sisi meja yang masih kosong.
                 </p>
             </div>
         </div>

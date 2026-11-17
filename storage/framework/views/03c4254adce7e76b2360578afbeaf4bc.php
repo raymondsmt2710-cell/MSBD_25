@@ -1,24 +1,18 @@
 <?php if (isset($component)) { $__componentOriginal4619374cef299e94fd7263111d0abc69 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal4619374cef299e94fd7263111d0abc69 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.app-layout','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.app-layout','data' => ['judul' => 'Denah Interaktif']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('app-layout'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes([]); ?>
-     <?php $__env->slot('header', null, []); ?> 
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">Denah Interaktif</h2>
-                <p class="text-sm text-gray-500">Tempat duduk kelas dan peta area sekolah</p>
-            </div>
-        </div>
-     <?php $__env->endSlot(); ?>
+<?php $component->withAttributes(['judul' => 'Denah Interaktif']); ?>
+    <h1>Denah Interaktif</h1>
+    <p class="subjudul">Tempat duduk kelas dan peta area sekolah</p>
 
-    <div class="py-6" x-data="denahPage(<?php echo \Illuminate\Support\Js::from($initial)->toHtml() ?>)" x-cloak>
-        <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
+    <div x-data="denahPage(<?php echo \Illuminate\Support\Js::from($initial)->toHtml() ?>)" x-cloak>
+        <div class="space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-2">
                     <label class="text-sm text-gray-500">Kelas</label>
@@ -72,7 +66,8 @@
 
                 <div x-show="modeEdit" class="mt-3 rounded-xl border border-dashed border-amber-300 bg-amber-50/60 p-3">
                     <p class="text-xs font-medium text-amber-800">
-                        Klik dua kursi untuk menukar. Klik kursi lalu klik kursi kosong untuk memindahkan.
+                        Setiap meja berisi 2 murid (sisi kiri &amp; kanan). Klik dua murid untuk menukar.
+                        Klik murid lalu klik sisi meja kosong untuk memindahkan.
                     </p>
                     <div class="mt-2 flex flex-wrap items-center gap-2">
                         <label class="text-xs text-amber-800">Tempatkan siswa yang belum duduk:</label>
@@ -108,31 +103,49 @@
                     
                     <div class="mt-6 overflow-x-auto pb-2">
                         <div class="grid min-w-[38rem] gap-3"
-                             :style="`grid-template-columns: repeat(${jumlahKolom()}, minmax(7rem, 1fr))`">
+                             :style="`grid-template-columns: repeat(${jumlahKolom()}, minmax(9rem, 1fr))`">
                             <template x-for="baris in jumlahBaris()" :key="baris">
                                 <template x-for="kolom in jumlahKolom()" :key="`${baris}-${kolom}`">
-                                    <button type="button"
-                                            @click="klikKursi(kursiPada(baris, kolom), baris, kolom)"
-                                            :class="{
-                                                'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-300': sorotSiswaId && kursiPada(baris, kolom)?.siswa?.id_siswa === sorotSiswaId,
-                                                'border-amber-400 bg-amber-50 ring-2 ring-amber-300': kursiSwapPertama?.id_posisi && kursiSwapPertama?.id_posisi === kursiPada(baris, kolom)?.id_posisi,
-                                                'border-dashed border-gray-300 bg-gray-50 text-gray-300': !kursiPada(baris, kolom),
-                                                'border-gray-200 bg-white hover:border-indigo-300': kursiPada(baris, kolom)?.siswa,
-                                            }"
-                                            class="min-h-[4.75rem] rounded-xl border p-2 text-left text-xs shadow-sm transition">
-                                        <template x-if="kursiPada(baris, kolom)?.siswa">
-                                            <div>
-                                                <p class="line-clamp-2 font-semibold text-gray-800" x-text="kursiPada(baris, kolom).siswa.nama_siswa"></p>
-                                                <p class="mt-1 text-[10px] text-gray-400" x-text="kursiPada(baris, kolom).siswa.nis"></p>
-                                                <p x-show="kursiPada(baris, kolom).siswa.jabatan"
-                                                   class="mt-1 inline-block rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-600"
-                                                   x-text="kursiPada(baris, kolom).siswa.jabatan"></p>
-                                            </div>
-                                        </template>
-                                        <template x-if="!kursiPada(baris, kolom)?.siswa">
-                                            <span class="flex h-full items-center justify-center text-[11px]">Kosong</span>
-                                        </template>
-                                    </button>
+                                    <div class="rounded-xl border border-gray-200 bg-white p-1.5 shadow-sm">
+                                        <div class="mb-1 flex items-center justify-between px-0.5">
+                                            <span class="text-[9px] font-semibold uppercase tracking-wider text-gray-400"
+                                                  x-text="`Meja ${baris}.${kolom}`"></span>
+                                            <span class="text-[9px] text-gray-300"
+                                                  x-text="`${jumlahDiMeja(baris, kolom)}/2`"></span>
+                                        </div>
+
+                                        
+                                        <div class="flex gap-1.5">
+                                            <template x-for="sisi in ['kiri', 'kanan']" :key="`${baris}-${kolom}-${sisi}`">
+                                                <button type="button"
+                                                        @click="klikKursi(baris, kolom, sisi)"
+                                                        :title="`Sisi ${sisi} meja ${baris}.${kolom}`"
+                                                        :class="{
+                                                            'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-300': sorotSiswaId && muridPada(baris, kolom, sisi)?.siswa?.id_siswa === sorotSiswaId,
+                                                            'border-amber-400 bg-amber-50 ring-2 ring-amber-300': kursiSwapPertama?.id_posisi && kursiSwapPertama?.id_posisi === muridPada(baris, kolom, sisi)?.id_posisi,
+                                                            'border-dashed border-gray-300 bg-gray-50 text-gray-300': !muridPada(baris, kolom, sisi),
+                                                            'border-gray-200 bg-white hover:border-indigo-300': muridPada(baris, kolom, sisi)?.siswa,
+                                                        }"
+                                                        class="min-h-[4.25rem] flex-1 rounded-lg border p-1.5 text-left text-[11px] shadow-sm transition">
+                                                    <template x-if="muridPada(baris, kolom, sisi)?.siswa">
+                                                        <div>
+                                                            <p class="line-clamp-2 font-semibold leading-tight text-gray-800"
+                                                               x-text="muridPada(baris, kolom, sisi).siswa.nama_siswa"></p>
+                                                            <p class="mt-0.5 text-[9px] text-gray-400"
+                                                               x-text="muridPada(baris, kolom, sisi).siswa.nis"></p>
+                                                            <p x-show="muridPada(baris, kolom, sisi).siswa.jabatan"
+                                                               class="mt-0.5 inline-block rounded bg-indigo-50 px-1 py-0.5 text-[9px] font-medium text-indigo-600"
+                                                               x-text="muridPada(baris, kolom, sisi).siswa.jabatan"></p>
+                                                        </div>
+                                                    </template>
+                                                    <template x-if="!muridPada(baris, kolom, sisi)?.siswa">
+                                                        <span class="flex h-full items-center justify-center text-[10px]"
+                                                              x-text="sisi === 'kiri' ? 'Kiri' : 'Kanan'"></span>
+                                                    </template>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </template>
                             </template>
                         </div>

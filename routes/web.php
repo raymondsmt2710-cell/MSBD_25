@@ -2,7 +2,7 @@
 
 use App\Enums\Role;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\Denah\DenahController;
 use App\Http\Controllers\Denah\DenahKelasController;
 use App\Http\Controllers\Denah\RuanganSekolahController;
@@ -11,38 +11,19 @@ use App\Http\Controllers\Kas\IuranKasController;
 use App\Http\Controllers\Kas\KasController;
 use App\Http\Controllers\Kas\TransaksiKasController;
 use App\Http\Controllers\KelolaPemilihanController;
+use App\Http\Controllers\PortalOrangTuaController;
 use App\Http\Controllers\PresensiGuruController;
 use App\Http\Controllers\PresensiSiswaController;
 use App\Http\Controllers\SiswaPemilihanController;
+use App\Support\PolaRute;
 use Illuminate\Support\Facades\Route;
 
-// Beranda: tamu diarahkan ke login, pengguna masuk diarahkan ke fitur utamanya
-// (ikut perilaku main supaya menu "Pemilihan" bisa dijangkau dari logo/beranda).
-Route::get('/', function () {
-    if (! auth()->check()) {
-        return redirect()->route('login');
-    }
-
-    return redirect()->to(auth()->user()->role === Role::Siswa
-        ? route('siswa.pemilihan.index')
-        : route('kelola.pemilihan.index'));
-})->name('beranda');
+// Halaman awal untuk tamu. Pengguna yang sudah login langsung diarahkan sesuai peran.
+Route::get('/', [BerandaController::class, 'index'])->name('beranda');
 
 Route::get('/login', [AuthController::class, 'form'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->name('login.proses')->middleware('throttle:10,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
-
-Route::middleware('auth')->group(function () {
-    // Route `/dashboard` generik sudah tidak dipakai (digantikan arah langsung dari `/`).
-    Route::get('/dashboard/admin', [DashboardController::class, 'admin'])
-        ->name('admin.dashboard')->middleware('role:admin');
-    Route::get('/dashboard/guru', [DashboardController::class, 'guru'])
-        ->name('guru.dashboard')->middleware('role:guru');
-    Route::get('/dashboard/siswa', [DashboardController::class, 'siswa'])
-        ->name('siswa.dashboard')->middleware('role:siswa');
-    Route::get('/dashboard/orang-tua', [DashboardController::class, 'ortu'])
-        ->name('ortu.dashboard')->middleware('role:orang_tua');
-});
 
 // ---- Fitur 1: Presensi QR sekali pakai ----
 Route::middleware(['auth', 'role:guru'])->prefix('guru/presensi')->name('guru.presensi.')->group(function () {
@@ -58,6 +39,15 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa/presensi')->name('siswa
     Route::get('/riwayat', [PresensiSiswaController::class, 'riwayat'])->name('riwayat');
     Route::get('/scan/{kode}', [PresensiSiswaController::class, 'konfirmasi'])->name('konfirmasi');
     Route::post('/scan/{kode}', [PresensiSiswaController::class, 'scan'])->name('scan')->middleware('throttle:10,1');
+});
+
+// ---- Fitur 7: Pemantauan orang tua/wali (hanya-baca, tidak ada rute tulis) ----
+Route::middleware(['auth', 'role:orang_tua'])->prefix('ortu')->name('ortu.')->group(function () {
+    Route::get('/', [PortalOrangTuaController::class, 'index'])->name('index');
+    // PolaRute::ID mencegah id di luar rentang PHP_INT_MAX menjadi TypeError (500);
+    // dengan batas ini masukan ngawur berhenti sebagai 404.
+    Route::get('/anak/{idSiswa}', [PortalOrangTuaController::class, 'anak'])
+        ->where('idSiswa', PolaRute::ID)->name('anak');
 });
 
 // ---- Fitur 3: Pemilihan suara elektronik (e-voting) ----

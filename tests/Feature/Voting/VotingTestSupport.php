@@ -30,14 +30,17 @@ trait VotingTestSupport
 
     /**
      * Fitur pemilihan bergantung pada MySQL (stored procedure/function/view/trigger).
-     * Bila server MySQL tidak tersedia, test dilewati alih-alih gagal, supaya
+     * Bila koneksi MySQL tidak tersedia, test dilewati alih-alih gagal, supaya
      * suite fitur lain (kas, denah, presensi) tetap bisa dijalankan di mesin
      * tanpa MySQL.
+     *
+     * Catatan: test yang memakai trait ini WAJIB menyiapkan skema lebih dulu
+     * (DatabaseTruncation / RefreshDatabase). Kalau MySQL tersedia tetapi tabel
+     * belum ada, biarkan test gagal apa adanya agar masalahnya terlihat.
      */
     protected function setUpVotingDatabase(): void
     {
         try {
-            DB::connection(config('database.default'))->getPdo();
             DB::connection('mysql')->getPdo();
         } catch (\Throwable $e) {
             $this->markTestSkipped('MySQL tidak tersedia untuk test pemilihan: '.$e->getMessage());

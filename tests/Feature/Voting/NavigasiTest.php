@@ -15,15 +15,12 @@ class NavigasiTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
-    protected function setUp(): void
+    public function test_tamu_melihat_landing_page_dari_beranda(): void
     {
-        parent::setUp();
-        $this->setUpVotingDatabase();
-    }
-
-    public function test_tamu_diarahkan_ke_login_dari_beranda(): void
-    {
-        $this->get('/')->assertRedirect(route('login'));
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('SI-SMANSAKA')
+            ->assertSee(route('login'), false);
     }
 
     public function test_siswa_diarahkan_ke_halaman_pemilihan_dari_beranda(): void

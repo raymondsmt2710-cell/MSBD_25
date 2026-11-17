@@ -31,6 +31,13 @@ class DBDynamicConnection
     {
         $asal = DB::getDefaultConnection();
 
+        // Saat testing, pergantian koneksi per-role tidak dipakai: setiap test
+        // memakai satu koneksi yang sama, dan perpindahan koneksi akan membuat
+        // data test tidak terlihat (query mengembalikan 0 baris).
+        if (app()->runningUnitTests()) {
+            return $next($request);
+        }
+
         // Selalu mulai dari koneksi aplikasi, bukan sisa request sebelumnya.
         if (Config::get('database.default') !== $asal) {
             Config::set('database.default', $asal);
@@ -67,6 +74,17 @@ class DBDynamicConnection
             Config::set('database.default', $target);
             DB::setDefaultConnection($target);
         } catch (\Throwable $e) {
+            // Set DB_ROLE_CONNECTION_STRICT=true agar kegagalan ini justru menghentikan
+            // request (fail-closed) dan tidak diam-diam memakai koneksi root — penting saat
+            // production agar GRANT benar-benar diuji.
+            if (filter_var(env('DB_ROLE_CONNECTION_STRICT', false), FILTER_VALIDATE_BOOLEAN)) {
+                throw new \RuntimeException(
+                    "Koneksi {$target} gagal dan DB_ROLE_CONNECTION_STRICT aktif: ".$e->getMessage(),
+                    0,
+                    $e,
+                );
+            }
+
             // Jika user MySQL belum dibuat, tetap pakai koneksi bawaan aplikasi (mis. sqlite),
             // bukan dipaksa ke mysql yang belum tentu tersedia.
             Log::warning("Gagal memakai koneksi {$target}: ".$e->getMessage());

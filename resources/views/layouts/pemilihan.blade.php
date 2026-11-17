@@ -115,9 +115,10 @@
 <header class="nav">
     <div class="nav-inner">
         <a href="{{ url('/') }}" class="brand">
-            <div class="logo">SM</div>
+            <img src="{{ asset('images/logo-sekolah.png') }}" alt="Logo SMAN 1 Kabanjahe"
+                 style="width:34px;height:34px;border-radius:10px;object-fit:contain;background:#fff;padding:2px">
             <div>
-                <div class="nama">SI-SMANSAKA</div>
+                <div class="nama">E-Learning</div>
                 <div class="sub">SMA Negeri 1 Kabanjahe</div>
             </div>
         </a>
@@ -127,10 +128,26 @@
                 @if (auth()->user()->role === 'siswa')
                     <a href="{{ route('siswa.pemilihan.index') }}"
                        class="{{ request()->routeIs('siswa.pemilihan.*') ? 'aktif' : '' }}">Pemilihan</a>
-                    <a href="{{ route('siswa.presensi.riwayat') }}">Presensi</a>
-                @else
+                    <a href="{{ route('siswa.presensi.riwayat') }}"
+                       class="{{ request()->routeIs('siswa.presensi.*') ? 'aktif' : '' }}">Presensi</a>
+                    <a href="{{ route('kas.index') }}"
+                       class="{{ request()->routeIs('kas.*') ? 'aktif' : '' }}">Kas Kelas</a>
+                    <a href="{{ route('denah.index') }}"
+                       class="{{ request()->routeIs('denah.*') ? 'aktif' : '' }}">Denah</a>
+                @elseif (in_array(auth()->user()->role, ['admin', 'guru'], true))
                     <a href="{{ route('kelola.pemilihan.index') }}"
                        class="{{ request()->routeIs('kelola.pemilihan.*') ? 'aktif' : '' }}">Kelola Pemilihan</a>
+                    <a href="{{ route('guru.presensi.index') }}"
+                       class="{{ request()->routeIs('guru.presensi.*') ? 'aktif' : '' }}">Presensi</a>
+                    <a href="{{ route('kas.index') }}"
+                       class="{{ request()->routeIs('kas.*') ? 'aktif' : '' }}">Kas Kelas</a>
+                    <a href="{{ route('denah.index') }}"
+                       class="{{ request()->routeIs('denah.*') ? 'aktif' : '' }}">Denah</a>
+                @else
+                    <a href="{{ route('kas.index') }}"
+                       class="{{ request()->routeIs('kas.*') ? 'aktif' : '' }}">Kas Kelas</a>
+                    <a href="{{ route('denah.index') }}"
+                       class="{{ request()->routeIs('denah.*') ? 'aktif' : '' }}">Denah</a>
                 @endif
             @endauth
         </nav>

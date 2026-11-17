@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('judul') – E-Learning SMAN 1 Kabanjahe</title>
     <style>
-        body{font-family:system-ui,sans-serif;margin:0;background:#f4f5f7;color:#1f2937}
-        header{background:#1e3a8a;color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
+        body{font-family:Figtree,system-ui,sans-serif;margin:0;background:#f8fafc;color:#1f2937}
+        header{background:#09656F;color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
         main{max-width:960px;margin:20px auto;padding:0 16px}
         .card{background:#fff;border-radius:8px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
         table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:14px}
-        .btn{background:#1e3a8a;color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-size:14px}
+        .btn{background:#09656F;color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-size:14px}
         .btn.merah{background:#b91c1c}.btn.abu{background:#6b7280}
         .ok{background:#dcfce7;color:#166534;padding:10px;border-radius:6px;margin-bottom:12px}
         .err{background:#fee2e2;color:#991b1b;padding:10px;border-radius:6px;margin-bottom:12px}

@@ -59,7 +59,7 @@
                 <div>
                     <label for="nomor_urut">Nomor urut</label>
                     <input id="nomor_urut" type="number" name="nomor_urut" min="1" max="99" required
-                           value="{{ old('nomor_urut', $kandidat->count() + 1) }}">
+                           value="{{ old('nomor_urut', $nomorBerikutnya) }}">
                 </div>
                 <div>
                     <label for="foto">Foto (opsional, maks 2 MB)</label>

@@ -72,9 +72,9 @@ class RekamSuaraTest extends TestCase
 
     public function test_ditolak_di_luar_rentang_waktu(): void
     {
-        // Rentang waktu tidak bisa diubah saat berlangsung (dikunci trigger), jadi
-        // pemilihan yang waktunya sudah lewat dibuat langsung lewat INSERT.
-        $d = $this->seedPemilihanBerlangsung();
+        // Pemilihan yang waktunya sudah lewat dibuat sebagai draf dulu, lalu dibuka.
+        // (Trigger menolak penambahan pemilih/kandidat pada pemilihan yang sudah berlangsung.)
+        $d = $this->seedPemilihanDraf();
 
         $idBaru = DB::table('pemilihan')->insertGetId([
             'id_organisasi' => $d['id_organisasi'],
@@ -82,7 +82,7 @@ class RekamSuaraTest extends TestCase
             'judul' => 'Lewat Waktu',
             'waktu_mulai' => now()->subHours(2),
             'waktu_selesai' => now()->subMinute(),
-            'status' => 'berlangsung',
+            'status' => 'draf',
             'dibuat_oleh' => $d['id_admin'],
         ]);
 
@@ -97,6 +97,8 @@ class RekamSuaraTest extends TestCase
             'nomor_urut' => 1,
             'id_siswa_ketua' => $d['id_siswa'][0],
         ]);
+
+        DB::table('pemilihan')->where('id_pemilihan', $idBaru)->update(['status' => 'berlangsung']);
 
         DB::statement('CALL sp_rekam_suara(?,?,?,@status)', [$idBaru, $d['id_siswa'][0], $idKandidat]);
 

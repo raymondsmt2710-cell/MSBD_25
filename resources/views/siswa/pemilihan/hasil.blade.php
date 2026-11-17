@@ -1,7 +1,7 @@
 @extends('layouts.pemilihan')
 @section('judul', 'Hasil Pemilihan')
 @section('isi')
-@php $id = $pemilihan->id_pemilihan; @endphp
+@php $id = $pemilihan->id_pemilihan; $dariKelola = $dariKelola ?? false; @endphp
 
 <h1>Perolehan Suara</h1>
 <p class="subjudul">{{ $pemilihan->judul }} — pemilihan telah ditutup.</p>
@@ -51,6 +51,8 @@
 </div>
 
 <div class="kartu">
-    <a class="btn garis" href="{{ route('siswa.pemilihan.index') }}">Kembali ke Daftar Pemilihan</a>
+    <a class="btn garis" href="{{ $dariKelola ? route('kelola.pemilihan.monitor', $id) : route('siswa.pemilihan.index') }}">
+        {{ $dariKelola ? 'Kembali ke Monitor' : 'Kembali ke Daftar Pemilihan' }}
+    </a>
 </div>
 @endsection

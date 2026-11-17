@@ -89,7 +89,7 @@
             </form>
         @else
             <span class="pill">Pemilihan sudah selesai. Hasil terbuka untuk siswa.</span>
-            <a class="btn garis" href="{{ route('siswa.pemilihan.hasil', $id) }}">Lihat Hasil</a>
+            <a class="btn garis" href="{{ route('kelola.pemilihan.hasil', $id) }}">Lihat Hasil</a>
         @endif
     </div>
 </div>

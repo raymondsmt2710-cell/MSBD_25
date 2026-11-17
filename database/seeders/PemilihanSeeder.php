@@ -137,6 +137,8 @@ class PemilihanSeeder extends Seeder
             ->value('id_pemilihan');
 
         if (! $idPemilihan) {
+            // Dibuat sebagai draf dulu, karena trigger database menolak penambahan
+            // kandidat/pemilih pada pemilihan yang sudah dibuka.
             $idPemilihan = DB::table('pemilihan')->insertGetId([
                 'id_organisasi' => $idOrganisasi,
                 'id_tahun_ajaran' => $idTahunAjaran,
@@ -145,7 +147,7 @@ class PemilihanSeeder extends Seeder
                     .'Pilih satu pasangan calon. Suara Anda rahasia.',
                 'waktu_mulai' => $now->copy()->subHour(),
                 'waktu_selesai' => $now->copy()->addDays(7),
-                'status' => 'berlangsung',
+                'status' => 'draf',
                 'dibuat_oleh' => DB::table('users')->where('username', 'admin')->value('id_user'),
             ]);
         }
@@ -208,6 +210,17 @@ class PemilihanSeeder extends Seeder
                 'id_pemilihan' => $idPemilihan,
                 'id_user' => $idGuruUserSudah,
             ]);
+        }
+
+        // Terakhir: buka pemilihan agar siap dicoba. Hanya transisi draf -> berlangsung
+        // yang diizinkan trigger, dan hanya jika belum pernah dibuka.
+        $statusSekarang = DB::table('pemilihan')
+            ->where('id_pemilihan', $idPemilihan)->value('status');
+
+        if ($statusSekarang === 'draf') {
+            DB::table('pemilihan')
+                ->where('id_pemilihan', $idPemilihan)
+                ->update(['status' => 'berlangsung']);
         }
     }
 }

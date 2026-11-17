@@ -102,9 +102,13 @@ Buka <http://localhost:8000>.
 | `trg_before_suara_insert` | Menolak suara bila pemilihan tidak `berlangsung` atau kandidat bukan miliknya. |
 | `trg_before_suara_update` | Menolak perubahan suara. |
 | `trg_before_suara_delete` | Menolak penghapusan suara. |
+| `trg_before_pemilihan_delete` | Menolak hapus pemilihan yang sudah punya suara (menutup jalan pintas lewat `ON DELETE CASCADE`). |
+| `trg_before_kandidat_insert` / `trg_before_kandidat_update` | Kandidat hanya boleh ditambah/diubah saat pemilihan `draf`. |
 | `trg_before_kandidat_delete` | Menolak hapus kandidat yang sudah punya suara. |
+| `trg_before_daftar_pemilih_insert` | Pemilih hanya boleh didaftarkan saat pemilihan `draf`. |
+| `trg_before_daftar_pemilih_update` | Menolak pengembalian `sudah_memilih` ke 0 (anti suara ganda). |
 | `trg_before_daftar_pemilih_delete` | Menolak hapus pemilih yang sudah memilih. |
-| `trg_before_pemilihan_update` | Mengunci data pemilihan setelah status bukan `draf`. |
+| `trg_before_pemilihan_update` | Mengunci data pemilihan setelah status bukan `draf`, dan hanya mengizinkan transisi status yang sah. |
 | `trg_after_pemilihan_update` | Mencatat perubahan status ke `log_pemilihan`. |
 | `trg_after_daftar_pemilih_update` | Mencatat keikutsertaan pemilih (tanpa menyebut kandidat). |
 
@@ -148,11 +152,28 @@ Tiga lapis, dan yang menentukan ada di database:
   `GRANT ALL ON msbd_25.*` dari migration presensi) secara teknis masih bisa menghapus
   suara. Yang dijaga fitur ini adalah **aplikasi tidak bisa** mengubah suara, bukan
   manusia dengan kredensial database penuh.
+- **Korelasi waktu (batas kerahasiaan yang nyata).** Tabel `suara` sendiri benar-benar
+  anonim: tidak ada `id_siswa`, dan `id_suara` adalah UUID v4 acak. Namun panitia yang
+  membuka monitor saat pemungutan berlangsung bisa **menyimpulkan** pilihan seseorang
+  dengan mencocokkan tiga hal: kenaikan hitungan suara per kandidat, jam `waktu_memilih`
+  di halaman Pemilih, dan baris log `PEMILIH_MEMILIH`. Pada pemilihan sekelas dengan
+  sedikit pemilih, korelasi ini bisa menunjuk satu orang. Untuk pemilihan yang benar-benar
+  rahasia, tutup monitor selama pemungutan berlangsung, atau jangan tampilkan jam memilih
+  ke panitia.
+- **Identitas pemanggil procedure.** `sp_rekam_suara` menerima `p_id_siswa` sebagai
+  parameter, jadi siapa pun yang memegang kredensial `siswa_app` (default
+  `siswa_app`/`siswa_app`) bisa merekam suara atas nama siswa lain. Lewat aplikasi hal ini
+  tidak mungkin, karena controller selalu mengirim `Auth::user()->siswa->id_siswa`.
 - Panitia memegang `INSERT/UPDATE/DELETE` pada tabel pemilihan karena perlu mengelola data
-  saat `draf`. Begitu pemilihan dibuka, trigger menolak semua perubahan data pemilihan.
+  saat `draf`. Begitu pemilihan dibuka, trigger menolak penambahan/penubahan kandidat dan
+  pemilih, menolak pengembalian `sudah_memilih` ke 0, menolak penghapusan pemilihan yang
+  sudah bersuara, dan hanya mengizinkan transisi status
+  `draf → berlangsung`, `berlangsung → selesai`, `berlangsung → draf`.
 - Waktu selesai terlewat **tidak** menutup pemilihan otomatis. Panitia harus menekan
   Tutup; halaman monitor menampilkan peringatan. Pemungutan suara sendiri sudah berhenti
   karena `sp_rekam_suara` memeriksa rentang waktu.
+- Batas waktu memakai rentang **setengah terbuka** `[waktu_mulai, waktu_selesai)`:
+  suara pada detik `waktu_selesai` sudah ditolak.
 
 ## 7. Menjalankan test
 

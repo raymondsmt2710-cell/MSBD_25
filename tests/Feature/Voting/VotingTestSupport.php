@@ -156,7 +156,9 @@ trait VotingTestSupport
             'deskripsi' => 'Pemilihan untuk keperluan pengujian.',
             'waktu_mulai' => $mulai,
             'waktu_selesai' => $selesai,
-            'status' => $status,
+            // Selalu dibuat sebagai draf lebih dulu: trigger database menolak
+            // penambahan kandidat/pemilih pada pemilihan yang sudah dibuka.
+            'status' => 'draf',
             'dibuat_oleh' => $idAdmin,
         ]);
 
@@ -181,6 +183,14 @@ trait VotingTestSupport
                 'sudah_memilih' => false,
                 'waktu_memilih' => null,
             ]);
+        }
+
+        // Baru setelah kandidat & pemilih lengkap, status diubah ke nilai yang diminta.
+        // Ini meniru alur nyata: data disiapkan saat draf, lalu pemilihan dibuka.
+        if ($status !== 'draf') {
+            DB::table('pemilihan')
+                ->where('id_pemilihan', $idPemilihan)
+                ->update(['status' => $status]);
         }
 
         return [

@@ -117,9 +117,9 @@ class PemilihanTriggerTest extends TestCase
 
     public function test_perubahan_status_tercatat_di_log(): void
     {
-        $d = $this->seedPemilihanBerlangsung();
+        $d = $this->seedPemilihanDraf();
 
-        DB::table('pemilihan')->where('id_pemilihan', $d['id_pemilihan'])->update(['status' => 'selesai']);
+        DB::table('pemilihan')->where('id_pemilihan', $d['id_pemilihan'])->update(['status' => 'berlangsung']);
 
         $log = DB::table('log_pemilihan')
             ->where('id_pemilihan', $d['id_pemilihan'])
@@ -127,8 +127,8 @@ class PemilihanTriggerTest extends TestCase
             ->first();
 
         $this->assertNotNull($log);
-        $this->assertSame('berlangsung', $log->status_lama);
-        $this->assertSame('selesai', $log->status_baru);
+        $this->assertSame('draf', $log->status_lama);
+        $this->assertSame('berlangsung', $log->status_baru);
     }
 
     public function test_suara_ditolak_untuk_pemilihan_yang_belum_berlangsung(): void

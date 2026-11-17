@@ -57,6 +57,7 @@ Route::middleware(['auth', 'role:admin,guru'])->prefix('kelola/pemilihan')->name
     Route::post('/{id}/panitia', [KelolaPemilihanController::class, 'simpanPanitia'])->name('panitia.simpan');
 
     Route::get('/{id}/monitor', [KelolaPemilihanController::class, 'monitor'])->name('monitor');
+    Route::get('/{id}/hasil', [KelolaPemilihanController::class, 'hasil'])->name('hasil');
     Route::post('/{id}/buka', [KelolaPemilihanController::class, 'buka'])->name('buka');
     Route::post('/{id}/tutup', [KelolaPemilihanController::class, 'tutup'])->name('tutup');
     Route::post('/{id}/kembalikan', [KelolaPemilihanController::class, 'kembalikan'])->name('kembalikan');

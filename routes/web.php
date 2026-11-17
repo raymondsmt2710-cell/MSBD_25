@@ -1,21 +1,15 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\KelolaPemilihanController;
 use App\Http\Controllers\PresensiGuruController;
 use App\Http\Controllers\PresensiSiswaController;
 use App\Http\Controllers\SiswaPemilihanController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    if (! auth()->check()) {
-        return redirect()->route('login');
-    }
-
-    return redirect()->to(auth()->user()->role === 'siswa'
-        ? route('siswa.pemilihan.index')
-        : route('kelola.pemilihan.index'));
-})->name('beranda');
+// Halaman awal untuk tamu. Pengguna yang sudah login langsung diarahkan sesuai peran.
+Route::get('/', [BerandaController::class, 'index'])->name('beranda');
 
 
 Route::get('/login', [AuthController::class, 'form'])->name('login')->middleware('guest');

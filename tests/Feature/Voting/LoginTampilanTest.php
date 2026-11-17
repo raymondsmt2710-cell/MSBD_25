@@ -54,7 +54,7 @@ class LoginTampilanTest extends TestCase
         $this->post(route('login.proses'), [
             'username' => $username,
             'password' => 'password',
-        ])->assertRedirect(route('siswa.beranda'));
+        ])->assertRedirect(route('siswa.presensi.riwayat'));
 
         $this->assertAuthenticatedAs($this->userDari($d['id_siswa_user'][0]));
     }

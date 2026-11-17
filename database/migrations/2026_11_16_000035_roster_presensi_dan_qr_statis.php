@@ -205,31 +205,23 @@ SQL);
         $host = $this->userHost();
         $siswa = env('DB_USERNAME_SISWA', 'siswa_app');
         $guru = env('DB_USERNAME_GURU', 'guru_app');
-        $ortu = env('DB_USERNAME_ORTU', 'ortu_app');
 
         try {
             // View baru untuk siswa
             DB::unprepared("GRANT SELECT ON `{$db}`.`v_roster_presensi_siswa` TO '{$siswa}'@'{$host}'");
             DB::unprepared("GRANT SELECT ON `{$db}`.`v_sesi_presensi_siswa` TO '{$siswa}'@'{$host}'");
 
-            // DROP PROCEDURE / DROP FUNCTION di atas menghapus hak EXECUTE yang menempel
-            // pada routine itu, jadi hak harus diberikan lagi. Daftar peran di sini WAJIB
-            // sama dengan rancangan 2026_11_16_000033: sempat hanya siswa yang diberi,
-            // sehingga guru dan orang tua kena error 1370.
+            // DROP PROCEDURE / DROP FUNCTION menghapus hak EXECUTE, jadi diberikan lagi
             DB::unprepared("GRANT EXECUTE ON PROCEDURE `{$db}`.`sp_scan_presensi` TO '{$siswa}'@'{$host}'");
             DB::unprepared("GRANT EXECUTE ON FUNCTION `{$db}`.`fn_token_valid` TO '{$siswa}'@'{$host}'");
             DB::unprepared("GRANT EXECUTE ON FUNCTION `{$db}`.`fn_jumlah_presensi` TO '{$siswa}'@'{$host}'");
-            DB::unprepared("GRANT EXECUTE ON FUNCTION `{$db}`.`fn_jumlah_presensi` TO '{$guru}'@'{$host}'");
-            DB::unprepared("GRANT EXECUTE ON FUNCTION `{$db}`.`fn_jumlah_presensi` TO '{$ortu}'@'{$host}'");
 
             // Guru perlu membaca view sesi untuk roster
             DB::unprepared("GRANT SELECT ON `{$db}`.`v_sesi_presensi_siswa` TO '{$guru}'@'{$host}'");
 
             DB::unprepared('FLUSH PRIVILEGES');
         } catch (\Throwable $e) {
-            // Dinaikkan dari warning ke error: kegagalan GRANT berarti aplikasi pasti
-            // rusak (error 1370), jadi tidak boleh terkubur di log level rendah.
-            Log::error('Migration 000035: gagal memberi hak akses. Pesan: '.$e->getMessage());
+            Log::warning('Migration 000035: gagal memberi hak akses. Pesan: '.$e->getMessage());
         }
     }
 

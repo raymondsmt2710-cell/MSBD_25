@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BerandaController;
-use App\Http\Controllers\DashboardGuruController;
-use App\Http\Controllers\DashboardSiswaController;
 use App\Http\Controllers\KelolaPemilihanController;
 use App\Http\Controllers\PortalOrangTuaController;
 use App\Http\Controllers\PresensiGuruController;
@@ -19,11 +17,6 @@ Route::get('/', [BerandaController::class, 'index'])->name('beranda');
 Route::get('/login', [AuthController::class, 'form'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->name('login.proses')->middleware('throttle:10,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
-
-// ---- Fitur 9: Dashboard guru (baca saja; aksi memakai rute presensi di bawah) ----
-Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
-    Route::get('/', [DashboardGuruController::class, 'index'])->name('beranda');
-});
 
 // ---- Fitur 1: Presensi QR ----
 // Semua halaman presensi berada di bawah /dashboard/presensi.
@@ -48,12 +41,6 @@ Route::middleware(['auth', 'role:guru,siswa'])->prefix('dashboard/presensi')->na
         Route::post('/sesi/{idSesi}/tutup', [PresensiGuruController::class, 'tutup'])->name('tutup');
         Route::post('/sesi/{idSesi}/manual', [PresensiGuruController::class, 'manual'])->name('manual');
     });
-});
-
-// ---- Fitur 8: Dashboard siswa (hanya-baca) ----
-Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
-    Route::get('/', [DashboardSiswaController::class, 'index'])->name('beranda');
-    Route::get('/perangkat', [DashboardSiswaController::class, 'perangkat'])->name('perangkat');
 });
 
 // ---- Fitur 7: Pemantauan orang tua/wali (hanya-baca, tidak ada rute tulis) ----
@@ -100,3 +87,6 @@ Route::middleware(['auth', 'role:admin,guru'])->prefix('kelola/pemilihan')->name
 
     Route::get('/{id}/log', [KelolaPemilihanController::class, 'log'])->name('log');
 });
+
+// ---- Fitur khusus administrator (lihat routes/admin.php) ----
+require __DIR__.'/admin.php';

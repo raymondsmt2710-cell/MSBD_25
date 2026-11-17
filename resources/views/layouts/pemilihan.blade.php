@@ -149,6 +149,9 @@
                     <a href="{{ route('ortu.index') }}"
                        class="{{ request()->routeIs('ortu.*') ? 'aktif' : '' }}">Portal Orang Tua</a>
                 @else
+                    @if (auth()->user()->role === 'admin')
+                        <a href="{{ route('admin.dashboard') }}">Panel Admin</a>
+                    @endif
                     <a href="{{ route('kelola.pemilihan.index') }}"
                        class="{{ request()->routeIs('kelola.pemilihan.*') ? 'aktif' : '' }}">Kelola Pemilihan</a>
                 @endif

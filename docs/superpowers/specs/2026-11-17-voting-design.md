@@ -2,7 +2,7 @@
 
 Tanggal: 2026-11-17
 Status: menunggu persetujuan
-Terkait: `AGENTS.md` fitur #3 "Pemilihan suara elektronik", `MSBD_25/*.md`
+Terkait: `AGENTS.md` fitur #3 "Pemilihan suara elektronik", `materi/*.md`
 
 ---
 

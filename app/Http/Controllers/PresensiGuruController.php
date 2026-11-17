@@ -37,7 +37,7 @@ class PresensiGuruController extends Controller
      */
     public function masuk()
     {
-        if (Auth::user()->role === 'guru') {
+        if ((Auth::user()->role?->value ?? Auth::user()->role) === 'guru') {
             return $this->index();
         }
 

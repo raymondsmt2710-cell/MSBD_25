@@ -113,7 +113,7 @@
     <div class="topbar-inner">
         <span class="dot"></span>
         @auth
-            @if (auth()->user()->role === 'orang_tua')
+            @if ((auth()->user()->role?->value ?? auth()->user()->role) === 'orang_tua')
                 <strong>Portal Orang Tua</strong>
                 <span style="opacity:.75">SMA Negeri 1 Kabanjahe — pemantauan wali murid</span>
             @else
@@ -139,17 +139,17 @@
 
         <nav class="nav-links">
             @auth
-                @if (auth()->user()->role === 'siswa')
+                @if ((auth()->user()->role?->value ?? auth()->user()->role) === 'siswa')
                     <a href="{{ route('siswa.pemilihan.index') }}"
                        class="{{ request()->routeIs('siswa.pemilihan.*') ? 'aktif' : '' }}">Pemilihan</a>
                     <a href="{{ route('dashboard.presensi.index') }}">Presensi</a>
-                @elseif (auth()->user()->role === 'orang_tua')
+                @elseif ((auth()->user()->role?->value ?? auth()->user()->role) === 'orang_tua')
                     {{-- Tanpa cabang ini akun orang tua jatuh ke @else dan melihat menu
                          "Kelola Pemilihan" yang menuju 403. --}}
                     <a href="{{ route('ortu.index') }}"
                        class="{{ request()->routeIs('ortu.*') ? 'aktif' : '' }}">Portal Orang Tua</a>
                 @else
-                    @if (auth()->user()->role === 'admin')
+                    @if ((auth()->user()->role?->value ?? auth()->user()->role) === 'admin')
                         <a href="{{ route('admin.dashboard') }}">Panel Admin</a>
                     @endif
                     <a href="{{ route('kelola.pemilihan.index') }}"
@@ -160,7 +160,7 @@
 
         <div class="nav-aksi">
             @auth
-                <span class="pill">{{ auth()->user()->username }} · {{ auth()->user()->role }}</span>
+                <span class="pill">{{ auth()->user()->username }} · {{ auth()->user()->role?->value ?? auth()->user()->role }}</span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button class="btn abu" type="submit">Keluar</button>

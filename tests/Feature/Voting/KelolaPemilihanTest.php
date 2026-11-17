@@ -11,6 +11,12 @@ class KelolaPemilihanTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_admin_membuat_pemilihan_baru_sebagai_draf(): void
     {
         $d = $this->seedPemilihanDraf();

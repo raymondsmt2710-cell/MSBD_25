@@ -27,12 +27,12 @@
             <label for="role">Peran</label>
             <select id="role" name="role" required @disabled(! $baru && ($punyaProfil ?? false))>
                 @foreach ($roles as $r)
-                    <option value="{{ $r }}" @selected(old('role', $user->role) === $r)>{{ str_replace('_', ' ', $r) }}</option>
+                    <option value="{{ $r }}" @selected(old('role', $user->role?->value ?? $user->role) === $r)>{{ str_replace('_', ' ', $r) }}</option>
                 @endforeach
             </select>
             @if (! $baru && ($punyaProfil ?? false))
                 {{-- select yang disabled tidak ikut terkirim, jadi nilai lama dikirim lewat hidden. --}}
-                <input type="hidden" name="role" value="{{ $user->role }}">
+                <input type="hidden" name="role" value="{{ $user->role?->value ?? $user->role }}">
                 <span class="kecil">Peran terkunci karena akun sudah memiliki profil.</span>
             @endif
         </div>

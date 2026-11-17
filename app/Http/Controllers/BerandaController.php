@@ -18,10 +18,13 @@ class BerandaController extends Controller
         // Kalau sudah login, langsung ke halaman sesuai peran.
         // Cabang orang_tua wajib ada: tanpa itu akun wali murid dilempar ke halaman
         // kelola pemilihan yang menolaknya dengan 403.
+        // Catatan: kolom users.role di-cast ke enum, jadi bandingkan lewat value-nya.
         if (auth()->check()) {
-            return redirect()->to(match (auth()->user()->role) {
-                'siswa' => route('siswa.pemilihan.index'),
+            $peran = auth()->user()->role?->value ?? (string) auth()->user()->role;
+
+            return redirect()->to(match ($peran) {
                 'guru' => route('guru.beranda'),
+                'siswa' => route('siswa.pemilihan.index'),
                 'orang_tua' => route('ortu.index'),
                 'admin' => route('admin.dashboard'),
                 default => route('kelola.pemilihan.index'),

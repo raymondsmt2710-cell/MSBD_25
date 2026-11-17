@@ -115,13 +115,13 @@
 
         <nav class="nav-links">
             @auth
-                @if (auth()->user()->role === 'siswa')
+                @if ((auth()->user()->role?->value ?? auth()->user()->role) === 'siswa')
                     <a href="{{ route('dashboard.presensi.index') }}"
                        class="{{ request()->routeIs('dashboard.presensi.index') ? 'aktif' : '' }}">Presensi</a>
-                @elseif (auth()->user()->role === 'guru')
+                @elseif ((auth()->user()->role?->value ?? auth()->user()->role) === 'guru')
                     <a href="{{ route('dashboard.presensi.index') }}"
                        class="{{ request()->routeIs('dashboard.presensi.*') ? 'aktif' : '' }}">Roster Presensi</a>
-                @elseif (auth()->user()->role === 'orang_tua')
+                @elseif ((auth()->user()->role?->value ?? auth()->user()->role) === 'orang_tua')
                     <a href="{{ route('ortu.index') }}">Portal Orang Tua</a>
                 @endif
             @endauth
@@ -129,7 +129,7 @@
 
         <div class="nav-aksi">
             @auth
-                <span class="pill">{{ auth()->user()->username }} · {{ auth()->user()->role }}</span>
+                <span class="pill">{{ auth()->user()->username }} · {{ auth()->user()->role?->value ?? auth()->user()->role }}</span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button class="btn abu" type="submit">Keluar</button>

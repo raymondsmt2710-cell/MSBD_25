@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\Role;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 // Disesuaikan dengan tabel `users` proyek (id_user, username, password_hash, role)
@@ -14,7 +16,11 @@ class User extends Authenticatable
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean', 'last_login' => 'datetime'];
+        return [
+            'role' => Role::class,
+            'is_active' => 'boolean',
+            'last_login' => 'datetime',
+        ];
     }
 
     public function getAuthPassword(): string
@@ -28,17 +34,17 @@ class User extends Authenticatable
         return '';
     }
 
-    public function siswa()
+    public function siswa(): HasOne
     {
         return $this->hasOne(Siswa::class, 'id_user', 'id_user');
     }
 
-    public function guru()
+    public function guru(): HasOne
     {
         return $this->hasOne(Guru::class, 'id_user', 'id_user');
     }
 
-    public function orangTua()
+    public function orangTua(): HasOne
     {
         return $this->hasOne(OrangTua::class, 'id_user', 'id_user');
     }

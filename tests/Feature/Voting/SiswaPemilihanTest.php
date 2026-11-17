@@ -11,6 +11,12 @@ class SiswaPemilihanTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_siswa_melihat_daftar_pemilihan_yang_diikuti(): void
     {
         $d = $this->seedPemilihanBerlangsung();

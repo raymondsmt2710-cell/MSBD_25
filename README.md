@@ -74,6 +74,41 @@ php artisan serve
 
 Aplikasi dapat diakses di `http://localhost:8000`.
 
+### Menjalankan dengan MySQL (Laragon)
+
+Fitur presensi memakai view, function, procedure, dan trigger MySQL, jadi aplikasi
+sebaiknya dijalankan dengan MySQL. Konfigurasi MySQL disimpan terpisah di `.env.mysql`
+sehingga `.env` bawaan (SQLite) tidak berubah.
+
+```bash
+# 0. Buat salinan konfigurasi MySQL, lalu isi DB_CONNECTION=mysql, DB_DATABASE,
+#    DB_USERNAME, DB_PASSWORD, DB_USERNAME_* dan DB_PASSWORD_* untuk akun per peran
+cp .env .env.mysql
+```
+# 1. Buat database
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS elearning_smansa CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+
+# 2. Jalankan migrasi (termasuk view/function/procedure/trigger/index/user & grant) dan data demo
+php artisan migrate:fresh --env=mysql --force
+php artisan db:seed --class=DemoSekolahSeeder --env=mysql --force
+
+# 3. Build aset frontend (sekali saja / setiap kali aset berubah)
+npm run build
+
+# 4. Jalankan server
+php artisan serve --env=mysql --host=127.0.0.1 --port=8000
+```
+
+Buka `http://127.0.0.1:8000`. Semua akun demo memakai password `password`:
+
+| Username | Peran | Kegunaan |
+| --- | --- | --- |
+| `raymond` / `admin` | Administrator | Semua modul: kas, denah, dashboard |
+| `guru1` | Guru / wali kelas | Buka sesi presensi, tampilkan QR |
+| `siswa1` | Siswa (Ketua Kelas) | Riwayat presensi, kelola denah kelas |
+| `siswa2` | Siswa (Bendahara) | Catat dan verifikasi kas kelas |
+| `ortu1` | Orang tua | Lihat kas dan denah anak (hanya-baca) |
+
 ## Metodologi Pengembangan
 
 Model **Waterfall** (SDLC) dengan tahapan:

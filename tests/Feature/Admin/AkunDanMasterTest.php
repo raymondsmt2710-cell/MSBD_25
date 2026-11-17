@@ -19,7 +19,7 @@ class AkunDanMasterTest extends AdminTestCase
             ->assertSessionHas('sandi_baru');
 
         $this->assertTrue(Hash::check(session('sandi_baru'), $user->password_hash));
-        $this->assertSame('siswa', $user->role);
+        $this->assertSame('siswa', $user->role?->value);
     }
 
     public function test_admin_tidak_bisa_menonaktifkan_diri_sendiri_atau_admin_terakhir(): void
@@ -29,7 +29,7 @@ class AkunDanMasterTest extends AdminTestCase
 
         $this->sebagaiAdmin()->put(route('admin.akun.update', $this->d['id_admin']), ['username' => 'admin_uji', 'role' => 'guru'])
             ->assertSessionHas('error');
-        $this->assertSame('admin', $this->admin()->fresh()->role);
+        $this->assertSame('admin', $this->admin()->fresh()->role?->value);
     }
 
     public function test_peran_akun_berprofil_terkunci(): void
@@ -38,7 +38,7 @@ class AkunDanMasterTest extends AdminTestCase
 
         $this->sebagaiAdmin()->put(route('admin.akun.update', $idUser), ['username' => 's1001', 'role' => 'guru'])
             ->assertSessionHas('error');
-        $this->assertSame('siswa', User::find($idUser)->role);
+        $this->assertSame('siswa', User::find($idUser)->role?->value);
     }
 
     public function test_menonaktifkan_akun_memutus_session_yang_terbuka(): void

@@ -103,10 +103,18 @@ class HakEksekusiRoutineTest extends TestCase
         $hak = $this->hakEksekusi($this->db['ortu']);
         $db = DB::connection()->getDatabaseName();
 
+        // Tabel infrastruktur (cache, cache_locks, sessions) sengaja butuh tulis
+        // agar login berbasis session berjalan. Yang dilarang adalah tulis ke
+        // tabel data sekolah.
+        $hakData = implode("\n", array_filter(
+            explode("\n", $hak),
+            fn (string $baris) => ! preg_match('/`(?:cache|cache_locks|sessions)`/i', $baris)
+        ));
+
         foreach (['INSERT', 'UPDATE', 'DELETE'] as $tulis) {
             $this->assertDoesNotMatchRegularExpression(
                 "/GRANT .*{$tulis}.*ON `{$db}`\./i",
-                $hak,
+                $hakData,
                 "ortu_app seharusnya tidak punya hak {$tulis}."
             );
         }

@@ -19,6 +19,12 @@ class PresensiCollationTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_fn_jumlah_presensi_bisa_dipanggil(): void
     {
         $d = $this->seedPemilihanBerlangsung();

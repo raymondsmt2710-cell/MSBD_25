@@ -28,6 +28,25 @@ trait VotingTestSupport
     /** Penomoran seed agar satu test boleh memanggil seed lebih dari sekali. */
     protected static int $seedCounter = 0;
 
+    /**
+     * Fitur pemilihan bergantung pada MySQL (stored procedure/function/view/trigger).
+     * Bila koneksi MySQL tidak tersedia, test dilewati alih-alih gagal, supaya
+     * suite fitur lain (kas, denah, presensi) tetap bisa dijalankan di mesin
+     * tanpa MySQL.
+     *
+     * Catatan: test yang memakai trait ini WAJIB menyiapkan skema lebih dulu
+     * (DatabaseTruncation / RefreshDatabase). Kalau MySQL tersedia tetapi tabel
+     * belum ada, biarkan test gagal apa adanya agar masalahnya terlihat.
+     */
+    protected function setUpVotingDatabase(): void
+    {
+        try {
+            DB::connection('mysql')->getPdo();
+        } catch (\Throwable $e) {
+            $this->markTestSkipped('MySQL tidak tersedia untuk test pemilihan: '.$e->getMessage());
+        }
+    }
+
     /** Daftar tabel yang harus dikosongkan antar test. */
     protected array $tablesToTruncate = [
         'suara',

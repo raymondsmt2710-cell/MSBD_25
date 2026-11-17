@@ -95,7 +95,8 @@ class AkunController extends AdminController
         }
 
         // Akun siswa/guru/orang tua belum bisa dipakai penuh tanpa profil: langsung arahkan ke form profil.
-        if ($rute = self::RUTE_PROFIL[$user->role] ?? null) {
+        $peran = $user->role?->value ?? $user->role;
+        if ($rute = self::RUTE_PROFIL[$peran] ?? null) {
             return redirect()->route($rute, ['id_user' => $user->id_user])
                 ->with('success', $pesan.' Lengkapi profilnya sekarang.');
         }
@@ -122,7 +123,9 @@ class AkunController extends AdminController
             'role' => ['required', Rule::in(self::ROLE)],
         ]);
 
-        if ($data['role'] !== $user->role) {
+        $peranLama = $user->role?->value ?? $user->role;
+
+        if ($data['role'] !== $peranLama) {
             if ($user->is($request->user())) {
                 return back()->with('error', 'Anda tidak dapat mengubah peran akun Anda sendiri.');
             }
@@ -131,10 +134,10 @@ class AkunController extends AdminController
             // membuat profil itu yatim dan akun tidak bisa dipakai di modul mana pun.
             if ($this->punyaProfil($user)) {
                 return back()->with('error', 'Peran tidak dapat diubah karena akun ini sudah memiliki profil '
-                    .str_replace('_', ' ', $user->role).'. Buat akun baru untuk peran lain.');
+                    .str_replace('_', ' ', $peranLama).'. Buat akun baru untuk peran lain.');
             }
 
-            if ($user->role === 'admin' && $this->adminAktifLainnya($user) === 0) {
+            if ($peranLama === 'admin' && $this->adminAktifLainnya($user) === 0) {
                 return back()->with('error', 'Ini satu-satunya admin aktif. Peran tidak dapat diubah.');
             }
         }
@@ -150,7 +153,9 @@ class AkunController extends AdminController
             return back()->with('error', 'Anda tidak dapat menonaktifkan akun Anda sendiri.');
         }
 
-        if ($user->is_active && $user->role === 'admin' && $this->adminAktifLainnya($user) === 0) {
+        $peran = $user->role?->value ?? $user->role;
+
+        if ($user->is_active && $peran === 'admin' && $this->adminAktifLainnya($user) === 0) {
             return back()->with('error', 'Ini satu-satunya admin aktif. Akun tidak dapat dinonaktifkan.');
         }
 

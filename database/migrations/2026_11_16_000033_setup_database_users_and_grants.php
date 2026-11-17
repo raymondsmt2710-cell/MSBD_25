@@ -78,7 +78,13 @@ return new class extends Migration
     {
         $grant = function (string $user, array $map) use ($db, $host) {
             foreach ($map as $object => $privileges) {
-                DB::unprepared("GRANT {$privileges} ON {$object} TO '{$user}'@'{$host}'");
+                // Toleran: objek bisa belum ada karena urutan migrasi (grant ulang
+                // diberikan oleh migration yang membuat objek tersebut).
+                try {
+                    DB::unprepared("GRANT {$privileges} ON {$object} TO '{$user}'@'{$host}'");
+                } catch (\Throwable $e) {
+                    Log::warning("Lewati GRANT {$privileges} ON {$object} untuk {$user}: ".$e->getMessage());
+                }
             }
         };
         $t = fn (string $name) => "`{$db}`.`{$name}`";

@@ -18,6 +18,12 @@ class TataLetakTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_grid_tidak_memaksa_semua_kartu_sama_tinggi(): void
     {
         $d = $this->seedPemilihanBerlangsung();

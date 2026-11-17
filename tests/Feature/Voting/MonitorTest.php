@@ -11,6 +11,12 @@ class MonitorTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_monitor_menampilkan_hitungan_sementara_untuk_panitia(): void
     {
         $d = $this->seedPemilihanBerlangsung();

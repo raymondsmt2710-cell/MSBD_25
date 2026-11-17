@@ -11,6 +11,12 @@ class OtorisasiTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_siswa_tidak_bisa_masuk_halaman_kelola(): void
     {
         $d = $this->seedPemilihanDraf();

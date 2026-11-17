@@ -11,6 +11,12 @@ class PemilihTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_admin_mendaftarkan_seluruh_kelas_sebagai_pemilih(): void
     {
         $d = $this->seedPemilihanDraf();

@@ -11,6 +11,12 @@ class PemilihanFunctionTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_total_suara_dan_partisipasi_awal_nol(): void
     {
         $d = $this->seedPemilihanBerlangsung();

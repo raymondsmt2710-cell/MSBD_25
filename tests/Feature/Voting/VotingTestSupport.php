@@ -25,6 +25,9 @@ use Illuminate\Support\Facades\DB;
  */
 trait VotingTestSupport
 {
+    /** Penomoran seed agar satu test boleh memanggil seed lebih dari sekali. */
+    protected static int $seedCounter = 0;
+
     /** Daftar tabel yang harus dikosongkan antar test. */
     protected array $tablesToTruncate = [
         'suara',
@@ -75,8 +78,12 @@ trait VotingTestSupport
     {
         $hash = bcrypt('password');
 
+        // Penanda unik agar satu test boleh memanggil seed lebih dari sekali
+        // (mis. membandingkan dua pemilihan) tanpa menabrak unique username.
+        $cap = 'uji_'.(++self::$seedCounter).'_';
+
         $buatUser = fn (string $username, string $role) => DB::table('users')->insertGetId([
-            'username' => $username,
+            'username' => $cap.$username,
             'password_hash' => $hash,
             'role' => $role,
             'is_active' => true,
@@ -84,12 +91,12 @@ trait VotingTestSupport
             'updated_at' => now(),
         ]);
 
-        $idAdmin = $buatUser('uji_admin', 'admin');
-        $idPanitia = $buatUser('uji_panitia', 'guru');
-        $idGuruLain = $buatUser('uji_guru_lain', 'guru');
+        $idAdmin = $buatUser('admin', 'admin');
+        $idPanitia = $buatUser('panitia', 'guru');
+        $idGuruLain = $buatUser('guru_lain', 'guru');
 
         $idTahunAjaran = DB::table('tahun_ajaran')->insertGetId([
-            'nama' => '2026/2027',
+            'nama' => (2026 + self::$seedCounter).'/'.(2027 + self::$seedCounter),
             'tanggal_mulai' => '2026-07-13',
             'tanggal_selesai' => '2027-06-26',
             'is_aktif' => true,
@@ -97,13 +104,13 @@ trait VotingTestSupport
 
         $idGuru = DB::table('guru')->insertGetId([
             'id_user' => $idPanitia,
-            'nip' => '198001012005011001',
+            'nip' => substr(str_pad((string) self::$seedCounter, 6, '0', STR_PAD_LEFT).'198001012005011001', 0, 18),
             'nama_guru' => 'Guru Uji',
             'jenis_kelamin' => 'L',
         ]);
 
         $idOrganisasi = DB::table('organisasi')->insertGetId([
-            'nama_organisasi' => 'OSIS Uji',
+            'nama_organisasi' => substr('OSIS Uji '.$cap, 0, 100),
             'singkatan' => 'OSIS',
             'deskripsi' => 'Organisasi uji',
             'id_pembina' => $idGuru,
@@ -126,8 +133,8 @@ trait VotingTestSupport
 
             $idSiswa[] = DB::table('siswa')->insertGetId([
                 'id_user' => $idUser,
-                'nis' => '2026000'.$no,
-                'nisn' => '00260000'.str_pad((string) $no, 2, '0', STR_PAD_LEFT),
+                'nis' => substr('2'.str_pad((string) self::$seedCounter, 3, '0', STR_PAD_LEFT).'00'.$no, 0, 20),
+                'nisn' => substr(str_pad((string) self::$seedCounter, 4, '0', STR_PAD_LEFT).'0000'.$no, 0, 10),
                 'nama_siswa' => $nama,
                 'jenis_kelamin' => $no % 2 ? 'L' : 'P',
                 'status' => 'aktif',

@@ -4,7 +4,7 @@
 <h1>Riwayat Presensi</h1>
 <p class="subjudul">Roster jadwal kelas Anda beserta status kehadiran per tanggal.</p>
 
-<div class="kartu" id="ringkasan">
+<div class="kartu">
     <div class="grid grid-2">
         <div class="stat">
             <span class="angka">{{ number_format($ringkasan['persen'], 2) }}%</span>
@@ -20,7 +20,7 @@
     </p>
 </div>
 
-<div class="kartu" id="roster">
+<div class="kartu">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <h3 style="margin:0">Roster Sepekan</h3>
         <div class="aksi-baris" style="align-items:center">

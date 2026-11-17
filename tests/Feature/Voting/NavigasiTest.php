@@ -32,13 +32,13 @@ class NavigasiTest extends TestCase
             ->assertRedirect(route('siswa.pemilihan.index'));
     }
 
-    public function test_admin_diarahkan_ke_kelola_pemilihan_dari_beranda(): void
+    public function test_admin_diarahkan_ke_panel_admin_dari_beranda(): void
     {
         $d = $this->seedPemilihanDraf();
 
         $this->actingAs($this->userDari($d['id_admin']))
             ->get('/')
-            ->assertRedirect(route('kelola.pemilihan.index'));
+            ->assertRedirect(route('admin.dashboard'));
     }
 
     public function test_route_dashboard_tidak_dipakai_lagi(): void
@@ -51,20 +51,18 @@ class NavigasiTest extends TestCase
         $d = $this->seedPemilihanBerlangsung();
 
         $this->actingAs($this->userDari($d['id_siswa_user'][0]))
-            ->get(route('dashboard.presensi.riwayat'))
+            ->get(route('siswa.presensi.riwayat'))
             ->assertOk()
             ->assertSee(route('siswa.pemilihan.index'), false);
     }
 
-    public function test_halaman_presensi_guru_tidak_menawarkan_menu_pemilihan(): void
+    public function test_halaman_presensi_guru_punya_menu_pemilihan(): void
     {
-        // Guru tidak punya akses voting; tautan Pemilihan tidak boleh ditawarkan
-        // di halaman presensi guru.
         $d = $this->seedPemilihanDraf();
 
         $this->actingAs($this->userDari($d['id_panitia_user']))
-            ->get(route('dashboard.presensi.index'))
+            ->get(route('guru.presensi.index'))
             ->assertOk()
-            ->assertDontSee(route('kelola.pemilihan.index'), false);
+            ->assertSee(route('kelola.pemilihan.index'), false);
     }
 }

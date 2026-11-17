@@ -66,13 +66,13 @@ class BerandaTest extends TestCase
             ->assertRedirect(route('siswa.pemilihan.index'));
     }
 
-    public function test_admin_yang_sudah_login_diarahkan_ke_kelola(): void
+    public function test_admin_yang_sudah_login_diarahkan_ke_panel_admin(): void
     {
         $d = $this->seedPemilihanDraf();
 
         $this->actingAs($this->userDari($d['id_admin']))
             ->get('/')
-            ->assertRedirect(route('kelola.pemilihan.index'));
+            ->assertRedirect(route('admin.dashboard'));
     }
 
     public function test_beranda_tidak_error_walau_tabel_kosong(): void

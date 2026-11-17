@@ -24,7 +24,11 @@
     <strong>E-Learning SMAN 1 Kabanjahe</strong>
     @auth
         <nav style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
-            @if (auth()->user()->role === 'siswa')
+            @php
+                // users.role di-cast ke enum Role, jadi bandingkan lewat value-nya.
+                $peranAktif = auth()->user()->role?->value ?? (string) auth()->user()->role;
+            @endphp
+            @if ($peranAktif === 'siswa')
                 <a href="{{ route('siswa.presensi.riwayat') }}"
                    style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('siswa.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
                     Presensi
@@ -33,7 +37,7 @@
                    style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('siswa.pemilihan.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
                     Pemilihan
                 </a>
-            @elseif (in_array(auth()->user()->role, ['guru', 'admin'], true))
+            @elseif (in_array($peranAktif, ['guru', 'admin'], true))
                 <a href="{{ route('guru.presensi.index') }}"
                    style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('guru.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
                     Presensi

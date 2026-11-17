@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 // DCL (materi Manajemen User & Hak Akses): user MySQL per role dengan prinsip least privilege.
 // Siswa TIDAK punya INSERT ke tabel presensi; ia hanya boleh EXECUTE sp_scan_presensi.
@@ -35,9 +36,17 @@ return new class extends Migration
             DB::unprepared("CREATE USER IF NOT EXISTS '{$user}'@'localhost' IDENTIFIED BY '{$pass}'");
         }
 
+        // Grant dibuat toleran: bila objek (tabel/view/procedure) belum ada karena
+        // urutan migrasi, lewati saja. Grant untuk objek tersebut diberikan ulang
+        // oleh migration yang membuatnya (mis. 001008 setup_pemilihan_grants,
+        // 001014 grant_sessions_to_role_users).
         $grant = function (string $user, array $map) use ($db) {
             foreach ($map as $object => $privileges) {
-                DB::unprepared("GRANT {$privileges} ON {$object} TO '{$user}'@'localhost'");
+                try {
+                    DB::unprepared("GRANT {$privileges} ON {$object} TO '{$user}'@'localhost'");
+                } catch (\Throwable $e) {
+                    Log::warning("Lewati GRANT {$privileges} ON {$object} untuk {$user}: ".$e->getMessage());
+                }
             }
         };
         $t = fn (string $name) => "`{$db}`.`{$name}`";
@@ -48,9 +57,15 @@ return new class extends Migration
         DB::unprepared("GRANT ALL PRIVILEGES ON `{$db}`.* TO '{$a['admin'][0]}'@'localhost'");
 
         // Cache dipakai throttle/rate limiter setelah koneksi role aktif.
-        $grant($a['guru'][0], [$t('cache') => 'SELECT, INSERT, UPDATE, DELETE', $t('cache_locks') => 'SELECT, INSERT, UPDATE, DELETE']);
-        $grant($a['siswa'][0], [$t('cache') => 'SELECT, INSERT, UPDATE, DELETE', $t('cache_locks') => 'SELECT, INSERT, UPDATE, DELETE']);
-        $grant($a['orangtua'][0], [$t('cache') => 'SELECT, INSERT, UPDATE, DELETE', $t('cache_locks') => 'SELECT, INSERT, UPDATE, DELETE']);
+        // Grant `sessions` sengaja TIDAK di sini: tabel sessions baru dibuat pada
+        // migration 2026_11_16_160541, lihat 2026_11_17_001014_grant_sessions_to_role_users.
+        $cache = [
+            $t('cache') => 'SELECT, INSERT, UPDATE, DELETE',
+            $t('cache_locks') => 'SELECT, INSERT, UPDATE, DELETE',
+        ];
+        $grant($a['guru'][0], $cache);
+        $grant($a['siswa'][0], $cache);
+        $grant($a['orangtua'][0], $cache);
 
         // Guru: baca data akademik + tulis presensi (koreksi manual)
         $grant($a['guru'][0], [

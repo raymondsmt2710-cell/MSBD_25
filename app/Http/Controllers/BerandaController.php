@@ -21,6 +21,7 @@ class BerandaController extends Controller
         if (auth()->check()) {
             return redirect()->to(match (auth()->user()->role) {
                 'siswa' => route('siswa.pemilihan.index'),
+                'guru' => route('guru.beranda'),
                 'orang_tua' => route('ortu.index'),
                 'admin' => route('admin.dashboard'),
                 default => route('kelola.pemilihan.index'),

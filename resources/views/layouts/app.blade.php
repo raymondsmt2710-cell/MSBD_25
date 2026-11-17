@@ -23,6 +23,27 @@
 <header>
     <strong>E-Learning SMAN 1 Kabanjahe</strong>
     @auth
+        <nav style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+            @if (auth()->user()->role === 'siswa')
+                <a href="{{ route('siswa.presensi.riwayat') }}"
+                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('siswa.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
+                    Presensi
+                </a>
+                <a href="{{ route('siswa.pemilihan.index') }}"
+                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('siswa.pemilihan.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
+                    Pemilihan
+                </a>
+            @else
+                <a href="{{ route('guru.presensi.index') }}"
+                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('guru.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
+                    Presensi
+                </a>
+                <a href="{{ route('kelola.pemilihan.index') }}"
+                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('kelola.pemilihan.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
+                    Pemilihan
+                </a>
+            @endif
+        </nav>
         <form method="POST" action="{{ route('logout') }}">@csrf
             <span>{{ auth()->user()->username }} ({{ auth()->user()->role }})</span>
             <button class="btn abu" type="submit">Keluar</button>

@@ -45,7 +45,8 @@ class AuthController extends Controller
         return match ($role) {
             'guru'  => route('guru.presensi.index'),
             'siswa' => route('siswa.presensi.riwayat'),
-            default => '/',
+            'admin' => route('kelola.pemilihan.index'),
+            default => route('beranda'),
         };
     }
 }

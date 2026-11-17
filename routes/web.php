@@ -7,7 +7,16 @@ use App\Http\Controllers\PresensiSiswaController;
 use App\Http\Controllers\SiswaPemilihanController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => view('welcome'));
+Route::get('/', function () {
+    if (! auth()->check()) {
+        return redirect()->route('login');
+    }
+
+    return redirect()->to(auth()->user()->role === 'siswa'
+        ? route('siswa.pemilihan.index')
+        : route('kelola.pemilihan.index'));
+})->name('beranda');
+
 
 Route::get('/login', [AuthController::class, 'form'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->name('login.proses')->middleware('throttle:10,1');

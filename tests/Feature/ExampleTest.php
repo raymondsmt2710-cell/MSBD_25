@@ -2,18 +2,16 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
     /**
-     * A basic test example.
+     * Beranda sekarang menampilkan landing page untuk tamu (dulu mengarahkan ke login).
+     * Pengguna yang sudah login tetap diarahkan sesuai peran.
      */
-    public function test_the_application_returns_a_successful_response(): void
+    public function test_the_application_shows_landing_page_for_guest(): void
     {
-        $response = $this->get('/');
-
-        $response->assertStatus(200);
+        $this->get('/')->assertOk()->assertSee('SI-SMANSAKA');
     }
 }

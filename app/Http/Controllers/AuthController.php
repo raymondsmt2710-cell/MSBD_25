@@ -43,8 +43,8 @@ class AuthController extends Controller
     private function beranda(string $role): string
     {
         return match ($role) {
-            'guru'      => route('guru.presensi.index'),
-            'siswa'     => route('siswa.presensi.riwayat'),
+            'guru'      => route('dashboard.presensi.index'),
+            'siswa'     => route('dashboard.presensi.index'),
             'admin'     => route('kelola.pemilihan.index'),
             'orang_tua' => route('ortu.index'),
             default     => route('beranda'),

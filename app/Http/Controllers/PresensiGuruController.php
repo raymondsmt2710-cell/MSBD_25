@@ -32,6 +32,19 @@ class PresensiGuruController extends Controller
     }
 
     /**
+     * Halaman masuk fitur presensi.
+     * Siswa melihat dua pilihan; guru langsung melihat roster jadwalnya.
+     */
+    public function masuk()
+    {
+        if (Auth::user()->role === 'guru') {
+            return $this->index();
+        }
+
+        return app(PresensiSiswaController::class)->menu();
+    }
+
+    /**
      * Roster presensi: seluruh jadwal guru (berulang tiap pekan), dengan penanda
      * apakah sesi untuk hari ini sudah dibuat.
      */
@@ -69,10 +82,37 @@ class PresensiGuruController extends Controller
             DB::statement('CALL sp_buka_sesi(?, ?, @status, @id_sesi)', [$idJadwal, $this->idGuru()]);
             $hasil = DB::selectOne('SELECT @status AS status, @id_sesi AS id_sesi');
 
-            if (in_array($hasil->status, ['BERHASIL', 'SESI_SUDAH_ADA'], true)) {
-                // QR statis: token dibuat sekali, berlaku sampai jam selesai jadwal.
-                $this->pastikanToken($hasil->id_sesi);
+            if (! in_array($hasil->status, ['BERHASIL', 'SESI_SUDAH_ADA'], true)) {
+                DB::rollBack();
+
+                $pesan = $hasil->status === 'BUKAN_HARI_JADWAL'
+                    ? 'Sesi hanya bisa dibuka pada hari jadwal.'
+                    : 'Jadwal tidak valid untuk akun Anda.';
+
+                return back()->with('error', $pesan);
             }
+
+            // Id sesi bisa kosong walau status BERHASIL/SESI_SUDAH_ADA (mis. variabel
+            // OUT tidak terbaca pada koneksi role). Ambil ulang dari tabel sebagai cadangan
+            // agar tidak berujung "Undefined property: stdClass::$jam_mulai".
+            $idSesi = $hasil->id_sesi;
+
+            if (! $idSesi) {
+                $idSesi = DB::table('sesi_presensi')
+                    ->where('id_jadwal', $idJadwal)
+                    ->whereRaw('tanggal = CURDATE()')
+                    ->orderByDesc('id_sesi')
+                    ->value('id_sesi');
+            }
+
+            if (! $idSesi) {
+                DB::rollBack();
+
+                return back()->with('error', 'Sesi gagal dibuat. Coba lagi.');
+            }
+
+            // QR statis: token dibuat sekali, berlaku sampai jam selesai jadwal.
+            $this->pastikanToken((int) $idSesi);
 
             DB::commit();
         } catch (\Throwable $e) {
@@ -82,15 +122,7 @@ class PresensiGuruController extends Controller
             return back()->with('error', 'Gagal membuka sesi: '.$e->getMessage());
         }
 
-        if (in_array($hasil->status, ['BERHASIL', 'SESI_SUDAH_ADA'], true)) {
-            return redirect()->route('guru.presensi.sesi', $hasil->id_sesi);
-        }
-
-        $pesan = $hasil->status === 'BUKAN_HARI_JADWAL'
-            ? 'Sesi hanya bisa dibuka pada hari jadwal.'
-            : 'Jadwal tidak valid untuk akun Anda.';
-
-        return back()->with('error', $pesan);
+        return redirect()->route('dashboard.presensi.sesi', $idSesi);
     }
 
     /**
@@ -108,21 +140,60 @@ class PresensiGuruController extends Controller
         $sesi = DB::table('sesi_presensi as sp')
             ->join('jadwal_pelajaran as jp', 'jp.id_jadwal', '=', 'sp.id_jadwal')
             ->where('sp.id_sesi', $idSesi)
-            ->select('sp.tanggal', 'jp.jam_selesai')
+            ->select('sp.tanggal', 'jp.jam_mulai', 'jp.jam_selesai')
             ->first();
 
         if (! $sesi) {
+            Log::warning("pastikanToken: sesi {$idSesi} tidak ditemukan, token tidak dibuat.");
+
             return;
         }
 
+        // Cadangan: kolom jam bisa tidak terbaca pada sebagian koneksi role.
+        if (! isset($sesi->jam_mulai) || ! isset($sesi->jam_selesai)) {
+            $jadwal = DB::table('sesi_presensi as sp')
+                ->join('jadwal_pelajaran as jp', 'jp.id_jadwal', '=', 'sp.id_jadwal')
+                ->where('sp.id_sesi', $idSesi)
+                ->first(['jp.jam_mulai', 'jp.jam_selesai', 'sp.tanggal']);
+
+            if (! $jadwal) {
+                Log::warning("pastikanToken: jadwal sesi {$idSesi} tidak ditemukan, token tidak dibuat.");
+
+                return;
+            }
+
+            $sesi->jam_mulai = $jadwal->jam_mulai;
+            $sesi->jam_selesai = $jadwal->jam_selesai;
+        }
+
         $kode = bin2hex(random_bytes(32)); // 64 karakter hex
-        $kedaluwarsa = $sesi->tanggal.' '.$sesi->jam_selesai;
+
+        // Hitung batas berlaku dari JAM sekarang, bukan dari tanggal sesi.
+        // Alasannya: sesi bisa dibuka setelah tengah malam (mis. jadwal 23:32-04:02
+        // dibuka pukul 00:02), sehingga tanggal sesi sudah berganti hari dan
+        // perhitungan bisa meleset sehari.
+        //
+        // Aturan:
+        //   - jam selesai > jam mulai  -> berakhir hari ini
+        //   - jam selesai <= jam mulai -> sesi melewati tengah malam, berakhir besok
+        $sekarang = \Carbon\Carbon::now();
+
+        if ($sesi->jam_selesai > $sesi->jam_mulai) {
+            $kedaluwarsa = $sekarang->copy()->setTimeFromTimeString($sesi->jam_selesai);
+
+            // Kalau jam selesai sudah lewat hari ini, berarti jadwalnya untuk besok.
+            if ($kedaluwarsa->lessThan($sekarang)) {
+                $kedaluwarsa->addDay();
+            }
+        } else {
+            $kedaluwarsa = $sekarang->copy()->setTimeFromTimeString($sesi->jam_selesai)->addDay();
+        }
 
         DB::table('token_presensi')->insert([
             'id_sesi'          => $idSesi,
             'kode_token'       => $kode,
             'dibuat_pada'      => DB::raw('NOW()'),
-            'kedaluwarsa_pada' => $kedaluwarsa,
+            'kedaluwarsa_pada' => $kedaluwarsa->format('Y-m-d H:i:s'),
         ]);
     }
 
@@ -151,7 +222,7 @@ class PresensiGuruController extends Controller
 
         $qrSvg = null;
         if ($token && $sesi->status === 'dibuka') {
-            $qrSvg = $this->svgQr(route('siswa.presensi.konfirmasi', $token->kode_token));
+            $qrSvg = $this->svgQr(route('dashboard.presensi.konfirmasi', $token->kode_token));
         }
 
         return view('guru.presensi.sesi', compact('sesi', 'siswa', 'token', 'qrSvg'));

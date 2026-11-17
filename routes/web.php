@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KelolaPemilihanController;
+use App\Http\Controllers\PortalOrangTuaController;
 use App\Http\Controllers\PresensiGuruController;
 use App\Http\Controllers\PresensiSiswaController;
 use App\Http\Controllers\SiswaPemilihanController;
+use App\Support\PolaRute;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -12,9 +14,13 @@ Route::get('/', function () {
         return redirect()->route('login');
     }
 
-    return redirect()->to(auth()->user()->role === 'siswa'
-        ? route('siswa.pemilihan.index')
-        : route('kelola.pemilihan.index'));
+    // Cabang orang_tua ditambahkan agar portal pemantauan bisa dicapai dari halaman
+    // depan; tanpa ini akun orang tua dilempar ke halaman kelola pemilihan (403).
+    return redirect()->to(match (auth()->user()->role) {
+        'siswa'     => route('siswa.pemilihan.index'),
+        'orang_tua' => route('ortu.index'),
+        default     => route('kelola.pemilihan.index'),
+    });
 })->name('beranda');
 
 
@@ -36,6 +42,15 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa/presensi')->name('siswa
     Route::get('/riwayat', [PresensiSiswaController::class, 'riwayat'])->name('riwayat');
     Route::get('/scan/{kode}', [PresensiSiswaController::class, 'konfirmasi'])->name('konfirmasi');
     Route::post('/scan/{kode}', [PresensiSiswaController::class, 'scan'])->name('scan')->middleware('throttle:10,1');
+});
+
+// ---- Fitur 7: Pemantauan orang tua/wali (hanya-baca, tidak ada rute tulis) ----
+Route::middleware(['auth', 'role:orang_tua'])->prefix('ortu')->name('ortu.')->group(function () {
+    Route::get('/', [PortalOrangTuaController::class, 'index'])->name('index');
+    // PolaRute::ID mencegah id di luar rentang PHP_INT_MAX menjadi TypeError (500);
+    // dengan batas ini masukan ngawur berhenti sebagai 404.
+    Route::get('/anak/{idSiswa}', [PortalOrangTuaController::class, 'anak'])
+        ->where('idSiswa', PolaRute::ID)->name('anak');
 });
 
 // ---- Fitur 3: Pemilihan suara elektronik (e-voting) ----

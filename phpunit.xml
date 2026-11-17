@@ -23,9 +23,16 @@
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
+        <!-- Fitur pemilihan bergantung pada Stored Procedure, View, dan Trigger MySQL,
+             sehingga test pemilihan memakai MySQL (terpisah dari DB aplikasi).
+             Namun default tetap sqlite agar test fitur lain (kas, denah, presensi DDL)
+             bisa jalan di mesin tanpa server MySQL. VotingTestSupport men-skip
+             otomatis bila MySQL tidak tersedia. -->
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="DB_URL" value=""/>
+        <env name="DB_TEST_MYSQL_CONNECTION" value="mysql"/>
+        <env name="DB_TEST_MYSQL_DATABASE" value="msbd_25_test"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

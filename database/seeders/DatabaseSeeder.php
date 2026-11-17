@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 // Data awal untuk menguji fitur presensi. Semua password: "password"
+// Seeder fitur pemilihan dipanggil terpisah (lihat PemilihanSeeder).
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
@@ -52,5 +53,7 @@ class DatabaseSeeder extends Seeder
             'id_kelas' => $idKelas, 'id_mapel' => $idMapel, 'id_guru' => $idGuru,
             'semester' => 'ganjil', 'hari' => $hari, 'jam_mulai' => '07:30:00', 'jam_selesai' => '09:00:00',
         ]);
+
+        $this->call(PemilihanSeeder::class);
     }
 }

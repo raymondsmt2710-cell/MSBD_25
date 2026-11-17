@@ -7,18 +7,21 @@
     $navigasi = match ($peran?->value) {
         'admin' => [
             ['label' => 'Beranda', 'route' => 'admin.dashboard'],
+            ['label' => 'Pemilihan', 'route' => 'kelola.pemilihan.index'],
             ['label' => 'Kas Kelas', 'route' => 'kas.index'],
             ['label' => 'Denah', 'route' => 'denah.index'],
         ],
         'guru' => [
             ['label' => 'Beranda', 'route' => 'guru.dashboard'],
             ['label' => 'Jadwal Presensi', 'route' => 'guru.presensi.index'],
+            ['label' => 'Pemilihan', 'route' => 'kelola.pemilihan.index'],
             ['label' => 'Kas Kelas', 'route' => 'kas.index'],
             ['label' => 'Denah', 'route' => 'denah.index'],
         ],
         'siswa' => [
             ['label' => 'Beranda', 'route' => 'siswa.dashboard'],
             ['label' => 'Riwayat Presensi', 'route' => 'siswa.presensi.riwayat'],
+            ['label' => 'Pemilihan', 'route' => 'siswa.pemilihan.index'],
             ['label' => 'Kas Kelas', 'route' => 'kas.index'],
             ['label' => 'Denah', 'route' => 'denah.index'],
         ],

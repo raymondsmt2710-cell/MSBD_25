@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Kelas;
+use App\Models\Pemilihan;
 use App\Models\User;
+use App\Policies\PemilihanPolicy;
 use App\Support\Akses;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -22,5 +24,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('kas.kelola', fn (User $user, Kelas $kelas) => app(Akses::class)->bisaKelolaKas($user, $kelas));
         Gate::define('denah.kelola-kursi', fn (User $user, Kelas $kelas) => app(Akses::class)->bisaKelolaKursi($user, $kelas));
         Gate::define('denah.kelola-ruangan', fn (User $user) => app(Akses::class)->bisaKelolaRuangan($user));
+
+        // Fitur e-voting (dari main).
+        Gate::policy(Pemilihan::class, PemilihanPolicy::class);
     }
 }

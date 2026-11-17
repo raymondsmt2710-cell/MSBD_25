@@ -46,8 +46,9 @@ class AuthController extends Controller
         $role = $role instanceof Role ? $role : Role::tryFrom($role);
 
         return match ($role) {
+            Role::Admin => route('kelola.pemilihan.index'),
             Role::Guru => route('guru.presensi.index'),
-            Role::Siswa => route('siswa.presensi.riwayat'),
+            Role::Siswa => route('siswa.pemilihan.index'),
             default => route('beranda'),
         };
     }

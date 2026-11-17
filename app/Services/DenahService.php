@@ -35,7 +35,13 @@ class DenahService
         return $denah;
     }
 
-    /** @return array<int, array<string, mixed>> */
+    /**
+     * Daftar meja beserta maksimal 2 murid yang duduk di sana.
+     * Bentuk tiap entri:
+     *   ['baris' => int, 'kolom' => int, 'murid' => ['kiri' => ?array, 'kanan' => ?array]]
+     *
+     * @return array<int, array<string, mixed>>
+     */
     public function kursi(DenahKelas $denah, Kelas $kelas): array
     {
         $jabatan = PengurusKelas::query()
@@ -48,18 +54,37 @@ class DenahService
         return PosisiDuduk::query()
             ->where('id_denah', $denah->id_denah)
             ->with('siswa:id_siswa,nama_siswa,nis')
+            ->orderBy('baris')
+            ->orderBy('kolom')
             ->get()
-            ->map(fn (PosisiDuduk $posisi) => [
-                'id_posisi' => $posisi->id_posisi,
-                'baris' => $posisi->baris,
-                'kolom' => $posisi->kolom,
-                'siswa' => $posisi->siswa ? [
-                    'id_siswa' => $posisi->siswa->id_siswa,
-                    'nama_siswa' => $posisi->siswa->nama_siswa,
-                    'nis' => $posisi->siswa->nis,
-                    'jabatan' => $jabatan[$posisi->id_siswa] ?? null,
-                ] : null,
-            ])
+            ->groupBy(fn (PosisiDuduk $posisi) => $posisi->baris.'-'.$posisi->kolom)
+            ->map(function ($rows, string $kunci) use ($jabatan) {
+                [$baris, $kolom] = array_map('intval', explode('-', $kunci));
+
+                $murid = ['kiri' => null, 'kanan' => null];
+
+                foreach ($rows as $posisi) {
+                    $sisi = in_array($posisi->sisi, PosisiDuduk::SISI, true) ? $posisi->sisi : 'kiri';
+
+                    $murid[$sisi] = [
+                        'id_posisi' => $posisi->id_posisi,
+                        'sisi' => $sisi,
+                        'siswa' => $posisi->siswa ? [
+                            'id_siswa' => $posisi->siswa->id_siswa,
+                            'nama_siswa' => $posisi->siswa->nama_siswa,
+                            'nis' => $posisi->siswa->nis,
+                            'jabatan' => $jabatan[$posisi->id_siswa] ?? null,
+                        ] : null,
+                    ];
+                }
+
+                return [
+                    'baris' => $baris,
+                    'kolom' => $kolom,
+                    'murid' => $murid,
+                ];
+            })
+            ->sortBy([['baris', 'asc'], ['kolom', 'asc']])
             ->values()
             ->all();
     }

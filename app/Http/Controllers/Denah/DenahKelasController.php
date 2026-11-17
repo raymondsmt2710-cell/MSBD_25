@@ -83,6 +83,9 @@ class DenahKelasController extends Controller
         $denah = $posisi->denah;
         $baris = $request->integer('baris');
         $kolom = $request->integer('kolom');
+        $sisi = $request->input('sisi', $posisi->sisi ?: 'kiri');
+
+        abort_unless(in_array($sisi, PosisiDuduk::SISI, true), 422, 'Sisi meja tidak dikenal.');
 
         abort_unless(
             $baris >= 1 && $baris <= $denah->jumlah_baris && $kolom >= 1 && $kolom <= $denah->jumlah_kolom,
@@ -90,16 +93,18 @@ class DenahKelasController extends Controller
             'Posisi berada di luar batas denah.',
         );
 
+        // Meja hanya punya 2 tempat (kiri & kanan); yang sudah ditempati murid lain dianggap bentrok.
         $bentrok = PosisiDuduk::query()
             ->where('id_denah', $denah->id_denah)
             ->where('baris', $baris)
             ->where('kolom', $kolom)
+            ->where('sisi', $sisi)
             ->where('id_posisi', '!=', $posisi->id_posisi)
             ->exists();
 
         abort_if($bentrok, 422, 'Kursi tujuan sudah terisi. Gunakan fitur tukar posisi.');
 
-        $posisi->update(['baris' => $baris, 'kolom' => $kolom]);
+        $posisi->update(['baris' => $baris, 'kolom' => $kolom, 'sisi' => $sisi]);
 
         return response()->json([
             'message' => 'Posisi dipindahkan.',
@@ -129,13 +134,17 @@ class DenahKelasController extends Controller
 
         $aBaris = $a->baris;
         $aKolom = $a->kolom;
+        $aSisi = $a->sisi ?: 'kiri';
         $bBaris = $b->baris;
         $bKolom = $b->kolom;
+        $bSisi = $b->sisi ?: 'kiri';
 
-        DB::transaction(function () use ($a, $b, $aBaris, $aKolom, $bBaris, $bKolom) {
-            $a->update(['baris' => 255, 'kolom' => 255]);
-            $b->update(['baris' => $aBaris, 'kolom' => $aKolom]);
-            $a->update(['baris' => $bBaris, 'kolom' => $bKolom]);
+        DB::transaction(function () use ($a, $b, $aBaris, $aKolom, $aSisi, $bBaris, $bKolom, $bSisi) {
+            // Parkir sementara di baris 0 (di luar grid) agar tidak menabrak
+            // unique (id_denah, baris, kolom, sisi).
+            $a->update(['baris' => 0, 'kolom' => 0]);
+            $b->update(['baris' => $aBaris, 'kolom' => $aKolom, 'sisi' => $aSisi]);
+            $a->update(['baris' => $bBaris, 'kolom' => $bKolom, 'sisi' => $bSisi]);
         });
 
         return response()->json([
@@ -151,6 +160,9 @@ class DenahKelasController extends Controller
         $idSiswa = $request->integer('id_siswa');
         $baris = $request->integer('baris');
         $kolom = $request->integer('kolom');
+        $sisi = $request->input('sisi', 'kiri');
+
+        abort_unless(in_array($sisi, PosisiDuduk::SISI, true), 422, 'Sisi meja tidak dikenal.');
 
         abort_unless(
             $kelas->anggotaKelas()->where('id_siswa', $idSiswa)->exists(),
@@ -173,10 +185,12 @@ class DenahKelasController extends Controller
             'Siswa sudah memiliki kursi.',
         );
 
+        // Satu meja hanya bisa menampung 2 murid: satu di kiri, satu di kanan.
         abort_if(
             PosisiDuduk::where('id_denah', $denah->id_denah)
                 ->where('baris', $baris)
                 ->where('kolom', $kolom)
+                ->where('sisi', $sisi)
                 ->exists(),
             422,
             'Kursi tujuan sudah terisi.',
@@ -187,6 +201,7 @@ class DenahKelasController extends Controller
             'id_siswa' => $idSiswa,
             'baris' => $baris,
             'kolom' => $kolom,
+            'sisi' => $sisi,
         ]);
 
         return response()->json([
@@ -204,10 +219,13 @@ class DenahKelasController extends Controller
 
         $idSiswa = $kelas->anggotaKelas()->pluck('id_siswa')->shuffle()->values();
 
+        // Satu meja = 2 murid, jadi kapasitas = baris × kolom × 2.
+        $kapasitas = $denah->jumlah_baris * $denah->jumlah_kolom * count(PosisiDuduk::SISI);
+
         abort_if(
-            $idSiswa->count() > $denah->jumlah_baris * $denah->jumlah_kolom,
+            $idSiswa->count() > $kapasitas,
             422,
-            'Jumlah siswa melebihi kapasitas kursi.',
+            'Jumlah siswa melebihi kapasitas meja.',
         );
 
         DB::transaction(function () use ($denah, $idSiswa) {
@@ -216,18 +234,22 @@ class DenahKelasController extends Controller
             $index = 0;
             for ($baris = 1; $baris <= $denah->jumlah_baris; $baris++) {
                 for ($kolom = 1; $kolom <= $denah->jumlah_kolom; $kolom++) {
-                    if (! isset($idSiswa[$index])) {
-                        return;
+                    // Isi sisi kiri dulu, lalu sisi kanan meja yang sama.
+                    foreach (PosisiDuduk::SISI as $sisi) {
+                        if (! isset($idSiswa[$index])) {
+                            return;
+                        }
+
+                        PosisiDuduk::create([
+                            'id_denah' => $denah->id_denah,
+                            'id_siswa' => $idSiswa[$index],
+                            'baris' => $baris,
+                            'kolom' => $kolom,
+                            'sisi' => $sisi,
+                        ]);
+
+                        $index++;
                     }
-
-                    PosisiDuduk::create([
-                        'id_denah' => $denah->id_denah,
-                        'id_siswa' => $idSiswa[$index],
-                        'baris' => $baris,
-                        'kolom' => $kolom,
-                    ]);
-
-                    $index++;
                 }
             }
         });

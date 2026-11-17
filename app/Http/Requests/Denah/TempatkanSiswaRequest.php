@@ -4,6 +4,7 @@ namespace App\Http\Requests\Denah;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class TempatkanSiswaRequest extends FormRequest
 {
@@ -21,6 +22,7 @@ class TempatkanSiswaRequest extends FormRequest
             'id_siswa' => ['required', 'integer', 'exists:anggota_kelas,id_siswa'],
             'baris' => ['required', 'integer', 'min:1'],
             'kolom' => ['required', 'integer', 'min:1'],
+            'sisi' => ['nullable', Rule::in(['kiri', 'kanan'])],
         ];
     }
 }

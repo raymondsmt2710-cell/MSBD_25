@@ -65,12 +65,40 @@ export default function denahPage(initial) {
             return Number(this.denah?.jumlah_kolom ?? 4);
         },
 
-        kursiPada(baris, kolom) {
-            return this.kursi.find((k) => Number(k.baris) === Number(baris) && Number(k.kolom) === Number(kolom)) ?? null;
+        /** Satu meja = { baris, kolom, murid: { kiri, kanan } }. */
+        mejaPada(baris, kolom) {
+            const meja = this.kursi.find(
+                (k) => Number(k.baris) === Number(baris) && Number(k.kolom) === Number(kolom),
+            );
+
+            return meja ?? { baris: Number(baris), kolom: Number(kolom), murid: { kiri: null, kanan: null } };
+        },
+
+        /** Ambil murid pada satu sisi meja ('kiri' | 'kanan'). */
+        muridPada(baris, kolom, sisi) {
+            return this.mejaPada(baris, kolom)?.murid?.[sisi] ?? null;
+        },
+
+        /** Berapa murid yang sudah duduk di meja ini (maksimal 2). */
+        jumlahDiMeja(baris, kolom) {
+            const meja = this.mejaPada(baris, kolom);
+            return ['kiri', 'kanan'].filter((s) => meja?.murid?.[s]).length;
+        },
+
+        /** Sisi meja yang masih kosong, atau null bila meja sudah penuh. */
+        sisiKosong(baris, kolom) {
+            const meja = this.mejaPada(baris, kolom);
+            return ['kiri', 'kanan'].find((s) => !meja?.murid?.[s]) ?? null;
         },
 
         siswaBelumDuduk() {
-            const terisi = new Set(this.kursi.map((k) => k.siswa?.id_siswa).filter(Boolean));
+            const terisi = new Set();
+            this.kursi.forEach((meja) => {
+                ['kiri', 'kanan'].forEach((s) => {
+                    const id = meja?.murid?.[s]?.siswa?.id_siswa;
+                    if (id) terisi.add(id);
+                });
+            });
             return this.siswa.filter((s) => !terisi.has(s.id_siswa));
         },
 
@@ -80,43 +108,57 @@ export default function denahPage(initial) {
             window.location.href = url.toString();
         },
 
-        klikKursi(kursi, baris, kolom) {
+        /**
+         * Klik pada satu sisi meja.
+         * @param {number} baris
+         * @param {number} kolom
+         * @param {'kiri'|'kanan'} sisi
+         */
+        klikKursi(baris, kolom, sisi) {
+            const murid = this.muridPada(baris, kolom, sisi);
+
             if (!this.modeEdit) {
-                if (kursi) {
-                    this.bukaSiswa(kursi);
+                if (murid) {
+                    this.bukaSiswa(murid);
                 }
                 return;
             }
 
-            if (this.siswaAkanDitempatkan && !kursi) {
-                this.tempatkan(baris, kolom);
+            // Sedang menempatkan siswa baru: taruh di sisi yang diklik bila kosong.
+            if (this.siswaAkanDitempatkan) {
+                if (!murid) {
+                    this.tempatkan(baris, kolom, sisi);
+                } else {
+                    this.showToast('Sisi meja ini sudah terisi. Pilih sisi yang kosong.', 'error');
+                }
                 return;
             }
 
-            if (!kursi) {
+            if (!murid) {
+                // Pindahkan murid terpilih ke sisi kosong ini.
                 if (this.kursiSwapPertama) {
-                    this.pindah(this.kursiSwapPertama, baris, kolom);
+                    this.pindah(this.kursiSwapPertama, baris, kolom, sisi);
                 }
                 return;
             }
 
             if (!this.kursiSwapPertama) {
-                this.kursiSwapPertama = kursi;
+                this.kursiSwapPertama = murid;
                 return;
             }
 
-            if (this.kursiSwapPertama.id_posisi === kursi.id_posisi) {
+            if (this.kursiSwapPertama.id_posisi === murid.id_posisi) {
                 this.kursiSwapPertama = null;
                 return;
             }
 
-            this.swap(this.kursiSwapPertama, kursi);
+            this.swap(this.kursiSwapPertama, murid);
         },
 
-        bukaSiswa(kursi) {
-            this.siswaTerpilih = kursi.siswa;
-            this.kursiTerpilih = kursi;
-            this.sorotSiswaId = kursi.siswa?.id_siswa ?? null;
+        bukaSiswa(murid) {
+            this.siswaTerpilih = murid.siswa;
+            this.kursiTerpilih = murid;
+            this.sorotSiswaId = murid.siswa?.id_siswa ?? null;
             this.drawerSiswa = true;
         },
 
@@ -143,12 +185,12 @@ export default function denahPage(initial) {
             }
         },
 
-        async pindah(kursi, baris, kolom) {
+        async pindah(murid, baris, kolom, sisi) {
             try {
-                const res = await fetch(`/denah/posisi/${kursi.id_posisi}`, {
+                const res = await fetch(`/denah/posisi/${murid.id_posisi}`, {
                     method: 'PATCH',
                     headers: this.headers(),
-                    body: JSON.stringify({ baris, kolom }),
+                    body: JSON.stringify({ baris, kolom, sisi }),
                 });
                 const payload = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(payload.message ?? 'Gagal memindahkan kursi.');
@@ -160,7 +202,7 @@ export default function denahPage(initial) {
             }
         },
 
-        async tempatkan(baris, kolom) {
+        async tempatkan(baris, kolom, sisi = 'kiri') {
             try {
                 const res = await fetch(`/denah/kelas/${this.idKelas}/tempatkan`, {
                     method: 'POST',
@@ -169,6 +211,7 @@ export default function denahPage(initial) {
                         id_siswa: Number(this.siswaAkanDitempatkan),
                         baris,
                         kolom,
+                        sisi,
                     }),
                 });
                 const payload = await res.json().catch(() => ({}));
@@ -216,9 +259,21 @@ export default function denahPage(initial) {
                 return;
             }
 
-            const kursi = this.kursi.find((k) => k.siswa?.nama_siswa?.toLowerCase().includes(q));
-            if (kursi) {
-                this.bukaSiswa(kursi);
+            // Cari murid yang sudah duduk (bisa di sisi kiri atau kanan meja).
+            let ketemu = null;
+            for (const meja of this.kursi) {
+                for (const sisi of ['kiri', 'kanan']) {
+                    const murid = meja?.murid?.[sisi];
+                    if (murid?.siswa?.nama_siswa?.toLowerCase().includes(q)) {
+                        ketemu = murid;
+                        break;
+                    }
+                }
+                if (ketemu) break;
+            }
+
+            if (ketemu) {
+                this.bukaSiswa(ketemu);
                 return;
             }
 

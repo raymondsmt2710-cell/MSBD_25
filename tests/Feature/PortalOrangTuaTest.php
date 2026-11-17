@@ -12,21 +12,37 @@ use Tests\TestCase;
 
 // Portal orang tua/wali: HANYA BACA, dan hanya anak miliknya sendiri.
 //
-// Kenapa ada "shim" di setUp():
-//   Controller membaca view v_portal_anak_orang_tua / v_rekap_presensi_siswa dan
-//   memanggil stored function fn_persentase_kehadiran / fn_jumlah_presensi. Semua
-//   objek itu hanya ada di MySQL (migrasinya sengaja dilewati pada sqlite), sehingga
-//   tes sqlite akan gagal bukan karena logika aplikasi salah.
+// Tes ini berjalan di DUA driver dan keduanya harus hijau:
 //
-//   Solusinya: di tes ini saja, view diganti TABEL bernama sama dan stored function
-//   didaftarkan sebagai fungsi PHP pada koneksi sqlite. Kode produksi tidak diubah
-//   sama sekali. Yang diuji di sini adalah lapisan otorisasi (siapa boleh melihat
-//   anak siapa) dan penanganan parameter — bagian yang paling mudah salah.
-//   Pengujian terhadap view/fungsi MySQL yang sesungguhnya ada di
-//   PortalOrangTuaMysqlTest.
+//   MySQL (phpunit.xml -> msbd_25_test)
+//     View v_portal_anak_orang_tua dan stored function fn_* dibuat oleh migrasi,
+//     jadi tes memakai objek SUNGGUHAN. Fixture menulis ke tabel dasar (presensi,
+//     anggota_kelas) sehingga view, stored function, dan trigger ikut bekerja —
+//     persis jalur produksi.
+//
+//   sqlite (:memory:)
+//     Migrasi view sengaja dilewati (guard getDriverName), sehingga view diganti
+//     TABEL bernama sama dan stored function diganti fungsi PHP. Tujuannya agar
+//     lapisan otorisasi dan penanganan parameter tetap teruji tanpa MySQL.
+//
+// Yang diuji di sini adalah siapa boleh melihat anak siapa dan penanganan
+// parameter — bagian yang paling mudah salah. Pemeriksaan "halaman benar-benar
+// dirender" pada database aplikasi ada di PortalOrangTuaMysqlTest.
 class PortalOrangTuaTest extends TestCase
 {
     use RefreshDatabase;
+
+    /** True bila suite berjalan di MySQL/MariaDB (mis. phpunit.xml menunjuk msbd_25_test). */
+    private bool $mysql = false;
+
+    /** Rantai FK minimal (tahun ajaran -> kelas -> mapel -> guru -> jadwal). Dibuat sekali per tes. */
+    private ?array $dasar = null;
+
+    /** Nomor urut untuk nis/nisn/username, supaya nilainya unik dan hasil tes dapat diulang. */
+    private int $urut = 0;
+
+    /** Penghitung id_presensi untuk tabel shim sqlite. */
+    private int $presensiShim = 0;
 
     protected function setUp(): void
     {
@@ -34,12 +50,28 @@ class PortalOrangTuaTest extends TestCase
 
         $this->withoutMiddleware(DBDynamicConnection::class);
 
-        $this->pasangShimView();
-        $this->pasangShimFungsi();
+        // Di MySQL, view dan stored function dibuat oleh migrasi, jadi tes memakai objek
+        // SUNGGUHAN — tidak ada shim. Di sqlite, migrasi itu sengaja dilewati sehingga
+        // view diganti tabel bernama sama dan stored function diganti fungsi PHP.
+        //
+        // Shim TIDAK dipasang di MySQL: nama view sudah dipakai, sehingga Schema::create
+        // gagal 1050. Lebih buruk lagi, DDL MySQL tidak bisa di-rollback, jadi view asli
+        // akan hilang untuk seluruh sisa suite.
+        $this->mysql = in_array(DB::getDriverName(), ['mysql', 'mariadb'], true);
+
+        if (! $this->mysql) {
+            $this->pasangShimView();
+            $this->pasangShimFungsi();
+        }
     }
 
+    /** Hanya dipakai pada sqlite. */
     private function pasangShimView(): void
     {
+        // dropIfExists perlu karena RefreshDatabase memakai ulang PDO :memory: yang sama
+        // untuk seluruh kelas, sehingga tabel shim bisa tertinggal dari tes sebelumnya.
+        Schema::dropIfExists('v_portal_anak_orang_tua');
+
         // Kolom mengikuti definisi v_portal_anak_orang_tua.
         Schema::create('v_portal_anak_orang_tua', function (Blueprint $t) {
             $t->increments('id_orang_tua');
@@ -60,6 +92,7 @@ class PortalOrangTuaTest extends TestCase
         });
 
         // Kolom mengikuti definisi v_rekap_presensi_siswa.
+        Schema::dropIfExists('v_rekap_presensi_siswa');
         Schema::create('v_rekap_presensi_siswa', function (Blueprint $t) {
             $t->increments('id_presensi');
             $t->unsignedInteger('id_sesi');
@@ -85,6 +118,11 @@ class PortalOrangTuaTest extends TestCase
     {
         $pdo = DB::connection()->getPdo();
 
+        // PDO MySQL tidak punya sqliteCreateFunction; di MySQL fungsi aslinya sudah ada.
+        if (! method_exists($pdo, 'sqliteCreateFunction')) {
+            return;
+        }
+
         $pdo->sqliteCreateFunction('fn_jumlah_presensi', function ($idSiswa, $status) {
             return (int) DB::table('v_rekap_presensi_siswa')
                 ->where('id_siswa', $idSiswa)
@@ -108,9 +146,71 @@ class PortalOrangTuaTest extends TestCase
         }, 1);
     }
 
+    /**
+     * Rantai FK minimal yang dibutuhkan VIEW pada MySQL:
+     * tahun ajaran aktif -> kelas, mata pelajaran, guru, jadwal pelajaran.
+     *
+     * Dibuat sekali per tes (di-cache) karena setiap tes berjalan dalam transaksi
+     * yang di-rollback, jadi datanya tidak pernah menumpuk antar tes.
+     */
+    private function dasar(): array
+    {
+        if ($this->dasar !== null) {
+            return $this->dasar;
+        }
+
+        $idUserGuru = DB::table('users')->insertGetId([
+            'username' => 'guru_uji_ortu',
+            'password_hash' => bcrypt('password'),
+            'role' => 'guru',
+            'is_active' => true,
+        ]);
+
+        $idGuru = DB::table('guru')->insertGetId([
+            'id_user' => $idUserGuru,
+            'nip' => '198001012005011001',
+            'nama_guru' => 'Guru Uji Ortu',
+            'jenis_kelamin' => 'L',
+        ]);
+
+        $idTahun = DB::table('tahun_ajaran')->insertGetId([
+            'nama' => '2026/2027',
+            'tanggal_mulai' => '2026-07-13',
+            'tanggal_selesai' => '2027-06-26',
+            'is_aktif' => true,
+        ]);
+
+        $idKelas = DB::table('kelas')->insertGetId([
+            'id_tahun_ajaran' => $idTahun,
+            'nama_kelas' => 'X IPA 1',
+            'tingkat' => 10,
+            'jurusan' => 'IPA',
+            'id_wali_kelas' => $idGuru,
+        ]);
+
+        $idMapel = DB::table('mata_pelajaran')->insertGetId([
+            'kode_mapel' => 'MTK',
+            'nama_mapel' => 'Matematika',
+        ]);
+
+        $idJadwal = DB::table('jadwal_pelajaran')->insertGetId([
+            'id_kelas' => $idKelas,
+            'id_mapel' => $idMapel,
+            'id_guru' => $idGuru,
+            'semester' => 'ganjil',
+            'hari' => 'senin',
+            'jam_mulai' => '07:00:00',
+            'jam_selesai' => '08:30:00',
+        ]);
+
+        return $this->dasar = compact('idGuru', 'idTahun', 'idKelas', 'idMapel', 'idJadwal');
+    }
+
     /** Membuat orang tua + anak + relasi. Mengembalikan [user, id_orang_tua, id_siswa]. */
     private function buatKeluarga(string $nama): array
     {
+        $this->urut++;
+
         $idUser = DB::table('users')->insertGetId([
             'username' => 'ortu_'.$nama,
             'password_hash' => bcrypt('password'),
@@ -131,10 +231,12 @@ class PortalOrangTuaTest extends TestCase
             'is_active' => true,
         ]);
 
+        // nis/nisn/username unik di MySQL, jadi nilainya diambil dari penghitung —
+        // bukan random_int, agar hasil tes dapat diulang persis.
         $idSiswa = DB::table('siswa')->insertGetId([
             'id_user' => $idUserSiswa,
-            'nis' => '9'.str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT),
-            'nisn' => str_pad((string) random_int(0, 9999999999), 10, '0', STR_PAD_LEFT),
+            'nis' => '9'.str_pad((string) $this->urut, 6, '0', STR_PAD_LEFT),
+            'nisn' => str_pad((string) $this->urut, 10, '0', STR_PAD_LEFT),
             'nama_siswa' => 'Anak '.$nama,
             'jenis_kelamin' => 'L',
             'status' => 'aktif',
@@ -147,44 +249,91 @@ class PortalOrangTuaTest extends TestCase
             'is_kontak_utama' => true,
         ]);
 
-        DB::table('v_portal_anak_orang_tua')->insert([
-            'id_orang_tua' => $idOrangTua,
-            'hubungan' => 'ibu',
-            'is_kontak_utama' => true,
-            'id_siswa' => $idSiswa,
-            'nis' => '9000001',
-            'nisn' => '0000000001',
-            'nama_siswa' => 'Anak '.$nama,
-            'jenis_kelamin' => 'L',
-            'status_siswa' => 'aktif',
-            'nama_kelas' => 'X IPA 1',
-            'tingkat' => 10,
-            'jurusan' => 'IPA',
-            'nama_tahun_ajaran' => '2026/2027',
-        ]);
+        if ($this->mysql) {
+            // View mengambil kelas lewat anggota_kelas pada tahun ajaran aktif.
+            $dasar = $this->dasar();
+
+            DB::table('anggota_kelas')->insert([
+                'id_kelas' => $dasar['idKelas'],
+                'id_siswa' => $idSiswa,
+                'no_absen' => $this->urut,
+            ]);
+        } else {
+            // sqlite: view diganti tabel shim, jadi barisnya diisi langsung.
+            DB::table('v_portal_anak_orang_tua')->insert([
+                'id_orang_tua' => $idOrangTua,
+                'hubungan' => 'ibu',
+                'is_kontak_utama' => true,
+                'id_siswa' => $idSiswa,
+                'nis' => '9000001',
+                'nisn' => '0000000001',
+                'nama_siswa' => 'Anak '.$nama,
+                'jenis_kelamin' => 'L',
+                'status_siswa' => 'aktif',
+                'nama_kelas' => 'X IPA 1',
+                'tingkat' => 10,
+                'jurusan' => 'IPA',
+                'nama_tahun_ajaran' => '2026/2027',
+            ]);
+        }
 
         return [User::find($idUser), $idOrangTua, $idSiswa];
     }
 
+    /**
+     * Menambah satu baris presensi.
+     *
+     * Di MySQL baris ditulis ke tabel dasar `presensi`; view dan stored function
+     * menghitungnya sendiri — persis seperti di produksi (termasuk trigger
+     * trg_after_presensi_insert yang mengisi log_presensi).
+     * Di sqlite baris ditulis langsung ke tabel shim.
+     */
     private function tambahPresensi(int $idSiswa, string $status, string $tanggal): void
     {
-        static $id = 0;
-        $id++;
+        if (! $this->mysql) {
+            $this->presensiShim++;
 
-        DB::table('v_rekap_presensi_siswa')->insert([
-            'id_presensi' => $id,
-            'id_sesi' => 1,
+            DB::table('v_rekap_presensi_siswa')->insert([
+                'id_presensi' => $this->presensiShim,
+                'id_sesi' => 1,
+                'id_siswa' => $idSiswa,
+                'nis' => '9000001',
+                'nama_siswa' => 'Anak',
+                'nama_mapel' => 'Matematika',
+                'tanggal' => $tanggal,
+                'hari' => 'senin',
+                'jam_mulai' => '07:00:00',
+                'jam_selesai' => '08:30:00',
+                'status' => $status,
+                'metode' => 'manual',
+                'waktu_presensi' => null,
+                'catatan' => null,
+            ]);
+
+            return;
+        }
+
+        $dasar = $this->dasar();
+
+        // uq_sesi_jadwal_tanggal: satu sesi per (jadwal, tanggal).
+        $idSesi = DB::table('sesi_presensi')
+            ->where('id_jadwal', $dasar['idJadwal'])
+            ->where('tanggal', $tanggal)
+            ->value('id_sesi')
+            ?? DB::table('sesi_presensi')->insertGetId([
+                'id_jadwal' => $dasar['idJadwal'],
+                'tanggal' => $tanggal,
+                'dibuka_pada' => $tanggal.' 07:30:00',
+                'ditutup_pada' => $tanggal.' 09:00:00',
+                'status' => 'ditutup',
+            ]);
+
+        DB::table('presensi')->insert([
+            'id_sesi' => $idSesi,
             'id_siswa' => $idSiswa,
-            'nis' => '9000001',
-            'nama_siswa' => 'Anak',
-            'nama_mapel' => 'Matematika',
-            'tanggal' => $tanggal,
-            'hari' => 'senin',
-            'jam_mulai' => '07:00:00',
-            'jam_selesai' => '08:30:00',
             'status' => $status,
             'metode' => 'manual',
-            'waktu_presensi' => null,
+            'waktu_presensi' => $tanggal.' 07:35:00',
             'catatan' => null,
         ]);
     }
@@ -211,6 +360,58 @@ class PortalOrangTuaTest extends TestCase
             ->assertSee('Anak b')
             ->assertSee('Ringkasan Kehadiran')
             ->assertSee('Matematika');
+    }
+
+    // Angka persentase dihitung stored function MySQL, bukan di PHP. Di sqlite fungsi
+    // itu diganti shim PHP, jadi yang diuji di sini adalah jalur MySQL yang sesungguhnya:
+    // hadir dari 2 presensi = 50,00%. Kalau collation parameter salah (error 1267) atau
+    // grant EXECUTE hilang, halaman ini 500 dan tes gagal.
+    public function test_persentase_kehadiran_dihitung_stored_function(): void
+    {
+        [$user, , $idSiswa] = $this->buatKeluarga('j');
+        $this->tambahPresensi($idSiswa, 'hadir', '2026-11-09');
+        $this->tambahPresensi($idSiswa, 'alpa', '2026-11-10');
+
+        $this->actingAs($user)
+            ->get('/ortu')
+            ->assertOk()
+            ->assertSee('50.00%');
+    }
+
+    // Di MySQL, objek yang dibaca harus benar-benar VIEW hasil migrasi, bukan tabel
+    // shim. Ini yang membuktikan migrasi 2026_11_17_000014 dipakai oleh tes.
+    public function test_view_anak_berupa_view_sungguhan_bukan_tabel_shim(): void
+    {
+        if (! $this->mysql) {
+            $this->markTestSkipped('Hanya relevan pada MySQL; sqlite memakai tabel shim.');
+        }
+
+        $jenis = DB::selectOne(
+            'SELECT TABLE_TYPE AS t FROM information_schema.TABLES
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
+            ['v_portal_anak_orang_tua']
+        );
+
+        $this->assertNotNull($jenis, 'View v_portal_anak_orang_tua tidak ada.');
+        $this->assertSame('VIEW', $jenis->t);
+    }
+
+    // Trigger trg_after_presensi_insert harus ikut terpicu saat tes menulis presensi
+    // lewat tabel dasar — bukti bahwa fixture memakai jalur produksi, bukan menyuap view.
+    public function test_presensi_lewat_tabel_dasar_memicu_trigger_log(): void
+    {
+        if (! $this->mysql) {
+            $this->markTestSkipped('Trigger hanya ada di MySQL.');
+        }
+
+        [, , $idSiswa] = $this->buatKeluarga('k');
+        $this->tambahPresensi($idSiswa, 'hadir', '2026-11-11');
+
+        $log = DB::table('log_presensi')->where('id_siswa', $idSiswa)->get();
+
+        $this->assertCount(1, $log);
+        $this->assertSame('PRESENSI_BARU', $log->first()->aksi);
+        $this->assertSame('hadir', $log->first()->status_baru);
     }
 
     // Inti keamanan fitur: angka di URL tidak boleh dipakai melihat anak orang lain.

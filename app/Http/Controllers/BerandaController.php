@@ -16,10 +16,14 @@ class BerandaController extends Controller
     public function index()
     {
         // Kalau sudah login, langsung ke halaman sesuai peran.
+        // Cabang orang_tua wajib ada: tanpa itu akun wali murid dilempar ke halaman
+        // kelola pemilihan yang menolaknya dengan 403.
         if (auth()->check()) {
-            return redirect()->to(auth()->user()->role === 'siswa'
-                ? route('siswa.pemilihan.index')
-                : route('kelola.pemilihan.index'));
+            return redirect()->to(match (auth()->user()->role) {
+                'siswa' => route('siswa.pemilihan.index'),
+                'orang_tua' => route('ortu.index'),
+                default => route('kelola.pemilihan.index'),
+            });
         }
 
         $statistik = $this->statistik();

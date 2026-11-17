@@ -3,9 +3,11 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\KelolaPemilihanController;
+use App\Http\Controllers\PortalOrangTuaController;
 use App\Http\Controllers\PresensiGuruController;
 use App\Http\Controllers\PresensiSiswaController;
 use App\Http\Controllers\SiswaPemilihanController;
+use App\Support\PolaRute;
 use Illuminate\Support\Facades\Route;
 
 // Halaman awal untuk tamu. Pengguna yang sudah login langsung diarahkan sesuai peran.
@@ -30,6 +32,15 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa/presensi')->name('siswa
     Route::get('/riwayat', [PresensiSiswaController::class, 'riwayat'])->name('riwayat');
     Route::get('/scan/{kode}', [PresensiSiswaController::class, 'konfirmasi'])->name('konfirmasi');
     Route::post('/scan/{kode}', [PresensiSiswaController::class, 'scan'])->name('scan')->middleware('throttle:10,1');
+});
+
+// ---- Fitur 7: Pemantauan orang tua/wali (hanya-baca, tidak ada rute tulis) ----
+Route::middleware(['auth', 'role:orang_tua'])->prefix('ortu')->name('ortu.')->group(function () {
+    Route::get('/', [PortalOrangTuaController::class, 'index'])->name('index');
+    // PolaRute::ID mencegah id di luar rentang PHP_INT_MAX menjadi TypeError (500);
+    // dengan batas ini masukan ngawur berhenti sebagai 404.
+    Route::get('/anak/{idSiswa}', [PortalOrangTuaController::class, 'anak'])
+        ->where('idSiswa', PolaRute::ID)->name('anak');
 });
 
 // ---- Fitur 3: Pemilihan suara elektronik (e-voting) ----

@@ -33,6 +33,11 @@
                    style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('siswa.pemilihan.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
                     Pemilihan
                 </a>
+            @elseif (auth()->user()->role === 'orang_tua')
+                <a href="{{ route('ortu.index') }}"
+                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('ortu.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
+                    Portal Orang Tua
+                </a>
             @else
                 <a href="{{ route('guru.presensi.index') }}"
                    style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('guru.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">

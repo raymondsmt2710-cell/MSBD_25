@@ -23,8 +23,10 @@ class BerandaController extends Controller
             $peran = auth()->user()->role?->value ?? (string) auth()->user()->role;
 
             return redirect()->to(match ($peran) {
+                'guru' => route('guru.beranda'),
                 'siswa' => route('siswa.pemilihan.index'),
                 'orang_tua' => route('ortu.index'),
+                'admin' => route('admin.dashboard'),
                 default => route('kelola.pemilihan.index'),
             });
         }

@@ -12,9 +12,9 @@ enum Role: string
     public function home(): string
     {
         return match ($this) {
-            self::Admin => 'kelola.pemilihan.index',
-            self::Guru => 'guru.presensi.index',
-            self::Siswa => 'siswa.pemilihan.index',
+            self::Admin => 'admin.dashboard',
+            self::Guru => 'guru.beranda',
+            self::Siswa => 'siswa.beranda',
             self::OrangTua => 'ortu.index',
         };
     }

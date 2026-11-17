@@ -24,4 +24,10 @@ class TahunAjaran extends Model
     {
         return $this->hasMany(Kelas::class, 'id_tahun_ajaran', 'id_tahun_ajaran');
     }
+
+    /** Tahun ajaran yang sedang aktif, atau null bila belum ada yang ditandai. */
+    public static function aktif(): ?self
+    {
+        return static::where('is_aktif', true)->first();
+    }
 }

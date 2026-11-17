@@ -29,8 +29,8 @@
                 $peranAktif = auth()->user()->role?->value ?? (string) auth()->user()->role;
             @endphp
             @if ($peranAktif === 'siswa')
-                <a href="{{ route('siswa.presensi.riwayat') }}"
-                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('siswa.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
+                <a href="{{ route('dashboard.presensi.index') }}"
+                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('dashboard.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
                     Presensi
                 </a>
                 <a href="{{ route('siswa.pemilihan.index') }}"
@@ -43,8 +43,8 @@
                     Portal Orang Tua
                 </a>
             @else
-                <a href="{{ route('guru.presensi.index') }}"
-                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('guru.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
+                <a href="{{ route('dashboard.presensi.index') }}"
+                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('dashboard.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
                     Presensi
                 </a>
                 <a href="{{ route('kelola.pemilihan.index') }}"
@@ -54,7 +54,7 @@
             @endif
         </nav>
         <form method="POST" action="{{ route('logout') }}">@csrf
-            <span>{{ auth()->user()->username }} ({{ auth()->user()->role }})</span>
+            <span>{{ auth()->user()->username }} ({{ $peranAktif }})</span>
             <button class="btn abu" type="submit">Keluar</button>
         </form>
     @endauth

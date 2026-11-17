@@ -27,6 +27,28 @@ class PresensiSiswaController extends Controller
         return Auth::user()->siswa?->id_siswa ?? abort(403, 'Akun ini belum terhubung ke data siswa.');
     }
 
+    /** Halaman masuk fitur presensi: dua pilihan (riwayat atau pindai QR). */
+    public function menu()
+    {
+        $idSiswa = $this->idSiswa();
+
+        $ringkasan = [
+            'persen' => Presensi::persentaseKehadiran($idSiswa),
+            'hadir'  => Presensi::jumlahStatus($idSiswa, 'hadir'),
+            'izin'   => Presensi::jumlahStatus($idSiswa, 'izin'),
+            'sakit'  => Presensi::jumlahStatus($idSiswa, 'sakit'),
+            'alpa'   => Presensi::jumlahStatus($idSiswa, 'alpa'),
+        ];
+
+        return view('siswa.presensi.menu', compact('ringkasan'));
+    }
+
+    /** Halaman pemindai QR: kamera langsung atau pilih foto dari galeri. */
+    public function pindai()
+    {
+        return view('siswa.presensi.pindai');
+    }
+
     /** GET tidak mengubah data: hanya menampilkan tombol konfirmasi. */
     public function konfirmasi(string $kode)
     {
@@ -68,13 +90,13 @@ class PresensiSiswaController extends Controller
             if ($status === null) {
                 Log::error($e);
 
-                return redirect()->route('siswa.presensi.riwayat')->with('error', 'Terjadi kesalahan saat mencatat presensi.');
+                return redirect()->route('dashboard.presensi.riwayat')->with('error', 'Terjadi kesalahan saat mencatat presensi.');
             }
         }
 
         $pesan = self::PESAN[$status] ?? 'Status tidak dikenal.';
 
-        return redirect()->route('siswa.presensi.riwayat')->with($status === 'BERHASIL' ? 'success' : 'error', $pesan);
+        return redirect()->route('dashboard.presensi.riwayat')->with($status === 'BERHASIL' ? 'success' : 'error', $pesan);
     }
 
     /**

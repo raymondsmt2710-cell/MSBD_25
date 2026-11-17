@@ -3,6 +3,8 @@
 use App\Enums\Role;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BerandaController;
+use App\Http\Controllers\DashboardGuruController;
+use App\Http\Controllers\DashboardSiswaController;
 use App\Http\Controllers\Denah\DenahController;
 use App\Http\Controllers\Denah\DenahKelasController;
 use App\Http\Controllers\Denah\RuanganSekolahController;
@@ -25,7 +27,12 @@ Route::get('/login', [AuthController::class, 'form'])->name('login')->middleware
 Route::post('/login', [AuthController::class, 'login'])->name('login.proses')->middleware('throttle:10,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-// ---- Fitur 1: Presensi QR sekali pakai ----
+// ---- Fitur 9: Dashboard guru (baca saja; aksi memakai rute presensi) ----
+Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
+    Route::get('/', [DashboardGuruController::class, 'index'])->name('beranda');
+});
+
+// ---- Fitur 1 lama: Presensi QR (URL lama tetap dipertahankan) ----
 Route::middleware(['auth', 'role:guru'])->prefix('guru/presensi')->name('guru.presensi.')->group(function () {
     Route::get('/', [PresensiGuruController::class, 'index'])->name('index');
     Route::post('/jadwal/{idJadwal}/buka', [PresensiGuruController::class, 'buka'])->name('buka');
@@ -39,6 +46,37 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa/presensi')->name('siswa
     Route::get('/riwayat', [PresensiSiswaController::class, 'riwayat'])->name('riwayat');
     Route::get('/scan/{kode}', [PresensiSiswaController::class, 'konfirmasi'])->name('konfirmasi');
     Route::post('/scan/{kode}', [PresensiSiswaController::class, 'scan'])->name('scan')->middleware('throttle:10,1');
+});
+
+// ---- Fitur 8: Dashboard siswa (hanya-baca) ----
+Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
+    Route::get('/', [DashboardSiswaController::class, 'index'])->name('beranda');
+    Route::get('/perangkat', [DashboardSiswaController::class, 'perangkat'])->name('perangkat');
+});
+
+// ---- Fitur 1: Presensi QR ----
+// Semua halaman presensi berada di bawah /dashboard/presensi.
+// Halaman masuk (index) berbeda isi menurut peran: siswa melihat dua pilihan,
+// guru langsung melihat roster jadwal mengajarnya.
+Route::middleware(['auth', 'role:guru,siswa'])->prefix('dashboard/presensi')->name('dashboard.presensi.')->group(function () {
+    Route::get('/', [PresensiGuruController::class, 'masuk'])->name('index');
+
+    // --- Siswa ---
+    Route::middleware('role:siswa')->group(function () {
+        Route::get('/riwayat', [PresensiSiswaController::class, 'riwayat'])->name('riwayat');
+        Route::get('/pindai', [PresensiSiswaController::class, 'pindai'])->name('pindai');
+        Route::get('/scan/{kode}', [PresensiSiswaController::class, 'konfirmasi'])->name('konfirmasi');
+        Route::post('/scan/{kode}', [PresensiSiswaController::class, 'scan'])->name('scan')->middleware('throttle:10,1');
+    });
+
+    // --- Guru ---
+    Route::middleware('role:guru')->group(function () {
+        Route::post('/jadwal/{idJadwal}/buka', [PresensiGuruController::class, 'buka'])->name('buka');
+        Route::get('/sesi/{idSesi}', [PresensiGuruController::class, 'tampil'])->name('sesi');
+        Route::get('/sesi/{idSesi}/qr', [PresensiGuruController::class, 'qr'])->name('qr');
+        Route::post('/sesi/{idSesi}/tutup', [PresensiGuruController::class, 'tutup'])->name('tutup');
+        Route::post('/sesi/{idSesi}/manual', [PresensiGuruController::class, 'manual'])->name('manual');
+    });
 });
 
 // ---- Fitur 7: Pemantauan orang tua/wali (hanya-baca, tidak ada rute tulis) ----
@@ -118,3 +156,6 @@ Route::middleware('auth')->prefix('denah')->name('denah.')->group(function () {
     Route::delete('/ruangan/{ruangan}', [RuanganSekolahController::class, 'destroy'])->name('ruangan.destroy');
     Route::patch('/ruangan/{ruangan}/status', [RuanganSekolahController::class, 'status'])->name('ruangan.status');
 });
+
+// ---- Fitur khusus administrator (lihat routes/admin.php) ----
+require __DIR__.'/admin.php';

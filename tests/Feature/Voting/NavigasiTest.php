@@ -32,13 +32,13 @@ class NavigasiTest extends TestCase
             ->assertRedirect(route('siswa.pemilihan.index'));
     }
 
-    public function test_admin_diarahkan_ke_kelola_pemilihan_dari_beranda(): void
+    public function test_admin_diarahkan_ke_panel_admin_dari_beranda(): void
     {
         $d = $this->seedPemilihanDraf();
 
         $this->actingAs($this->userDari($d['id_admin']))
             ->get('/')
-            ->assertRedirect(route('kelola.pemilihan.index'));
+            ->assertRedirect(route('admin.dashboard'));
     }
 
     public function test_route_dashboard_tidak_dipakai_lagi(): void

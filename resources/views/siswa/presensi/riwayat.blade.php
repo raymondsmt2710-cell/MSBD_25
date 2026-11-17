@@ -21,6 +21,8 @@
 </div>
 
 <div class="kartu" id="roster">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <h3 style="margin:0">Roster Sepekan</h3>
         <div class="aksi-baris" style="align-items:center">
             <a class="btn garis" href="{{ route('dashboard.presensi.riwayat', ['pekan' => $pekanSebelum]) }}">&lsaquo; Pekan lalu</a>
             <span class="kecil">

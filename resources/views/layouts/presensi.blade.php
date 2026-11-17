@@ -118,13 +118,9 @@
                 @if ((auth()->user()->role?->value ?? auth()->user()->role) === 'siswa')
                     <a href="{{ route('dashboard.presensi.index') }}"
                        class="{{ request()->routeIs('dashboard.presensi.index') ? 'aktif' : '' }}">Presensi</a>
-                    <a href="{{ route('siswa.pemilihan.index') }}"
-                       class="{{ request()->routeIs('siswa.pemilihan.*') ? 'aktif' : '' }}">Pemilihan</a>
                 @elseif ((auth()->user()->role?->value ?? auth()->user()->role) === 'guru')
                     <a href="{{ route('dashboard.presensi.index') }}"
                        class="{{ request()->routeIs('dashboard.presensi.*') ? 'aktif' : '' }}">Roster Presensi</a>
-                    <a href="{{ route('kelola.pemilihan.index') }}"
-                       class="{{ request()->routeIs('kelola.pemilihan.*') ? 'aktif' : '' }}">Pemilihan</a>
                 @elseif ((auth()->user()->role?->value ?? auth()->user()->role) === 'orang_tua')
                     <a href="{{ route('ortu.index') }}">Portal Orang Tua</a>
                 @endif

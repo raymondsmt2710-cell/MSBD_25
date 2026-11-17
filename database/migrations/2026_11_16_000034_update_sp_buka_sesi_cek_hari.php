@@ -16,8 +16,9 @@ return new class extends Migration
     {
         $db = config('database.connections.mysql.database');
         $guru = env('DB_USERNAME_GURU', 'guru_app');
+        $host = env('DB_USER_HOST', 'localhost');
 
-        DB::unprepared("GRANT EXECUTE ON PROCEDURE `{$db}`.`sp_buka_sesi` TO '{$guru}'@'localhost'");
+        DB::unprepared("GRANT EXECUTE ON PROCEDURE `{$db}`.`sp_buka_sesi` TO '{$guru}'@'{$host}'");
         DB::unprepared('FLUSH PRIVILEGES');
     }
 

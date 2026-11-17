@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 // DCL (materi Manajemen User & Hak Akses): user MySQL per role dengan prinsip least privilege.
 // Siswa TIDAK punya INSERT ke tabel presensi; ia hanya boleh EXECUTE sp_scan_presensi.
@@ -22,22 +24,61 @@ return new class extends Migration
         ];
     }
 
+    /**
+     * Host pada akun MySQL. Nilai bawaan 'localhost' hanya bisa login dari mesin yang sama
+     * dengan server MySQL. Set DB_USER_HOST=% (atau IP server aplikasi) bila database
+     * berada di mesin terpisah, misalnya saat deploy.
+     */
+    private function userHost(): string
+    {
+        return env('DB_USER_HOST', 'localhost');
+    }
+
     public function up(): void
     {
         if (! $this->mysql()) {
             return;
         }
 
-        $db = config('database.connections.mysql.database');
-        $a = $this->accounts();
+        // Di shared hosting / akun DB tanpa hak CREATE USER & GRANT, pembuatan user per role
+        // tidak mungkin dilakukan. Migration dilewati dengan peringatan, bukan menggagalkan deploy.
+        // Set DB_SKIP_ROLE_USERS=true untuk melewati secara sengaja.
+        if (filter_var(env('DB_SKIP_ROLE_USERS', false), FILTER_VALIDATE_BOOLEAN)) {
+            Log::warning('Migration 000033 dilewati karena DB_SKIP_ROLE_USERS=true. Hak akses per role tidak dibuat.');
 
-        foreach ($a as [$user, $pass]) {
-            DB::unprepared("CREATE USER IF NOT EXISTS '{$user}'@'localhost' IDENTIFIED BY '{$pass}'");
+            return;
         }
 
-        $grant = function (string $user, array $map) use ($db) {
+        $db = config('database.connections.mysql.database');
+        $a = $this->accounts();
+        $host = $this->userHost();
+
+        try {
+            foreach ($a as [$user, $pass]) {
+                DB::unprepared("CREATE USER IF NOT EXISTS '{$user}'@'{$host}' IDENTIFIED BY '{$pass}'");
+            }
+
+            $this->beriHak($a, $db, $host);
+        } catch (QueryException $e) {
+            // 1227 = butuh hak CREATE USER/SUPER, 1044/1142 = akses ditolak
+            if (in_array((int) ($e->errorInfo[1] ?? 0), [1044, 1142, 1227], true)) {
+                Log::warning(
+                    'Migration 000033 tidak dapat membuat user MySQL (hak CREATE USER/GRANT tidak tersedia). '.
+                    'Jalankan migration sebagai root, atau buat user & GRANT secara manual. Pesan: '.$e->getMessage()
+                );
+
+                return;
+            }
+
+            throw $e;
+        }
+    }
+
+    private function beriHak(array $a, string $db, string $host): void
+    {
+        $grant = function (string $user, array $map) use ($db, $host) {
             foreach ($map as $object => $privileges) {
-                DB::unprepared("GRANT {$privileges} ON {$object} TO '{$user}'@'localhost'");
+                DB::unprepared("GRANT {$privileges} ON {$object} TO '{$user}'@'{$host}'");
             }
         };
         $t = fn (string $name) => "`{$db}`.`{$name}`";
@@ -45,7 +86,7 @@ return new class extends Migration
         $func = fn (string $name) => "FUNCTION `{$db}`.`{$name}`";
 
         // Admin: penuh, hanya pada database aplikasi
-        DB::unprepared("GRANT ALL PRIVILEGES ON `{$db}`.* TO '{$a['admin'][0]}'@'localhost'");
+        DB::unprepared("GRANT ALL PRIVILEGES ON `{$db}`.* TO '{$a['admin'][0]}'@'{$host}'");
 
         // Guru
         $grant($a['guru'][0], [
@@ -102,7 +143,7 @@ return new class extends Migration
         }
 
         foreach ($this->accounts() as [$user]) {
-            DB::unprepared("DROP USER IF EXISTS '{$user}'@'localhost'");
+            DB::unprepared("DROP USER IF EXISTS '{$user}'@'{$this->userHost()}'");
         }
     }
 };

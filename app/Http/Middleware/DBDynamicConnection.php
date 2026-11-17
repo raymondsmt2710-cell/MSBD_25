@@ -32,7 +32,14 @@ class DBDynamicConnection
                     Config::set('database.default', $target);
                     DB::setDefaultConnection($target);
                 } catch (\Throwable $e) {
-                    // Sama seperti materi: jika user MySQL belum dibuat, kembali ke koneksi bawaan
+                    // Bawaan: kembali ke koneksi `mysql` (sama seperti materi), supaya aplikasi tetap jalan
+                    // walau user MySQL per role belum dibuat. Set DB_ROLE_CONNECTION_STRICT=true agar
+                    // kegagalan ini justru menghentikan request (fail-closed) dan tidak diam-diam
+                    // memakai koneksi root — penting saat production agar GRANT benar-benar diuji.
+                    if (filter_var(env('DB_ROLE_CONNECTION_STRICT', false), FILTER_VALIDATE_BOOLEAN)) {
+                        throw new \RuntimeException("Koneksi {$target} gagal dan DB_ROLE_CONNECTION_STRICT aktif: ".$e->getMessage(), 0, $e);
+                    }
+
                     Log::warning("Gagal memakai koneksi {$target}: ".$e->getMessage());
                     Config::set('database.default', 'mysql');
                     DB::setDefaultConnection('mysql');

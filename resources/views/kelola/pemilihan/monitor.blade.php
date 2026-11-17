@@ -26,7 +26,7 @@
 
 @if ($waktuLewat)
     <div class="err">
-        Waktu pemilihan sudah lewat, tetapi status masih <strong>berlangsung</strong>.
+        Peringatan: waktu sudah lewat, tetapi status masih <strong>berlangsung</strong>.
         Pemungutan suara sudah berhenti sendiri; tekan <strong>Tutup Pemilihan</strong> agar hasil dapat dilihat siswa.
     </div>
 @endif

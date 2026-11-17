@@ -18,4 +18,14 @@ enum Role: string
             self::OrangTua => 'ortu.dashboard',
         };
     }
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Admin => 'Administrator',
+            self::Guru => 'Guru',
+            self::Siswa => 'Siswa',
+            self::OrangTua => 'Orang Tua',
+        };
+    }
 }

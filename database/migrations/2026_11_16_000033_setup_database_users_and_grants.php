@@ -47,11 +47,17 @@ return new class extends Migration
         // Admin: penuh, hanya pada database aplikasi
         DB::unprepared("GRANT ALL PRIVILEGES ON `{$db}`.* TO '{$a['admin'][0]}'@'localhost'");
 
-        // Guru
+        // Cache dipakai throttle/rate limiter setelah koneksi role aktif.
+        $grant($a['guru'][0], [$t('cache') => 'SELECT, INSERT, UPDATE, DELETE', $t('cache_locks') => 'SELECT, INSERT, UPDATE, DELETE']);
+        $grant($a['siswa'][0], [$t('cache') => 'SELECT, INSERT, UPDATE, DELETE', $t('cache_locks') => 'SELECT, INSERT, UPDATE, DELETE']);
+        $grant($a['orangtua'][0], [$t('cache') => 'SELECT, INSERT, UPDATE, DELETE', $t('cache_locks') => 'SELECT, INSERT, UPDATE, DELETE']);
+
+        // Guru: baca data akademik + tulis presensi (koreksi manual)
         $grant($a['guru'][0], [
             $t('users') => 'SELECT',
             $t('guru') => 'SELECT',
             $t('siswa') => 'SELECT',
+            $t('tahun_ajaran') => 'SELECT',
             $t('kelas') => 'SELECT',
             $t('anggota_kelas') => 'SELECT',
             $t('mata_pelajaran') => 'SELECT',
@@ -61,6 +67,14 @@ return new class extends Migration
             $t('presensi') => 'SELECT, INSERT, UPDATE',   // koreksi manual oleh guru
             $t('pengajuan_izin') => 'SELECT',
             $t('log_presensi') => 'SELECT',
+            $t('transaksi_kas') => 'SELECT',
+            $t('iuran_kas') => 'SELECT',
+            $t('denah_kelas') => 'SELECT',
+            $t('posisi_duduk') => 'SELECT',
+            $t('ruangan_sekolah') => 'SELECT',
+            $t('pengurus_kelas') => 'SELECT',
+            $t('jabatan') => 'SELECT',
+            $t('orang_tua_siswa') => 'SELECT',
             $t('v_rekap_presensi_siswa') => 'SELECT',
             $t('v_rekap_sesi_presensi') => 'SELECT',
             $proc('sp_buka_sesi') => 'EXECUTE',
@@ -70,10 +84,24 @@ return new class extends Migration
             $func('fn_jumlah_presensi') => 'EXECUTE',
         ]);
 
-        // Siswa
+        // Siswa: baca data kelas; bendahara/ketua kelas menulis kas & denah lewat aplikasi.
+        // Siswa TIDAK punya INSERT langsung ke presensi; hanya EXECUTE sp_scan_presensi.
         $grant($a['siswa'][0], [
             $t('users') => 'SELECT',
             $t('siswa') => 'SELECT',
+            $t('guru') => 'SELECT',   // nama wali kelas pada denah
+            $t('tahun_ajaran') => 'SELECT',
+            $t('kelas') => 'SELECT',
+            $t('anggota_kelas') => 'SELECT',
+            $t('mata_pelajaran') => 'SELECT',
+            $t('jadwal_pelajaran') => 'SELECT',
+            $t('pengurus_kelas') => 'SELECT',
+            $t('jabatan') => 'SELECT',
+            $t('transaksi_kas') => 'SELECT, INSERT, UPDATE',
+            $t('iuran_kas') => 'SELECT, INSERT, UPDATE',
+            $t('denah_kelas') => 'SELECT, INSERT, UPDATE',
+            $t('posisi_duduk') => 'SELECT, INSERT, UPDATE, DELETE',
+            $t('ruangan_sekolah') => 'SELECT',
             $t('v_rekap_presensi_siswa') => 'SELECT',
             $proc('sp_scan_presensi') => 'EXECUTE',
             $func('fn_token_valid') => 'EXECUTE',
@@ -81,12 +109,25 @@ return new class extends Migration
             $func('fn_jumlah_presensi') => 'EXECUTE',
         ]);
 
-        // Orang tua / wali: hanya-baca
+        // Orang tua / wali: hanya-baca, termasuk kas dan denah kelas anak
         $grant($a['orangtua'][0], [
             $t('users') => 'SELECT',
             $t('orang_tua') => 'SELECT',
             $t('orang_tua_siswa') => 'SELECT',
             $t('siswa') => 'SELECT',
+            $t('guru') => 'SELECT',   // nama wali kelas pada denah
+            $t('tahun_ajaran') => 'SELECT',
+            $t('kelas') => 'SELECT',
+            $t('anggota_kelas') => 'SELECT',
+            $t('mata_pelajaran') => 'SELECT',
+            $t('jadwal_pelajaran') => 'SELECT',
+            $t('pengurus_kelas') => 'SELECT',
+            $t('jabatan') => 'SELECT',
+            $t('transaksi_kas') => 'SELECT',
+            $t('iuran_kas') => 'SELECT',
+            $t('denah_kelas') => 'SELECT',
+            $t('posisi_duduk') => 'SELECT',
+            $t('ruangan_sekolah') => 'SELECT',
             $t('v_rekap_presensi_siswa') => 'SELECT',
             $func('fn_persentase_kehadiran') => 'EXECUTE',
             $func('fn_jumlah_presensi') => 'EXECUTE',

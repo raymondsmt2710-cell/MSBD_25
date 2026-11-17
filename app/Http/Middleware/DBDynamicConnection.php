@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\Role;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +25,10 @@ class DBDynamicConnection
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
-            $target = self::KONEKSI_ROLE[Auth::user()->role] ?? null;
+            $role = Auth::user()->role;
+            $role = $role instanceof Role ? $role->value : (string) $role;
+            $target = self::KONEKSI_ROLE[$role] ?? null;
+            $asal = DB::getDefaultConnection();
 
             if ($target && Config::has("database.connections.{$target}")) {
                 try {
@@ -32,10 +36,11 @@ class DBDynamicConnection
                     Config::set('database.default', $target);
                     DB::setDefaultConnection($target);
                 } catch (\Throwable $e) {
-                    // Sama seperti materi: jika user MySQL belum dibuat, kembali ke koneksi bawaan
+                    // Jika user MySQL belum dibuat, kembali ke koneksi bawaan aplikasi (mis. sqlite),
+                    // bukan dipaksa ke mysql yang belum tentu tersedia.
                     Log::warning("Gagal memakai koneksi {$target}: ".$e->getMessage());
-                    Config::set('database.default', 'mysql');
-                    DB::setDefaultConnection('mysql');
+                    Config::set('database.default', $asal);
+                    DB::setDefaultConnection($asal);
                 }
             }
         }

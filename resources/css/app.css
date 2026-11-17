@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+[x-cloak] {
+    display: none !important;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+    .label-kapital {
+        @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500;
+    }
+
+    .kartu {
+        @apply rounded-2xl bg-white shadow-sm ring-1 ring-gray-100;
+    }
+
+    .tombol-utama {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl bg-sekolah-teal px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sekolah-teal-dark focus:outline-none focus:ring-2 focus:ring-sekolah-teal focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .tombol-garis {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-sekolah-teal hover:text-sekolah-teal focus:outline-none focus:ring-2 focus:ring-sekolah-teal focus:ring-offset-2;
+    }
+
+    .tautan-nav {
+        @apply rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-sekolah-teal/5 hover:text-sekolah-teal;
+    }
+
+    .tautan-nav-aktif {
+        @apply bg-sekolah-teal/10 text-sekolah-teal;
+    }
+}

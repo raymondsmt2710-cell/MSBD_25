@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\KelolaPemilihanController;
 use App\Http\Controllers\PortalOrangTuaController;
 use App\Http\Controllers\PresensiGuruController;
@@ -9,19 +10,8 @@ use App\Http\Controllers\SiswaPemilihanController;
 use App\Support\PolaRute;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    if (! auth()->check()) {
-        return redirect()->route('login');
-    }
-
-    // Cabang orang_tua ditambahkan agar portal pemantauan bisa dicapai dari halaman
-    // depan; tanpa ini akun orang tua dilempar ke halaman kelola pemilihan (403).
-    return redirect()->to(match (auth()->user()->role) {
-        'siswa'     => route('siswa.pemilihan.index'),
-        'orang_tua' => route('ortu.index'),
-        default     => route('kelola.pemilihan.index'),
-    });
-})->name('beranda');
+// Halaman awal untuk tamu. Pengguna yang sudah login langsung diarahkan sesuai peran.
+Route::get('/', [BerandaController::class, 'index'])->name('beranda');
 
 
 Route::get('/login', [AuthController::class, 'form'])->name('login')->middleware('guest');

@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\KelolaPemilihanController;
+use App\Http\Controllers\KelolaPerangkatController;
+use App\Http\Controllers\PerangkatController;
 use App\Http\Controllers\PresensiGuruController;
 use App\Http\Controllers\PresensiSiswaController;
 use App\Http\Controllers\SiswaPemilihanController;
@@ -66,4 +68,21 @@ Route::middleware(['auth', 'role:admin,guru'])->prefix('kelola/pemilihan')->name
     Route::post('/{id}/kembalikan', [KelolaPemilihanController::class, 'kembalikan'])->name('kembalikan');
 
     Route::get('/{id}/log', [KelolaPemilihanController::class, 'log'])->name('log');
+});
+
+// ---- Fitur 5: Perangkat organisasi & kelas ----
+// Lihat: siswa, guru, admin. Orang tua sengaja tidak diberi akses.
+Route::middleware(['auth', 'role:siswa,guru,admin'])->prefix('perangkat')->name('perangkat.')->group(function () {
+    Route::get('/', [PerangkatController::class, 'index'])->name('index');
+    Route::get('/kelas/{id}', [PerangkatController::class, 'kelas'])->whereNumber('id')->name('kelas');
+    Route::get('/organisasi/{id}', [PerangkatController::class, 'organisasi'])->whereNumber('id')->name('organisasi');
+});
+
+// Kelola: admin (semua) dan guru (kelas yang dibimbing / organisasi yang dibina).
+Route::middleware(['auth', 'role:guru,admin'])->prefix('kelola/perangkat')->name('perangkat.kelola.')->group(function () {
+    Route::get('/', [KelolaPerangkatController::class, 'index'])->name('index');
+    Route::get('/kelas/{id}', [KelolaPerangkatController::class, 'kelas'])->whereNumber('id')->name('kelas');
+    Route::post('/kelas/{id}', [KelolaPerangkatController::class, 'simpanKelas'])->whereNumber('id')->name('kelas.simpan');
+    Route::get('/organisasi/{id}', [KelolaPerangkatController::class, 'organisasi'])->whereNumber('id')->name('organisasi');
+    Route::post('/organisasi/{id}', [KelolaPerangkatController::class, 'simpanOrganisasi'])->whereNumber('id')->name('organisasi.simpan');
 });

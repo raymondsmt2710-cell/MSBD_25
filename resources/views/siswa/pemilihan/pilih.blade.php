@@ -42,10 +42,6 @@
     @endforeach
 </div>
 
-<div class="kartu" style="margin-top:16px">
-    <a class="btn garis" href="{{ route('siswa.pemilihan.index') }}">Kembali</a>
-</div>
-
 {{-- Modal konfirmasi: satu-satunya jalan mengirim suara. --}}
 <div class="modal-latar" id="modal-konfirmasi">
     <div class="modal">

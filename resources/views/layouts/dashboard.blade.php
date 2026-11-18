@@ -20,7 +20,7 @@
 
         /* ---------- Navigasi ---------- */
         header.nav{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #eef0f2;box-shadow:0 1px 2px rgba(16,24,40,.04)}
-        .nav-inner{max-width:1120px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+        .nav-inner{max-width:1120px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative}
         .brand{display:flex;align-items:center;gap:10px}
         .brand .logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#043d44,#09656F);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
         .brand .nama{font-size:13px;font-weight:800;color:#09656F;line-height:1.1}
@@ -31,6 +31,19 @@
         .nav-links a.aktif{background:rgba(9,101,111,.08);color:#09656F;font-weight:700}
         .nav-aksi{display:flex;align-items:center;gap:8px}
         .nav-pengguna{font-size:12px;color:#6b7280}
+        /* Tombol profil versi desktop. .nav-profil di bawah hanya tampil di ponsel,
+           jadi tanpa ini halaman /akun tidak bisa dijangkau dari desktop.
+           Diletakkan DI DALAM .nav-aksi supaya posisi nav-links tidak bergeser. */
+        .nav-profil-dalam{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:999px;background:rgba(9,101,111,.08);color:#09656F;flex-shrink:0;transition:background .15s}
+        .nav-profil-dalam:hover{background:rgba(9,101,111,.16)}
+
+        /* ---------- Menu ponsel (hamburger, tanpa JavaScript) ----------
+           <details> menangani buka-tutup sendiri, jadi tidak ada JS yang bisa gagal.
+           Di desktop ketiga elemen ini disembunyikan dan nav-links yang dipakai. */
+        .nav-drawer{display:none}
+        .nav-hamburger{display:none}
+        .nav-profil{display:none}
+        .drawer-panel{display:none}
 
         /* ---------- Tombol ---------- */
         .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:#09656F;color:#fff;border:0;border-radius:11px;padding:9px 16px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;transition:background .15s}
@@ -51,13 +64,26 @@
         .hero p{font-size:clamp(13px,1.6vw,15px);color:rgba(255,255,255,.82);line-height:1.7}
         .hero p .pemisah{opacity:.45;margin:0 8px}
 
-        /* ---------- Kartu statistik ---------- */
+        /* ---------- Kartu statistik ----------
+           Ponsel: satu baris mendatar yang bisa digeser (tidak pernah turun ke
+           baris kedua). Desktop: kembali jadi grid seperti semula. */
         .statistik{max-width:1120px;margin:-52px auto 0;padding:0 16px;position:relative;z-index:2}
-        .statistik-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
-        .stat-kartu{background:#fff;border:1px solid #eef0f2;border-radius:16px;padding:18px 14px;text-align:center;box-shadow:0 6px 18px rgba(16,24,40,.08)}
+        /* overflow-x:auto membuat overflow-y ikut auto, sehingga bayangan kartu
+           terpotong. Padding atas/bawah memberi ruang agar bayangan tetap utuh. */
+        .statistik-grid{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 20px;-webkit-overflow-scrolling:touch}
+        /* 120px, bukan 112px: dengan padding 14px per sisi, 112px hanya menyisakan
+           82px untuk angka, sedangkan "100.00%" butuh lebih dari itu. */
+        .stat-kartu{flex:0 0 120px;scroll-snap-align:start;background:#fff;border:1px solid #eef0f2;border-radius:16px;padding:18px 14px;text-align:center;box-shadow:0 6px 18px rgba(16,24,40,.08)}
         .stat-kartu .ikon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;background:rgba(9,101,111,.1);color:#09656F}
-        .stat-kartu .angka{font-size:26px;font-weight:800;line-height:1.1;color:#09656F}
+        /* nowrap: tanpa ini tanda "%" turun ke baris kedua pada angka terpanjang. */
+        .stat-kartu .angka{font-size:22px;font-weight:800;line-height:1.1;color:#09656F;white-space:nowrap}
         .stat-kartu .label{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#9ca3af;font-weight:700;margin-top:4px}
+        /* auto-fit, bukan repeat(5,1fr): dashboard guru hanya punya 4 kartu. */
+        @media(min-width:641px){
+            .statistik-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));overflow:visible;padding:0}
+            .stat-kartu{flex:none}
+            .stat-kartu .angka{font-size:26px}
+        }
 
         /* ---------- Bagian umum ---------- */
         section{padding:44px 16px}
@@ -67,13 +93,12 @@
         .judul-bagian h2{font-size:clamp(19px,2.6vw,26px);font-weight:800;color:#111827;letter-spacing:-.01em}
         .judul-bagian p{font-size:13px;color:#6b7280;margin-top:6px;line-height:1.7}
 
-        /* ---------- Kartu ikon ---------- */
-        .ikon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
-        .ikon-kartu{display:block;background:#fff;border:1px solid #eef0f2;border-radius:16px;padding:18px;transition:transform .18s,box-shadow .18s,border-color .18s}
-        .ikon-kartu:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(16,24,40,.09);border-color:rgba(9,101,111,.2)}
-        .ikon-kartu .ikon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;background:rgba(9,101,111,.08);color:#09656F}
-        .ikon-kartu h3{font-size:14px;font-weight:700;color:#111827;margin-bottom:6px}
-        .ikon-kartu p{font-size:12px;color:#6b7280;line-height:1.65}
+        /* ---------- Tombol kembali ----------
+           Dipakai semua layout. Di dashboard .kembali-wrap butuh lebar maksimum
+           sendiri karena isi halaman berada langsung di dalam body. */
+        .kembali-wrap{max-width:1120px;margin:0 auto;padding:16px 16px 0}
+        .tombol-kembali{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(9,101,111,.07);color:#09656F;font-size:12px;font-weight:600;transition:background .15s}
+        .tombol-kembali:hover{background:rgba(9,101,111,.14)}
 
         /* ---------- Kartu data ---------- */
         .kartu{background:#fff;border:1px solid #eef0f2;border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
@@ -98,6 +123,18 @@
         .aksi-tombol{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
         .status-pil{display:inline-block;background:rgba(201,122,20,.12);color:#C97A14;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;text-transform:capitalize}
 
+        /* ---------- Form ---------- */
+        .form-baris{margin-bottom:16px}
+        .form-label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#6b7280;margin-bottom:6px}
+        .form-input{width:100%;border:1px solid #e5e7eb;border-radius:11px;padding:10px 12px;font-size:14px;font-family:inherit;color:#1f2937;background:#fff;transition:border-color .15s,box-shadow .15s}
+        .form-input:focus{outline:0;border-color:#09656F;box-shadow:0 0 0 3px rgba(9,101,111,.12)}
+        .form-input-salah{border-color:#dc2626}
+        .form-error{font-size:12px;color:#dc2626;margin-top:5px}
+        .form-aksi{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+        .notif{border-radius:12px;padding:11px 14px;font-size:13px;margin-bottom:16px;border:1px solid transparent}
+        .notif-sukses{background:rgba(9,101,111,.08);border-color:rgba(9,101,111,.2);color:#09656F;font-weight:600}
+        .notif-gagal{background:rgba(220,38,38,.07);border-color:rgba(220,38,38,.22);color:#b91c1c;font-weight:600}
+
         /* ---------- Footer ---------- */
         footer{background:#111827;color:#9ca3af;padding:34px 16px 26px;font-size:12px;margin-top:20px}
         .footer-inner{max-width:1120px;margin:0 auto;display:flex;justify-content:space-between;gap:22px;flex-wrap:wrap}
@@ -107,9 +144,43 @@
         .footer-kolom p{line-height:1.8}
         .footer-bawah{max-width:1120px;margin:26px auto 0;padding-top:18px;border-top:1px solid rgba(255,255,255,.08);text-align:center;font-size:11px;color:#6b7280}
 
+        @media(max-width:900px){
+            /* Di lebar menengah nav-links masih tampil, tetapi tombol profil +
+               Keluar sudah memakan ruang. Nama pengguna disembunyikan lebih dulu
+               supaya bar tidak membungkus ke dua baris. */
+            .nav-pengguna{display:none}
+        }
+
         @media(max-width:640px){
+            /* Tautan nav digantikan drawer; logo dipusatkan; profil di kanan. */
             .nav-links{display:none}
             .nav-pengguna{display:none}
+            .nav-aksi{display:none}
+            .nav-drawer{display:block}
+            .nav-hamburger{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;background:#f3f4f6;color:#09656F;cursor:pointer;list-style:none;flex-shrink:0}
+            .nav-hamburger::-webkit-details-marker{display:none}
+            .nav-hamburger::marker{content:''}
+            .nav-profil{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:999px;background:rgba(9,101,111,.08);color:#09656F;flex-shrink:0}
+            .brand{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);gap:8px}
+            .brand .sub{display:none}
+            /* Panel membentang selebar bar, di bawahnya, bukan menempel di tombol. */
+            .drawer-panel{display:block;position:absolute;left:0;right:0;top:100%;background:#fff;border-top:1px solid #eef0f2;box-shadow:0 14px 26px rgba(16,24,40,.14);padding:14px 16px 18px;z-index:60}
+            /* Batasi tinggi: pada layar pendek (320x568) empat kartu tetap bisa
+               digulir, tidak terpotong di luar viewport. */
+            .drawer-panel{max-height:calc(100vh - 64px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+            .drawer-kepala{display:flex;align-items:center;gap:9px;padding-bottom:11px;margin-bottom:11px;border-bottom:1px solid #eef0f2}
+            .drawer-kepala .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#043d44,#09656F);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;flex-shrink:0}
+            .drawer-kepala .nama{font-size:13px;font-weight:800;color:#09656F;line-height:1.1}
+            .drawer-kepala .sub{font-size:10px;color:#9ca3af;line-height:1.2}
+            /* Kartu ringkas bertumpuk ke bawah: satu baris per tujuan, bukan grid.
+               Tanpa baris keterangan, jadi tingginya cukup satu baris. */
+            .drawer-menu{display:flex;flex-direction:column;gap:6px}
+            .drawer-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #eef0f2;border-radius:10px;background:#fff;transition:background .15s,border-color .15s}
+            .drawer-item:active{background:rgba(9,101,111,.05);border-color:rgba(9,101,111,.2)}
+            .drawer-item .ikon{width:26px;height:26px;border-radius:8px;background:rgba(9,101,111,.09);color:#09656F;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+            .drawer-item .judul{font-size:12.5px;font-weight:700;color:#111827;line-height:1.2}
+            /* Halaman /akun: dua kolom masih terbaca, satu kolom di ponsel sempit. */
+            .data-grid{grid-template-columns:1fr}
             .hero{padding:40px 16px 72px}
             .statistik{margin-top:-42px}
             section{padding:32px 16px}
@@ -129,6 +200,26 @@
 
 <header class="nav">
     <div class="nav-inner">
+        {{-- Kiri (ponsel saja): hamburger. Isinya section menu-cepat milik tiap
+             peran, sehingga tidak pernah ada tombol yang membuka panel kosong. --}}
+        @hasSection('menu-cepat')
+            <details class="nav-drawer">
+                <summary class="nav-hamburger" aria-label="Buka menu cepat">
+                    <x-ikon nama="list" ukuran="20" />
+                </summary>
+                <div class="drawer-panel">
+                    <div class="drawer-kepala">
+                        <div class="logo">SM</div>
+                        <div>
+                            <div class="nama">SI-SMANSAKA</div>
+                            <div class="sub">SMA Negeri 1 Kabanjahe</div>
+                        </div>
+                    </div>
+                    @yield('menu-cepat')
+                </div>
+            </details>
+        @endif
+
         <a href="@yield('brand-href', url('/'))" class="brand">
             <div class="logo">SM</div>
             <div>
@@ -139,17 +230,21 @@
 
         @yield('nav')
 
+        {{-- Kanan (ponsel saja): tombol profil menuju halaman ganti sandi. --}}
+        <a href="{{ route('akun.profil') }}" class="nav-profil" aria-label="Profil dan ganti password">
+            <x-ikon nama="person-circle" ukuran="22" />
+        </a>
+
         <div class="nav-aksi">
             <span class="nav-pengguna">{{ auth()->user()->username ?? '' }}</span>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button class="btn garis" type="submit">
-                    <x-ikon nama="box-arrow-in-right" ukuran="15" /> Keluar
-                </button>
-            </form>
+            <a href="{{ route('akun.profil') }}" class="nav-profil-dalam" aria-label="Profil dan ganti password">
+                <x-ikon nama="person-circle" ukuran="20" />
+            </a>
         </div>
     </div>
 </header>
+
+<x-tombol-kembali />
 
 @yield('isi')
 

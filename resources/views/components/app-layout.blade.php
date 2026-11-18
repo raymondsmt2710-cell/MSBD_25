@@ -73,6 +73,9 @@
         .nav-aksi .btn-keluar{background:#6b7280;color:#fff;border:0;border-radius:10px;padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit}
         .nav-aksi .btn-keluar:hover{background:#4b5563}
         .isi-layout{max-width:1120px;margin:0 auto;padding:22px 16px 60px}
+        .kembali-wrap{margin-bottom:14px}
+        .tombol-kembali{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(9,101,111,.07);color:#09656F;font-size:12px;font-weight:600;transition:background .15s}
+        .tombol-kembali:hover{background:rgba(9,101,111,.14)}
         @media(max-width:640px){
             .nav-links{display:none}
         }
@@ -109,10 +112,6 @@
         <div class="nav-aksi">
             @auth
                 <span class="pill">{{ $pengguna->username }} · {{ $peran }}</span>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button class="btn-keluar" type="submit">Keluar</button>
-                </form>
             @else
                 <a class="btn-keluar" href="{{ route('login') }}">Masuk</a>
             @endauth
@@ -121,6 +120,8 @@
 </header>
 
 <main class="isi-layout">
+    <x-tombol-kembali />
+
     @if (session('success'))<div class="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('success') }}</div>@endif
     @if (session('error'))<div class="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-800">{{ session('error') }}</div>@endif
     @if ($errors->any())

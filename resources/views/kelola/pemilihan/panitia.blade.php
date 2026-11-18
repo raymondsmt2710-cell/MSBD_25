@@ -8,7 +8,6 @@
         <h1>Panitia Pemilihan</h1>
         <p class="subjudul">{{ $pemilihan->judul }} — hanya admin yang dapat mengubah daftar panitia.</p>
     </div>
-    <a class="btn garis" href="{{ route('kelola.pemilihan.monitor', $id) }}">Kembali ke Monitor</a>
 </div>
 
 @if (! $draf)

@@ -62,17 +62,65 @@ class DashboardSiswaTest extends TestCase
             ->assertSee('20260099');
     }
 
-    public function test_dashboard_memuat_empat_tautan_ikon(): void
+    public function test_dashboard_tidak_lagi_memuat_menu_cepat(): void
     {
+        // Menu Cepat kini hanya hidup di dalam drawer. Merendernya juga di halaman
+        // berarti isi yang sama dua kali dan dashboard jadi panjang di ponsel.
         $user = $this->buatSiswa();
 
         $this->actingAs($user)
             ->get(route('siswa.beranda'))
             ->assertOk()
-            ->assertSee(route('dashboard.presensi.riwayat').'#ringkasan', false)
-            ->assertSee(route('dashboard.presensi.riwayat').'#roster', false)
-            ->assertSee(route('siswa.perangkat'), false)
-            ->assertSee(route('siswa.pemilihan.index'), false);
+            ->assertDontSee('Mau ke mana?')
+            ->assertDontSee('Empat pintu masuk ke fitur');
+    }
+
+    public function test_data_diri_tidak_lagi_di_dashboard(): void
+    {
+        // Data Diri pindah ke /akun.
+        $user = $this->buatSiswa();
+
+        $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->assertDontSee('Profil Siswa');
+    }
+
+    public function test_drawer_tanpa_baris_keterangan(): void
+    {
+        // Kartu drawer setinggi satu baris: ikon + judul, tanpa keterangan.
+        $user = $this->buatSiswa();
+
+        $html = $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->getContent();
+
+        $panel = $this->panelDrawer($html);
+
+        $this->assertStringNotContainsString('class="ket"', $panel);
+        $this->assertStringNotContainsString('Ringkasan kehadiran', $panel);
+        $this->assertStringNotContainsString('Jadwal pelajaran pekan ini', $panel);
+        $this->assertStringContainsString('Presensi', $panel);
+        $this->assertStringContainsString('Perangkat Kelas', $panel);
+    }
+
+    public function test_drawer_memuat_empat_tujuan(): void
+    {
+        $user = $this->buatSiswa();
+
+        $html = $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->getContent();
+
+        $panel = $this->panelDrawer($html);
+        $this->assertNotSame('', $panel, 'Panel drawer tidak ditemukan.');
+
+        $this->assertStringContainsString(route('dashboard.presensi.riwayat').'#ringkasan', $panel);
+        $this->assertStringContainsString(route('dashboard.presensi.riwayat').'#roster', $panel);
+        $this->assertStringContainsString(route('siswa.perangkat'), $panel);
+        $this->assertStringContainsString(route('siswa.pemilihan.index'), $panel);
     }
 
     public function test_tamu_tidak_bisa_buka_dashboard_siswa(): void
@@ -92,6 +140,82 @@ class DashboardSiswaTest extends TestCase
         $this->actingAs(\App\Models\User::find($idUser))
             ->get(route('siswa.beranda'))
             ->assertForbidden();
+    }
+
+    public function test_kartu_kehadiran_mendatar_dan_bisa_digeser(): void
+    {
+        // Permintaan: kelima kartu dalam satu baris ke samping, tidak turun ke
+        // baris kedua, supaya mudah dilihat di ponsel.
+        $user = $this->buatSiswa();
+
+        $html = $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('scroll-snap-type:x mandatory', $html);
+        $this->assertStringContainsString('overflow-x:auto', $html);
+        // Lebar tetap: tanpa ini kartu menyusut dan angka "100.00%" terpotong.
+        $this->assertStringContainsString('flex:0 0 120px', $html);
+        // Angka terpanjang tidak boleh pecah ke baris kedua.
+        $this->assertStringContainsString('white-space:nowrap', $html);
+        // Desktop harus kembali jadi grid, bukan ikut mendatar.
+        $this->assertStringContainsString('@media(min-width:641px)', $html);
+    }
+
+    public function test_hamburger_membuka_empat_kartu_menu_cepat(): void
+    {
+        $user = $this->buatSiswa();
+
+        $html = $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->getContent();
+
+        // Drawer memakai <details> agar bekerja tanpa JavaScript.
+        $this->assertStringContainsString('<details class="nav-drawer">', $html);
+        $this->assertStringContainsString('<summary class="nav-hamburger"', $html);
+
+        // Panel drawer memuat keempat tujuan Menu Cepat.
+        $panel = $this->panelDrawer($html);
+        $this->assertStringContainsString(route('dashboard.presensi.riwayat'), $panel);
+        $this->assertStringContainsString(route('siswa.perangkat'), $panel);
+        $this->assertStringContainsString(route('siswa.pemilihan.index'), $panel);
+    }
+
+    public function test_tombol_profil_ada_dan_menuju_halaman_akun(): void
+    {
+        $user = $this->buatSiswa();
+
+        $html = $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->assertSee('class="nav-profil"', false)
+            ->assertSee(route('akun.profil'), false)
+            ->getContent();
+
+        // Tombol profil ponsel (.nav-profil) disembunyikan di desktop, jadi harus
+        // ada varian yang tampil di dalam .nav-aksi — kalau tidak, /akun tidak
+        // bisa dijangkau sama sekali dari layar lebar.
+        $this->assertMatchesRegularExpression(
+            '/<div class="nav-aksi">[\s\S]{0,600}?class="nav-profil-dalam"/',
+            $html,
+            'Tombol profil desktop (.nav-profil-dalam) tidak ada di dalam .nav-aksi.'
+        );
+    }
+
+    /** Isi elemen .drawer-panel, dipakai untuk memeriksa isi hamburger. */
+    private function panelDrawer(string $html): string
+    {
+        $mulai = strpos($html, '<div class="drawer-panel">');
+
+        if ($mulai === false) {
+            return '';
+        }
+
+        $akhir = strpos($html, '</details>', $mulai);
+
+        return $akhir === false ? '' : substr($html, $mulai, $akhir - $mulai);
     }
 
     public function test_dashboard_memakai_gaya_beranda(): void
@@ -139,6 +263,7 @@ class DashboardSiswaTest extends TestCase
     public function test_alamat_panjang_dan_khusus_ter_escape(): void
     {
         // Review Focus #5: alamat berisi karakter HTML tidak boleh dieksekusi.
+        // Alamat kini tampil di halaman /akun (data diri pindah dari dashboard).
         $user = $this->buatSiswa('Uji Escape', '20260097');
 
         DB::table('siswa')->where('id_user', $user->id_user)->update([
@@ -146,7 +271,7 @@ class DashboardSiswaTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get(route('siswa.beranda'))
+            ->get(route('akun.profil'))
             ->assertOk()
             ->assertDontSee('<script>alert(1)</script>', false)
             ->assertSee('&lt;script&gt;', false);

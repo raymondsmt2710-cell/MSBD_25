@@ -8,7 +8,6 @@
         <h1>Log Pemilihan</h1>
         <p class="subjudul">{{ $pemilihan->judul }}</p>
     </div>
-    <a class="btn garis" href="{{ route('kelola.pemilihan.monitor', $id) }}">Kembali ke Monitor</a>
 </div>
 
 <div class="kartu">

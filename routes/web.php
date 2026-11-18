@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\Role;
+use App\Http\Controllers\AkunController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\DashboardGuruController;
@@ -41,6 +42,12 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa/presensi')->name('siswa
     Route::get('/riwayat', [PresensiSiswaController::class, 'riwayat'])->name('riwayat');
     Route::get('/scan/{kode}', [PresensiSiswaController::class, 'konfirmasi'])->name('konfirmasi');
     Route::post('/scan/{kode}', [PresensiSiswaController::class, 'scan'])->name('scan')->middleware('throttle:10,1');
+});
+
+// ---- Akun sendiri: ganti sandi & keluar (semua peran yang login) ----
+Route::middleware('auth')->prefix('akun')->name('akun.')->group(function () {
+    Route::get('/', [AkunController::class, 'profil'])->name('profil');
+    Route::put('/sandi', [AkunController::class, 'ubahSandi'])->name('sandi.simpan');
 });
 
 // ---- Dashboard siswa & guru (hanya-baca) ----

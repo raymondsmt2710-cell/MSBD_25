@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\StatusIuran;
+use App\Models\IuranKas;
 use App\Models\TahunAjaran;
 use App\Models\TransaksiKas;
 use Illuminate\Http\Request;
@@ -76,15 +78,31 @@ class KasController extends AdminController
             'alasan_batal' => ['required', 'string', 'min:5', 'max:255'],
         ], ['alasan_batal.required' => 'Alasan pembatalan wajib diisi untuk keperluan audit.']);
 
-        // Update bersyarat: dua admin yang membatalkan bersamaan tidak saling menimpa jejak audit.
-        $berubah = TransaksiKas::whereKey($transaksi->id_transaksi)
-            ->where('is_batal', false)
-            ->update([
-                'is_batal' => true,
-                'dibatalkan_oleh' => $request->user()->id_user,
-                'dibatalkan_pada' => now(),
-                'alasan_batal' => $data['alasan_batal'],
-            ]);
+        $berubah = DB::transaction(function () use ($request, $transaksi, $data) {
+            // Update bersyarat: dua admin yang membatalkan bersamaan tidak saling menimpa jejak audit.
+            $berubah = TransaksiKas::whereKey($transaksi->id_transaksi)
+                ->where('is_batal', false)
+                ->update([
+                    'is_batal' => true,
+                    'dibatalkan_oleh' => $request->user()->id_user,
+                    'dibatalkan_pada' => now(),
+                    'alasan_batal' => $data['alasan_batal'],
+                ]);
+
+            // Transaksi hasil verifikasi iuran: kembalikan iurannya ke "belum bayar",
+            // sama seperti pembatalan oleh bendahara. Tanpa ini siswa tetap tampil lunas
+            // di matriks padahal uangnya tidak lagi dihitung dalam saldo.
+            if ($berubah) {
+                IuranKas::where('id_transaksi', $transaksi->id_transaksi)->update([
+                    'status' => StatusIuran::BelumBayar->value,
+                    'id_transaksi' => null,
+                    'diverifikasi_oleh' => null,
+                    'diverifikasi_pada' => null,
+                ]);
+            }
+
+            return $berubah;
+        });
 
         return $berubah
             ? back()->with('success', 'Transaksi dibatalkan dan tidak lagi dihitung dalam saldo kelas.')

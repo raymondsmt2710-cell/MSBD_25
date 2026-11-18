@@ -119,11 +119,14 @@ class IuranKasController extends Controller
         );
 
         DB::transaction(function () use ($request, $iuran) {
-            if ($iuran->transaksi) {
+            // Lewati bila transaksinya sudah dibatalkan (mis. oleh admin) agar
+            // siapa/kapan/alasan pembatalan pertama tidak tertimpa.
+            if ($iuran->transaksi && ! $iuran->transaksi->is_batal) {
                 $iuran->transaksi->update([
                     'is_batal' => true,
                     'alasan_batal' => 'Pembatalan verifikasi iuran',
                     'dibatalkan_oleh' => $request->user()->id_user,
+                    'dibatalkan_pada' => now(),
                 ]);
             }
 

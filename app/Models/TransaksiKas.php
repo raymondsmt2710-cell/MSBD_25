@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 #[Table('transaksi_kas', key: 'id_transaksi')]
 #[Fillable([
     'id_kelas', 'jenis', 'kategori', 'nominal', 'tanggal', 'keterangan',
-    'id_siswa', 'bukti_url', 'dicatat_oleh', 'is_batal', 'alasan_batal', 'dibatalkan_oleh',
+    'id_siswa', 'bukti_url', 'dicatat_oleh', 'is_batal', 'alasan_batal', 'dibatalkan_oleh', 'dibatalkan_pada',
 ])]
 class TransaksiKas extends Model
 {
@@ -23,6 +23,7 @@ class TransaksiKas extends Model
             'tanggal' => 'date',
             'nominal' => 'decimal:2',
             'is_batal' => 'boolean',
+            'dibatalkan_pada' => 'datetime',
             'jenis' => JenisKas::class,
         ];
     }

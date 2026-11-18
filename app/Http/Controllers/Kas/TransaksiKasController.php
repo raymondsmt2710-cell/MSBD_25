@@ -72,6 +72,7 @@ class TransaksiKasController extends Controller
                 'is_batal' => true,
                 'alasan_batal' => $request->string('alasan_batal')->toString(),
                 'dibatalkan_oleh' => $request->user()->id_user,
+                'dibatalkan_pada' => now(),
             ]);
 
             if ($iuran = $transaksi->iuran) {

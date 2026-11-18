@@ -9,6 +9,7 @@ use App\Policies\PemilihanPolicy;
 use App\Policies\PerangkatPolicy;
 use App\Support\Akses;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,6 +21,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Paksa URL absolut memakai APP_URL. Tanpa ini, route() memakai alamat yang
+        // sedang dibuka di peramban guru, sehingga QR yang dihasilkan bisa berisi
+        // "localhost" dan tidak dapat dibuka dari ponsel siswa.
+        if ($appUrl = config('app.url')) {
+            URL::forceRootUrl($appUrl);
+        }
+
         // Otorisasi terpusat (lihat docs/superpowers/specs/2026-11-16-kas-dan-denah-design.md).
         Gate::define('kas.lihat', fn (User $user, Kelas $kelas) => app(Akses::class)->bisaLihatKelas($user, $kelas));
         Gate::define('kas.kelola', fn (User $user, Kelas $kelas) => app(Akses::class)->bisaKelolaKas($user, $kelas));

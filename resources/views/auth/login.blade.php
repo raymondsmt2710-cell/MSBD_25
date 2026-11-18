@@ -130,7 +130,9 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('login.proses') }}" id="form-masuk">
+            {{-- autocomplete="off" pada form + "new-password" pada sandi: minta browser
+                 tidak mengisi otomatis kredensial yang tersimpan. --}}
+            <form method="POST" action="{{ route('login.proses') }}" id="form-masuk" autocomplete="off">
                 @csrf
 
                 <div class="grup">
@@ -138,7 +140,8 @@
                     <div class="input-wrap">
                         <span class="ikon"><x-ikon nama="person" ukuran="15" /></span>
                         <input id="username" name="username" value="{{ old('username') }}"
-                               placeholder="Masukkan username" autocomplete="username"
+                               placeholder="Masukkan username" autocomplete="off"
+                               autocapitalize="none" spellcheck="false"
                                autofocus required>
                     </div>
                 </div>
@@ -148,7 +151,7 @@
                     <div class="input-wrap">
                         <span class="ikon"><x-ikon nama="lock" ukuran="15" /></span>
                         <input id="password" type="password" name="password"
-                               placeholder="Masukkan password" autocomplete="current-password"
+                               placeholder="Masukkan password" autocomplete="new-password"
                                required>
                         <button class="tombol-mata" type="button" id="lihat"
                                 aria-label="Tampilkan password"><x-ikon nama="eye" ukuran="15" /></button>

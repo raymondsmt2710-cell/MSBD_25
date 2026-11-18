@@ -26,12 +26,17 @@ class KelolaPerangkatController extends Controller
         $policy = new \App\Policies\PerangkatPolicy;
         $user = Auth::user();
 
+        // User::$role di-cast ke App\Enums\Role, jadi harus dinormalkan dulu
+        // sebelum dibandingkan dengan string.
+        $peran = $user->role instanceof \App\Enums\Role ? $user->role->value : (string) $user->role;
+        $bukanAdmin = $peran !== \App\Enums\Role::Admin->value;
+
         $idKelas = $policy->kelasYangBoleh($user);
         $idOrganisasi = $policy->organisasiYangBoleh($user);
 
         $kelas = DB::table('kelas as k')
             ->leftJoin('guru as g', 'g.id_guru', '=', 'k.id_wali_kelas')
-            ->when($user->role !== 'admin', fn ($q) => $q->whereIn('k.id_kelas', $idKelas))
+            ->when($bukanAdmin, fn ($q) => $q->whereIn('k.id_kelas', $idKelas))
             ->orderBy('k.tingkat')->orderBy('k.nama_kelas')
             ->select('k.id_kelas', 'k.nama_kelas', 'k.tingkat', 'g.nama_guru as wali_kelas',
                 DB::raw('(SELECT COUNT(*) FROM pengurus_kelas pk WHERE pk.id_kelas = k.id_kelas) as jumlah_pengurus'))
@@ -39,7 +44,7 @@ class KelolaPerangkatController extends Controller
 
         $organisasi = DB::table('organisasi as o')
             ->leftJoin('guru as g', 'g.id_guru', '=', 'o.id_pembina')
-            ->when($user->role !== 'admin', fn ($q) => $q->whereIn('o.id_organisasi', $idOrganisasi))
+            ->when($bukanAdmin, fn ($q) => $q->whereIn('o.id_organisasi', $idOrganisasi))
             ->orderBy('o.nama_organisasi')
             ->select('o.id_organisasi', 'o.nama_organisasi', 'o.singkatan', 'g.nama_guru as pembina',
                 DB::raw('(SELECT COUNT(*) FROM pengurus_organisasi po WHERE po.id_organisasi = o.id_organisasi) as jumlah_pengurus'))

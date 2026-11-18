@@ -1,6 +1,9 @@
 *.log
 .DS_Store
 .env
+# Semua .env.* diabaikan (berisi kredensial), kecuali contohnya.
+.env.*
+!.env.example
 .env.backup
 .env.production
 .phpactor.json
@@ -28,6 +31,7 @@ Thumbs.db
 AGENTS.md
 CLAUDE.md
 /materi
+/docs
 /fiturAbsen
 /.superpowers
 /docs/superpowers

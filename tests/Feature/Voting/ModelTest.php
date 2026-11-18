@@ -12,6 +12,12 @@ class ModelTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_model_memanggil_stored_function(): void
     {
         $d = $this->seedPemilihanBerlangsung();

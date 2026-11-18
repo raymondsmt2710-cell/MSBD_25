@@ -17,7 +17,7 @@
     <div class="aksi-baris">
         <a class="btn garis" href="{{ route('kelola.pemilihan.kandidat', $id) }}">Kandidat</a>
         <a class="btn garis" href="{{ route('kelola.pemilihan.pemilih', $id) }}">Pemilih</a>
-        @if (auth()->user()->role === 'admin')
+        @if ((auth()->user()->role?->value ?? auth()->user()->role) === 'admin')
             <a class="btn garis" href="{{ route('kelola.pemilihan.panitia', $id) }}">Panitia</a>
         @endif
         <a class="btn garis" href="{{ route('kelola.pemilihan.log', $id) }}">Log</a>

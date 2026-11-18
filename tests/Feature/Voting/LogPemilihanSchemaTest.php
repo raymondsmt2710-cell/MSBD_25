@@ -12,6 +12,12 @@ class LogPemilihanSchemaTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_tabel_log_pemilihan_punya_kolom_yang_dibutuhkan(): void
     {
         $this->assertTrue(Schema::hasTable('log_pemilihan'));

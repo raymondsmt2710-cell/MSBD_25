@@ -23,11 +23,19 @@
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
-        <!-- Fitur pemilihan bergantung pada Stored Procedure, View, dan Trigger MySQL,
-             sehingga test memakai MySQL, bukan sqlite. Database uji TERPISAH dari
-             database aplikasi (msbd_25) agar data praktikum tidak tersentuh. -->
+        <!-- Fitur pemilihan & perangkat bergantung pada Stored Procedure, View, Function,
+             dan Trigger MySQL. Test-nya memakai DatabaseTruncation, yang TIDAK kompatibel
+             dengan sqlite :memory: (setiap test membuat koneksi baru sehingga skema hilang).
+             Karena itu default test memakai MySQL, dengan database uji TERPISAH dari
+             database aplikasi (msbd_25) agar data praktikum tidak tersentuh.
+             VotingTestSupport tetap men-skip otomatis bila MySQL tidak tersedia. -->
         <env name="DB_CONNECTION" value="mysql"/>
         <env name="DB_DATABASE" value="msbd_25_test"/>
+        <env name="DB_USERNAME" value="root"/>
+        <env name="DB_PASSWORD" value=""/>
+        <env name="DB_URL" value=""/>
+        <env name="DB_TEST_MYSQL_CONNECTION" value="mysql"/>
+        <env name="DB_TEST_MYSQL_DATABASE" value="msbd_25_test"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

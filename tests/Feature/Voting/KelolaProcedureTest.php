@@ -11,6 +11,12 @@ class KelolaProcedureTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     private function panggil(string $proc, array $params): string
     {
         DB::statement("CALL {$proc}(".implode(',', array_fill(0, count($params), '?')).',@s)', $params);

@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -14,23 +15,33 @@ use Illuminate\Support\Facades\DB;
  *                  menjadi pembinanya;
  *  - siswa       : hanya melihat;
  *  - orang_tua   : tidak punya akses sama sekali ke fitur ini.
+ *
+ * Catatan penting: User::$role di-cast menjadi App\Enums\Role, sehingga
+ * perbandingan dengan string biasa ("admin") selalu bernilai false.
+ * Semua pemeriksaan di bawah memakai peran() yang menormalkan enum ke string.
  */
 class PerangkatPolicy
 {
+    /** Peran pengguna sebagai string ('admin', 'guru', 'siswa', 'orang_tua'). */
+    private function peran(User $user): string
+    {
+        return $user->role instanceof Role ? $user->role->value : (string) $user->role;
+    }
+
     /** Melihat daftar kelas & organisasi beserta pengurusnya. */
     public function lihat(User $user): bool
     {
-        return in_array($user->role, ['admin', 'guru', 'siswa'], true);
+        return in_array($this->peran($user), ['admin', 'guru', 'siswa'], true);
     }
 
     /** Boleh membuka halaman kelola (daftar yang bisa dikelola). */
     public function kelola(User $user): bool
     {
-        if ($user->role === 'admin') {
+        if ($this->peran($user) === Role::Admin->value) {
             return true;
         }
 
-        if ($user->role !== 'guru') {
+        if ($this->peran($user) !== Role::Guru->value) {
             return false;
         }
 
@@ -40,11 +51,11 @@ class PerangkatPolicy
     /** Boleh mengubah susunan pengurus kelas ini? */
     public function kelolaKelas(User $user, int $idKelas): bool
     {
-        if ($user->role === 'admin') {
+        if ($this->peran($user) === Role::Admin->value) {
             return true;
         }
 
-        if ($user->role !== 'guru') {
+        if ($this->peran($user) !== Role::Guru->value) {
             return false;
         }
 
@@ -54,11 +65,11 @@ class PerangkatPolicy
     /** Boleh mengubah susunan pengurus organisasi ini? */
     public function kelolaOrganisasi(User $user, int $idOrganisasi): bool
     {
-        if ($user->role === 'admin') {
+        if ($this->peran($user) === Role::Admin->value) {
             return true;
         }
 
-        if ($user->role !== 'guru') {
+        if ($this->peran($user) !== Role::Guru->value) {
             return false;
         }
 
@@ -68,7 +79,7 @@ class PerangkatPolicy
     /** ID kelas yang menjadi tanggung jawab guru ini (wali kelas). */
     public function kelasYangBoleh(User $user): array
     {
-        if ($user->role !== 'guru') {
+        if ($this->peran($user) !== Role::Guru->value) {
             return [];
         }
 
@@ -85,7 +96,7 @@ class PerangkatPolicy
     /** ID organisasi yang menjadi tanggung jawab guru ini (pembina). */
     public function organisasiYangBoleh(User $user): array
     {
-        if ($user->role !== 'guru') {
+        if ($this->peran($user) !== Role::Guru->value) {
             return [];
         }
 

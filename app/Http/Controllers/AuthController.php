@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -40,12 +41,15 @@ class AuthController extends Controller
         return redirect()->route('login');
     }
 
-    private function beranda(string $role): string
+    private function beranda(Role|string $role): string
     {
+        $role = $role instanceof Role ? $role : Role::tryFrom($role);
+
         return match ($role) {
-            'guru'  => route('guru.presensi.index'),
-            'siswa' => route('siswa.presensi.riwayat'),
-            'admin' => route('kelola.pemilihan.index'),
+            Role::Admin => route('admin.dashboard'),
+            Role::Guru => route('guru.beranda'),
+            Role::Siswa => route('siswa.beranda'),
+            Role::OrangTua => route('ortu.index'),
             default => route('beranda'),
         };
     }

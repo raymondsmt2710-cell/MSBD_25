@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-// Tabel `tahun_ajaran` tidak punya timestamps.
+#[Table('tahun_ajaran', key: 'id_tahun_ajaran', timestamps: false)]
+#[Fillable(['nama', 'tanggal_mulai', 'tanggal_selesai', 'is_aktif'])]
 class TahunAjaran extends Model
 {
-    protected $table = 'tahun_ajaran';
-    protected $primaryKey = 'id_tahun_ajaran';
-    public $timestamps = false;
-    protected $guarded = [];
-
     protected function casts(): array
     {
         return [
@@ -21,6 +20,18 @@ class TahunAjaran extends Model
         ];
     }
 
+    public function kelas(): HasMany
+    {
+        return $this->hasMany(Kelas::class, 'id_tahun_ajaran', 'id_tahun_ajaran');
+    }
+
+    /** Tahun ajaran yang sedang aktif, atau null bila belum ada yang ditandai. */
+    public static function aktif(): ?self
+    {
+        return static::where('is_aktif', true)->first();
+    }
+
+    /** Scope untuk query builder: TahunAjaran::aktif()->first(). */
     public function scopeAktif($query)
     {
         return $query->where('is_aktif', true);

@@ -16,6 +16,12 @@ class KandidatGandaDatabaseTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_insert_langsung_ketua_ganda_ditolak_database(): void
     {
         $d = $this->seedPemilihanDraf();

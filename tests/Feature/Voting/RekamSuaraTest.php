@@ -11,6 +11,12 @@ class RekamSuaraTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     private function rekam(array $d, int $idSiswa, ?int $idKandidat = null): string
     {
         DB::statement('CALL sp_rekam_suara(?,?,?,@status)', [

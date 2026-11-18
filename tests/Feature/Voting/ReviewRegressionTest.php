@@ -16,6 +16,12 @@ class ReviewRegressionTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     // ---------- C1: panitia harus bisa mengakses halaman kelola ----------
 
     public function test_panitia_bisa_membuka_daftar_kelola(): void

@@ -24,18 +24,27 @@
     <strong>E-Learning SMAN 1 Kabanjahe</strong>
     @auth
         <nav style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
-            @if (auth()->user()->role === 'siswa')
-                <a href="{{ route('siswa.presensi.riwayat') }}"
-                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('siswa.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
+            @php
+                // users.role di-cast ke enum Role, jadi bandingkan lewat value-nya.
+                $peranAktif = auth()->user()->role?->value ?? (string) auth()->user()->role;
+            @endphp
+            @if ($peranAktif === 'siswa')
+                <a href="{{ route('dashboard.presensi.index') }}"
+                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('dashboard.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
                     Presensi
                 </a>
                 <a href="{{ route('siswa.pemilihan.index') }}"
                    style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('siswa.pemilihan.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
                     Pemilihan
                 </a>
+            @elseif ($peranAktif === 'orang_tua')
+                <a href="{{ route('ortu.index') }}"
+                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('ortu.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
+                    Portal Orang Tua
+                </a>
             @else
-                <a href="{{ route('guru.presensi.index') }}"
-                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('guru.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
+                <a href="{{ route('dashboard.presensi.index') }}"
+                   style="color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13px;{{ request()->routeIs('dashboard.presensi.*') ? 'background:rgba(255,255,255,.18)' : '' }}">
                     Presensi
                 </a>
                 <a href="{{ route('kelola.pemilihan.index') }}"
@@ -45,7 +54,7 @@
             @endif
         </nav>
         <form method="POST" action="{{ route('logout') }}">@csrf
-            <span>{{ auth()->user()->username }} ({{ auth()->user()->role }})</span>
+            <span>{{ auth()->user()->username }} ({{ $peranAktif }})</span>
             <button class="btn abu" type="submit">Keluar</button>
         </form>
     @endauth

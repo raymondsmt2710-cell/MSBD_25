@@ -15,6 +15,12 @@ class NavigasiTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_tamu_melihat_landing_page_dari_beranda(): void
     {
         $this->get('/')
@@ -32,13 +38,13 @@ class NavigasiTest extends TestCase
             ->assertRedirect(route('siswa.pemilihan.index'));
     }
 
-    public function test_admin_diarahkan_ke_kelola_pemilihan_dari_beranda(): void
+    public function test_admin_diarahkan_ke_panel_admin_dari_beranda(): void
     {
         $d = $this->seedPemilihanDraf();
 
         $this->actingAs($this->userDari($d['id_admin']))
             ->get('/')
-            ->assertRedirect(route('kelola.pemilihan.index'));
+            ->assertRedirect(route('admin.dashboard'));
     }
 
     public function test_route_dashboard_tidak_dipakai_lagi(): void
@@ -46,23 +52,27 @@ class NavigasiTest extends TestCase
         $this->assertFalse(\Illuminate\Support\Facades\Route::has('dashboard'));
     }
 
-    public function test_halaman_presensi_siswa_punya_menu_pemilihan(): void
+    public function test_beranda_siswa_punya_menu_pemilihan(): void
     {
         $d = $this->seedPemilihanBerlangsung();
 
         $this->actingAs($this->userDari($d['id_siswa_user'][0]))
-            ->get(route('siswa.presensi.riwayat'))
+            // Sejak dashboard siswa, menu Pemilihan ada di navigasi beranda siswa,
+            // bukan lagi di layout presensi.
+            ->get(route('siswa.beranda'))
             ->assertOk()
             ->assertSee(route('siswa.pemilihan.index'), false);
     }
 
-    public function test_halaman_presensi_guru_punya_menu_pemilihan(): void
+    public function test_halaman_presensi_guru_tidak_menawarkan_pemilihan(): void
     {
         $d = $this->seedPemilihanDraf();
 
         $this->actingAs($this->userDari($d['id_panitia_user']))
-            ->get(route('guru.presensi.index'))
+            // Sejak dashboard guru, guru (termasuk panitia) sengaja tidak ditawari tautan
+            // pemilihan dari halaman presensi; sejalan dengan DashboardGuruTest.
+            ->get(route('dashboard.presensi.index'))
             ->assertOk()
-            ->assertSee(route('kelola.pemilihan.index'), false);
+            ->assertDontSee(route('kelola.pemilihan.index'), false);
     }
 }

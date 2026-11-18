@@ -19,6 +19,12 @@ class KandidatGandaTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_ketua_yang_sama_tidak_bisa_didaftarkan_dua_kali(): void
     {
         $d = $this->seedPemilihanDraf();

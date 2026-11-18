@@ -1,9 +1,16 @@
 @extends('layouts.pemilihan')
 @section('judul', 'Kelola Perangkat')
 @section('isi')
+@php
+    // User::$role di-cast ke App\Enums\Role, jadi bandingkan lewat ->value.
+    $peranSaya = auth()->user()->role instanceof \App\Enums\Role
+        ? auth()->user()->role->value
+        : (string) auth()->user()->role;
+    $sayaAdmin = $peranSaya === \App\Enums\Role::Admin->value;
+@endphp
 <h1>Kelola Perangkat</h1>
 <p class="subjudul">
-    @if (auth()->user()->role === 'admin')
+    @if ($sayaAdmin)
         Anda dapat mengelola semua kelas dan organisasi.
     @else
         Anda dapat mengelola kelas yang Anda bimbing dan organisasi yang Anda bina.
@@ -16,7 +23,7 @@
     @if ($kelas->isEmpty())
         <div class="kosong">
             Tidak ada kelas yang menjadi tanggung jawab Anda.
-            @if (auth()->user()->role !== 'admin')
+            @if (! $sayaAdmin)
                 Hubungi admin untuk menetapkan Anda sebagai wali kelas.
             @endif
         </div>
@@ -43,7 +50,7 @@
     @if ($organisasi->isEmpty())
         <div class="kosong">
             Tidak ada organisasi yang menjadi tanggung jawab Anda.
-            @if (auth()->user()->role !== 'admin')
+            @if (! $sayaAdmin)
                 Hubungi admin untuk menetapkan Anda sebagai pembina.
             @endif
         </div>

@@ -13,9 +13,19 @@ enum Role: string
     {
         return match ($this) {
             self::Admin => 'admin.dashboard',
-            self::Guru => 'guru.dashboard',
-            self::Siswa => 'siswa.dashboard',
-            self::OrangTua => 'ortu.dashboard',
+            self::Guru => 'guru.beranda',
+            self::Siswa => 'siswa.beranda',
+            self::OrangTua => 'ortu.index',
+        };
+    }
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Admin => 'Administrator',
+            self::Guru => 'Guru',
+            self::Siswa => 'Siswa',
+            self::OrangTua => 'Orang Tua',
         };
     }
 }

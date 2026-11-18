@@ -19,6 +19,12 @@ class PresensiCollationTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_fn_jumlah_presensi_bisa_dipanggil(): void
     {
         $d = $this->seedPemilihanBerlangsung();
@@ -75,7 +81,7 @@ class PresensiCollationTest extends TestCase
         $d = $this->seedPemilihanBerlangsung();
 
         $this->actingAs($this->userDari($d['id_siswa_user'][0]))
-            ->get(route('siswa.presensi.riwayat'))
+            ->get(route('dashboard.presensi.riwayat'))
             ->assertOk();
     }
 }

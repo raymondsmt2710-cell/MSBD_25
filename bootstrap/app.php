@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\DBDynamicConnection;
+use App\Http\Middleware\PastikanAkunAktif;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,7 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // append => berjalan SETELAH StartSession, sehingga Auth::check() sudah tahu siapa yang login
         $middleware->web(append: [
+            // Mencabut akses akun yang dinonaktifkan pada setiap request.
+            PastikanAkunAktif::class,
             DBDynamicConnection::class,
+            // Mencabut session akun yang dinonaktifkan admin (fitur Kelola Akun).
+            PastikanAkunAktif::class,
         ]);
 
         $middleware->alias([

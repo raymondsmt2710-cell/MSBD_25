@@ -12,6 +12,12 @@ class PemilihanTriggerTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     private function masukkanSuara(array $d, int $indeksKandidat = 0): string
     {
         $id = Str::uuid()->toString();

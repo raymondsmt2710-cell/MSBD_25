@@ -11,6 +11,12 @@ class HarnessTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_procedure_dari_migration_ada(): void
     {
         $names = array_map(fn ($r) => $r->Name, DB::select('SHOW PROCEDURE STATUS WHERE Db = DATABASE()'));

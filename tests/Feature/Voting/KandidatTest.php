@@ -13,6 +13,12 @@ class KandidatTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     /** Buat siswa baru yang belum dipakai kandidat mana pun. */
     private function siswaBaru(string $username, string $nis, string $nisn): int
     {

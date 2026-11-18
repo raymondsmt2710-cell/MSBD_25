@@ -14,6 +14,12 @@ class LoginTampilanTest extends TestCase
     use DatabaseTruncation;
     use VotingTestSupport;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpVotingDatabase();
+    }
+
     public function test_halaman_login_tampil(): void
     {
         $this->seedPemilihanDraf();
@@ -54,7 +60,7 @@ class LoginTampilanTest extends TestCase
         $this->post(route('login.proses'), [
             'username' => $username,
             'password' => 'password',
-        ])->assertRedirect(route('siswa.presensi.riwayat'));
+        ])->assertRedirect(route('siswa.beranda'));
 
         $this->assertAuthenticatedAs($this->userDari($d['id_siswa_user'][0]));
     }

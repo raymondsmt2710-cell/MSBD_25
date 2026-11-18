@@ -15,7 +15,7 @@ SMAN 1 Kabanjahe belum memiliki sistem pembelajaran digital yang terpadu. Kegiat
 
 | No | Fitur | Deskripsi Singkat |
 | --- | --- | --- |
-| 1 | Presensi barcode sekali pakai | Pencatatan kehadiran dengan barcode sekali pakai, dilengkapi wadah pengajuan alasan ketidakhadiran |
+| 1 | Presensi qr code sekali pakai | Pencatatan kehadiran dengan qr code sekali pakai, dilengkapi wadah pengajuan alasan ketidakhadiran |
 | 2 | Roster kelas digital | Penyajian daftar siswa dan jadwal kelas secara digital |
 | 3 | Pemilihan suara elektronik | Pemungutan dan rekapitulasi suara Badan Pengurus Harian organisasi sekolah |
 | 4 | Pencatatan kas kelas | Pencatatan pemasukan dan pengeluaran kas kelas secara transparan |
@@ -45,7 +45,7 @@ SMAN 1 Kabanjahe belum memiliki sistem pembelajaran digital yang terpadu. Kegiat
 - **Framework:** Laravel (PHP)
 - **DBMS:** MySQL / PostgreSQL (relasional)
 - **Aplikasi:** Web (dapat diakses melalui peramban, responsif untuk ponsel)
-- **Pendukung:** Pustaka pembuatan dan pembacaan barcode, perangkat desain diagram (ERD & DFD)
+- **Pendukung:** Pustaka pembuatan QR code (bacon/bacon-qr-code), perangkat desain diagram (ERD & DFD)
 
 ## Instalasi dan Menjalankan Proyek
 
@@ -103,7 +103,7 @@ Buka `http://127.0.0.1:8000`. Semua akun demo memakai password `password`:
 
 | Username | Peran | Kegunaan |
 | --- | --- | --- |
-| `raymond` / `admin` | Administrator | Semua modul: kas, denah, dashboard |
+| `admin` | Administrator | Semua modul: kas, denah, dashboard |
 | `guru1` | Guru / wali kelas | Buka sesi presensi, tampilkan QR |
 | `siswa1` | Siswa (Ketua Kelas) | Riwayat presensi, kelola denah kelas |
 | `siswa2` | Siswa (Bendahara) | Catat dan verifikasi kas kelas |

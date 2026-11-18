@@ -32,27 +32,33 @@
         </div>
     </div>
 
-    <table style="margin-top:12px">
-        <tr><th>Hari</th><th>Tanggal</th><th>Jam</th><th>Mata Pelajaran</th><th>Guru</th><th>Status</th></tr>
-        @forelse ($roster as $r)
-            <tr>
-                <td>{{ ucfirst($r->hari) }}</td>
-                <td>{{ $r->tanggal->locale('id')->isoFormat('D MMM') }}</td>
-                <td>{{ substr($r->jam_mulai, 0, 5) }} - {{ substr($r->jam_selesai, 0, 5) }}</td>
-                <td>{{ $r->nama_mapel }}</td>
-                <td>{{ $r->nama_guru }}</td>
-                <td>
-                    @if ($r->status === '-')
-                        <span class="kecil">-</span>
-                    @else
-                        <span class="badge {{ $r->status }}">{{ $r->status }}</span>
-                    @endif
-                </td>
-            </tr>
-        @empty
-            <tr><td colspan="6" class="kosong">Belum ada jadwal untuk kelas Anda.</td></tr>
-        @endforelse
-    </table>
+    <div class="tabel-gulir">
+        <table class="tabel-roster">
+            <thead>
+                <tr><th>Hari</th><th>Tanggal</th><th>Jam</th><th>Mata Pelajaran</th><th>Guru</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+            @forelse ($roster as $r)
+                <tr>
+                    <td data-label="Hari">{{ ucfirst($r->hari) }}</td>
+                    <td data-label="Tanggal">{{ $r->tanggal->locale('id')->isoFormat('D MMM') }}</td>
+                    <td data-label="Jam">{{ substr($r->jam_mulai, 0, 5) }} - {{ substr($r->jam_selesai, 0, 5) }}</td>
+                    <td data-label="Mata Pelajaran">{{ $r->nama_mapel }}</td>
+                    <td data-label="Guru">{{ $r->nama_guru }}</td>
+                    <td data-label="Status">
+                        @if ($r->status === '-')
+                            <span class="kecil">-</span>
+                        @else
+                            <span class="badge {{ $r->status }}">{{ $r->status }}</span>
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <tr><td colspan="6" class="kosong">Belum ada jadwal untuk kelas Anda.</td></tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
     <p class="kecil" style="margin-bottom:0">
         Tanda <strong>-</strong> berarti guru belum membuka sesi pada tanggal tersebut.
         Status <strong>alpa</strong> diberikan otomatis saat guru menutup sesi.

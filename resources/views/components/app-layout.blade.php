@@ -17,13 +17,13 @@
             ['label' => 'Denah', 'route' => 'denah.index', 'aktif' => 'denah.*'],
         ],
         'guru' => [
-            ['label' => 'Presensi', 'route' => 'guru.presensi.index', 'aktif' => 'guru.presensi.*'],
+            ['label' => 'Presensi', 'route' => 'dashboard.presensi.index', 'aktif' => 'dashboard.presensi.*'],
             ['label' => 'Pemilihan', 'route' => 'kelola.pemilihan.index', 'aktif' => 'kelola.pemilihan.*'],
             ['label' => 'Kas Kelas', 'route' => 'kas.index', 'aktif' => 'kas.*'],
             ['label' => 'Denah', 'route' => 'denah.index', 'aktif' => 'denah.*'],
         ],
         'siswa' => [
-            ['label' => 'Presensi', 'route' => 'siswa.presensi.riwayat', 'aktif' => 'siswa.presensi.*'],
+            ['label' => 'Presensi', 'route' => 'dashboard.presensi.index', 'aktif' => 'dashboard.presensi.*'],
             ['label' => 'Pemilihan', 'route' => 'siswa.pemilihan.index', 'aktif' => 'siswa.pemilihan.*'],
             ['label' => 'Kas Kelas', 'route' => 'kas.index', 'aktif' => 'kas.*'],
             ['label' => 'Denah', 'route' => 'denah.index', 'aktif' => 'denah.*'],

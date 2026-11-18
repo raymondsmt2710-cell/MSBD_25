@@ -51,40 +51,49 @@
 
 <div class="kartu">
     <h3>Daftar Kehadiran</h3>
-    <table>
-        <tr><th>No</th><th>NIS</th><th>Nama</th><th>Status</th><th>Metode</th><th>Waktu</th><th>Lokasi</th><th>Koreksi</th></tr>
-        @foreach ($siswa as $s)
-            <tr>
-                <td>{{ $s->no_absen }}</td><td>{{ $s->nis }}</td><td>{{ $s->nama_siswa }}</td>
-                <td><span class="badge {{ $s->status ?? 'belum' }}">{{ $s->status ?? 'belum' }}</span></td>
-                <td>{{ $s->metode ?? '-' }}</td><td>{{ $s->waktu_presensi ?? '-' }}</td>
-                <td style="font-size:12px">
-                    @if ($s->latitude && $s->longitude)
-                        <a href="https://www.google.com/maps?q={{ $s->latitude }},{{ $s->longitude }}"
-                           target="_blank" rel="noopener" style="color:#09656F;font-weight:600">
-                            {{ number_format($s->latitude, 5) }}, {{ number_format($s->longitude, 5) }}
-                        </a>
-                        @if ($s->akurasi_meter)
-                            <span class="kecil">(&plusmn;{{ round($s->akurasi_meter) }} m)</span>
+    <div class="tabel-gulir">
+        <table class="tabel-roster">
+            <thead>
+                <tr><th>No</th><th>NIS</th><th>Nama</th><th>Status</th><th>Metode</th><th>Waktu</th><th>Lokasi</th><th>Koreksi</th></tr>
+            </thead>
+            <tbody>
+            @foreach ($siswa as $s)
+                <tr>
+                    <td data-label="No">{{ $s->no_absen }}</td>
+                    <td data-label="NIS">{{ $s->nis }}</td>
+                    <td data-label="Nama">{{ $s->nama_siswa }}</td>
+                    <td data-label="Status"><span class="badge {{ $s->status ?? 'belum' }}">{{ $s->status ?? 'belum' }}</span></td>
+                    <td data-label="Metode">{{ $s->metode ?? '-' }}</td>
+                    <td data-label="Waktu">{{ $s->waktu_presensi ?? '-' }}</td>
+                    <td data-label="Lokasi" style="font-size:12px">
+                        @if ($s->latitude && $s->longitude)
+                            <a href="https://www.google.com/maps?q={{ $s->latitude }},{{ $s->longitude }}"
+                               target="_blank" rel="noopener" style="color:#09656F;font-weight:600">
+                                {{ number_format($s->latitude, 5) }}, {{ number_format($s->longitude, 5) }}
+                            </a>
+                            @if ($s->akurasi_meter)
+                                <span class="kecil">(&plusmn;{{ round($s->akurasi_meter) }} m)</span>
+                            @endif
+                        @else
+                            <span class="kecil">tidak tercatat</span>
                         @endif
-                    @else
-                        <span class="kecil">tidak tercatat</span>
-                    @endif
-                </td>
-                <td>
-                    <form method="POST" action="{{ route('dashboard.presensi.manual', $sesi->id_sesi) }}" style="display:flex;gap:4px">@csrf
-                        <input type="hidden" name="id_siswa" value="{{ $s->id_siswa }}">
-                        <select name="status" style="width:auto">
-                            @foreach (['hadir', 'izin', 'sakit', 'alpa'] as $st)
-                                <option value="{{ $st }}" @selected($s->status === $st)>{{ $st }}</option>
-                            @endforeach
-                        </select>
-                        <button class="btn abu" type="submit">Simpan</button>
-                    </form>
-                </td>
-            </tr>
-        @endforeach
-    </table>
+                    </td>
+                    <td data-label="Koreksi">
+                        <form method="POST" action="{{ route('dashboard.presensi.manual', $sesi->id_sesi) }}" style="display:flex;gap:4px">@csrf
+                            <input type="hidden" name="id_siswa" value="{{ $s->id_siswa }}">
+                            <select name="status" style="width:auto">
+                                @foreach (['hadir', 'izin', 'sakit', 'alpa'] as $st)
+                                    <option value="{{ $st }}" @selected($s->status === $st)>{{ $st }}</option>
+                                @endforeach
+                            </select>
+                            <button class="btn abu" type="submit">Simpan</button>
+                        </form>
+                    </td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
 
 @if ($sesi->status === 'dibuka')

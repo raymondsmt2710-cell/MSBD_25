@@ -59,6 +59,50 @@
         .stat .label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;font-weight:700}
         .pill{display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:999px;padding:4px 10px;font-size:11px;color:#4b5563;font-weight:600}
         .kosong{text-align:center;padding:34px 16px;color:#9ca3af;font-size:13px}
+
+        /* ---------- Tabel responsif ---------- */
+        /* Layar sedang: tabel boleh digulir mendatar, tidak memaksa halaman melebar. */
+        .tabel-gulir{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+        .tabel-roster{min-width:560px}
+        .tabel-roster thead th{white-space:nowrap}
+
+        /* Layar kecil: setiap baris jadi kartu bertumpuk, label di kiri. */
+        @media(max-width:560px){
+            .tabel-gulir{overflow-x:visible}
+            .tabel-roster{min-width:0}
+            .tabel-roster thead{display:none}
+            .tabel-roster tbody tr{
+                display:block;
+                border:1px solid #eef0f2;
+                border-radius:12px;
+                padding:10px 12px;
+                margin-bottom:10px;
+                background:#fff;
+            }
+            .tabel-roster tbody tr:last-child{margin-bottom:0}
+            .tabel-roster tbody td{
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:12px;
+                border:0;
+                padding:5px 0;
+                font-size:13px;
+                text-align:right;
+            }
+            .tabel-roster tbody td::before{
+                content:attr(data-label);
+                font-size:11px;
+                font-weight:700;
+                text-transform:uppercase;
+                letter-spacing:.06em;
+                color:#9ca3af;
+                text-align:left;
+                flex-shrink:0;
+            }
+            .tabel-roster tbody td.kosong{display:block;text-align:center}
+            .tabel-roster tbody td.kosong::before{content:none}
+        }
         .aksi-baris{display:flex;gap:6px;flex-wrap:wrap}
         .aksi-baris form{display:inline}
         .kecil{font-size:11px;color:#9ca3af}

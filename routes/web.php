@@ -14,6 +14,8 @@ use App\Http\Controllers\Kas\IuranKasController;
 use App\Http\Controllers\Kas\KasController;
 use App\Http\Controllers\Kas\TransaksiKasController;
 use App\Http\Controllers\KelolaPemilihanController;
+use App\Http\Controllers\KelolaPerangkatController;
+use App\Http\Controllers\PerangkatController;
 use App\Http\Controllers\PortalOrangTuaController;
 use App\Http\Controllers\PresensiGuruController;
 use App\Http\Controllers\PresensiSiswaController;
@@ -27,22 +29,6 @@ Route::get('/', [BerandaController::class, 'index'])->name('beranda');
 Route::get('/login', [AuthController::class, 'form'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->name('login.proses')->middleware('throttle:10,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
-
-// ---- Fitur 1 lama: Presensi QR (URL lama tetap dipertahankan) ----
-Route::middleware(['auth', 'role:guru'])->prefix('guru/presensi')->name('guru.presensi.')->group(function () {
-    Route::get('/', [PresensiGuruController::class, 'index'])->name('index');
-    Route::post('/jadwal/{idJadwal}/buka', [PresensiGuruController::class, 'buka'])->name('buka');
-    Route::get('/sesi/{idSesi}', [PresensiGuruController::class, 'tampil'])->name('sesi');
-    Route::get('/sesi/{idSesi}/qr', [PresensiGuruController::class, 'qr'])->name('qr');
-    Route::post('/sesi/{idSesi}/tutup', [PresensiGuruController::class, 'tutup'])->name('tutup');
-    Route::post('/sesi/{idSesi}/manual', [PresensiGuruController::class, 'manual'])->name('manual');
-});
-
-Route::middleware(['auth', 'role:siswa'])->prefix('siswa/presensi')->name('siswa.presensi.')->group(function () {
-    Route::get('/riwayat', [PresensiSiswaController::class, 'riwayat'])->name('riwayat');
-    Route::get('/scan/{kode}', [PresensiSiswaController::class, 'konfirmasi'])->name('konfirmasi');
-    Route::post('/scan/{kode}', [PresensiSiswaController::class, 'scan'])->name('scan')->middleware('throttle:10,1');
-});
 
 // ---- Akun sendiri: ganti sandi & keluar (semua peran yang login) ----
 Route::middleware('auth')->prefix('akun')->name('akun.')->group(function () {
@@ -127,6 +113,23 @@ Route::middleware(['auth', 'role:admin,guru'])->prefix('kelola/pemilihan')->name
     Route::post('/{id}/kembalikan', [KelolaPemilihanController::class, 'kembalikan'])->name('kembalikan');
 
     Route::get('/{id}/log', [KelolaPemilihanController::class, 'log'])->name('log');
+});
+
+// ---- Fitur 5: Perangkat organisasi & kelas ----
+// Lihat: siswa, guru, admin. Orang tua sengaja tidak diberi akses.
+Route::middleware(['auth', 'role:siswa,guru,admin'])->prefix('perangkat')->name('perangkat.')->group(function () {
+    Route::get('/', [PerangkatController::class, 'index'])->name('index');
+    Route::get('/kelas/{id}', [PerangkatController::class, 'kelas'])->whereNumber('id')->name('kelas');
+    Route::get('/organisasi/{id}', [PerangkatController::class, 'organisasi'])->whereNumber('id')->name('organisasi');
+});
+
+// Kelola: admin (semua) dan guru (kelas yang dibimbing / organisasi yang dibina).
+Route::middleware(['auth', 'role:guru,admin'])->prefix('kelola/perangkat')->name('perangkat.kelola.')->group(function () {
+    Route::get('/', [KelolaPerangkatController::class, 'index'])->name('index');
+    Route::get('/kelas/{id}', [KelolaPerangkatController::class, 'kelas'])->whereNumber('id')->name('kelas');
+    Route::post('/kelas/{id}', [KelolaPerangkatController::class, 'simpanKelas'])->whereNumber('id')->name('kelas.simpan');
+    Route::get('/organisasi/{id}', [KelolaPerangkatController::class, 'organisasi'])->whereNumber('id')->name('organisasi');
+    Route::post('/organisasi/{id}', [KelolaPerangkatController::class, 'simpanOrganisasi'])->whereNumber('id')->name('organisasi.simpan');
 });
 
 // ---- Fitur 4: Pencatatan kas kelas ----

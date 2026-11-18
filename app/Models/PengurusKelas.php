@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 #[Table('pengurus_kelas', key: 'id_pengurus_kelas', timestamps: false)]
 #[Fillable(['id_kelas', 'id_siswa', 'id_jabatan'])]
@@ -24,5 +25,13 @@ class PengurusKelas extends Model
     public function jabatan(): BelongsTo
     {
         return $this->belongsTo(Jabatan::class, 'id_jabatan', 'id_jabatan');
+    }
+
+    /** Dipanggil lewat Stored Function fn_jumlah_pengurus_kelas. */
+    public static function jumlahUntukKelas(int $idKelas): int
+    {
+        $hasil = DB::selectOne('SELECT fn_jumlah_pengurus_kelas(?) AS hasil', [$idKelas]);
+
+        return $hasil ? (int) $hasil->hasil : 0;
     }
 }

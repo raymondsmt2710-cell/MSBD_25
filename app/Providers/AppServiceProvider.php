@@ -6,8 +6,10 @@ use App\Models\Kelas;
 use App\Models\Pemilihan;
 use App\Models\User;
 use App\Policies\PemilihanPolicy;
+use App\Policies\PerangkatPolicy;
 use App\Support\Akses;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Paksa URL absolut memakai APP_URL. Tanpa ini, route() memakai alamat yang
+        // sedang dibuka di peramban guru, sehingga QR yang dihasilkan bisa berisi
+        // "localhost" dan tidak dapat dibuka dari ponsel siswa.
+        if ($appUrl = config('app.url')) {
+            URL::forceRootUrl($appUrl);
+        }
+
         // Otorisasi terpusat (lihat docs/superpowers/specs/2026-11-16-kas-dan-denah-design.md).
         Gate::define('kas.lihat', fn (User $user, Kelas $kelas) => app(Akses::class)->bisaLihatKelas($user, $kelas));
         Gate::define('kas.kelola', fn (User $user, Kelas $kelas) => app(Akses::class)->bisaKelolaKas($user, $kelas));
@@ -27,5 +36,12 @@ class AppServiceProvider extends ServiceProvider
 
         // Fitur e-voting (dari main).
         Gate::policy(Pemilihan::class, PemilihanPolicy::class);
+
+        // Fitur perangkat organisasi & kelas tidak punya model tunggal,
+        // jadi didaftarkan sebagai ability berbasis policy.
+        Gate::define('perangkat.lihat', [PerangkatPolicy::class, 'lihat']);
+        Gate::define('perangkat.kelola', [PerangkatPolicy::class, 'kelola']);
+        Gate::define('perangkat.kelolaKelas', [PerangkatPolicy::class, 'kelolaKelas']);
+        Gate::define('perangkat.kelolaOrganisasi', [PerangkatPolicy::class, 'kelolaOrganisasi']);
     }
 }

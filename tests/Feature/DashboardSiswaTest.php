@@ -334,6 +334,13 @@ class DashboardSiswaTest extends TestCase
             'jurusan' => 'IPA',
         ]);
 
+        // Siswa yang menjadi pengurus WAJIB anggota kelas tersebut
+        // (dijaga trigger trg_pengurus_kelas_insert).
+        DB::table('anggota_kelas')->insert([
+            ['id_kelas' => $idKelas, 'id_siswa' => $idSiswaA, 'no_absen' => 1],
+            ['id_kelas' => $idKelas, 'id_siswa' => $idSiswaB, 'no_absen' => 2],
+        ]);
+
         DB::table('pengurus_kelas')->insert([
             ['id_kelas' => $idKelas, 'id_siswa' => $idSiswaA, 'id_jabatan' => $idJabatan],
             ['id_kelas' => $idKelas, 'id_siswa' => $idSiswaB, 'id_jabatan' => $idJabatan],

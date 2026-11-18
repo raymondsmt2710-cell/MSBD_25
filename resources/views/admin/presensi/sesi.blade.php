@@ -11,7 +11,6 @@
             · dibuka oleh {{ $info->nama_guru ?? '—' }} · sesi {{ $info->status }}
         </p>
     </div>
-    <a class="btn garis" href="{{ url()->previous() !== url()->current() ? url()->previous() : route('admin.presensi.index') }}">Kembali</a>
 </div>
 
 <div class="kartu">

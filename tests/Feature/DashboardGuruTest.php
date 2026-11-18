@@ -115,13 +115,28 @@ class DashboardGuruTest extends TestCase
             ->assertDontSee('Pemilihan');
     }
 
-    public function test_dashboard_guru_menampilkan_data_diri(): void
+    public function test_dashboard_guru_tidak_lagi_memuat_data_diri(): void
     {
+        // Data Diri pindah ke /akun. Nama guru tetap muncul di hero, tetapi bagian
+        // "Profil Guru" beserta NIP tidak lagi dirender di dashboard.
         $user = $this->buatGuru('Ibu Uji', '1987002');
 
         $this->actingAs($user)
             ->get(route('guru.beranda'))
             ->assertOk()
+            ->assertSee('Ibu Uji')
+            ->assertDontSee('Profil Guru')
+            ->assertDontSee('Yang bisa Anda lakukan');
+    }
+
+    public function test_guru_melihat_data_diri_di_halaman_akun(): void
+    {
+        $user = $this->buatGuru('Ibu Uji', '1987002');
+
+        $this->actingAs($user)
+            ->get(route('akun.profil'))
+            ->assertOk()
+            ->assertSee('Data Diri')
             ->assertSee('Ibu Uji')
             ->assertSee('1987002');
     }
@@ -129,15 +144,12 @@ class DashboardGuruTest extends TestCase
     public function test_guru_tanpa_jadwal_tetap_tampil_dengan_keadaan_kosong(): void
     {
         // Review Focus #3: guru tanpa jadwal sama sekali.
-        // Teks keadaan kosong untuk jadwal/sesi diperiksa di task berikutnya;
-        // di sini cukup pastikan halaman tetap 200 dan profil memakai tanda kosong.
         $user = $this->buatGuru();
 
         $this->actingAs($user)
             ->get(route('guru.beranda'))
             ->assertOk()
-            ->assertSee('Profil Guru')
-            ->assertSee('—');
+            ->assertSee('Tidak ada jadwal mengajar untuk hari ini.');
     }
 
     public function test_dashboard_guru_hanya_menampilkan_ikon_yang_benar_benar_ada(): void
@@ -279,6 +291,88 @@ class DashboardGuruTest extends TestCase
         $this->assertStringNotContainsString('Pemilihan', $html);
         // Penimpaan harus merender <br> sebagai tag, bukan teks ter-escape.
         $this->assertStringNotContainsString('&lt;br&gt;', $html);
+    }
+
+    public function test_guru_punya_hamburger_dengan_kartu_presensi(): void
+    {
+        // Guru harus mendapat perlakuan yang sama persis dengan siswa di ponsel:
+        // hamburger di kiri, logo tengah, tombol profil di kanan. Bedanya hanya isi
+        // drawer, karena guru memang hanya punya satu tujuan Menu Cepat.
+        $user = $this->buatGuru();
+
+        $html = $this->actingAs($user)
+            ->get(route('guru.beranda'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('<details class="nav-drawer">', $html);
+        $this->assertStringContainsString('<summary class="nav-hamburger"', $html);
+
+        $panel = $this->panelDrawer($html);
+        $this->assertStringContainsString(route('dashboard.presensi.index'), $panel);
+        $this->assertStringContainsString('Presensi', $panel);
+    }
+
+    public function test_drawer_guru_tanpa_baris_keterangan(): void
+    {
+        $user = $this->buatGuru();
+
+        $html = $this->actingAs($user)
+            ->get(route('guru.beranda'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('class="ket"', $html);
+        $this->assertStringNotContainsString('Roster mengajar, buka sesi, tampilkan QR', $html);
+    }
+
+    public function test_guru_punya_tombol_profil_menuju_halaman_akun(): void
+    {
+        $user = $this->buatGuru();
+
+        $html = $this->actingAs($user)
+            ->get(route('guru.beranda'))
+            ->assertOk()
+            ->assertSee('class="nav-profil"', false)
+            ->assertSee(route('akun.profil'), false)
+            ->getContent();
+
+        // Sama seperti siswa: varian ponsel disembunyikan di desktop, jadi harus
+        // ada varian di dalam .nav-aksi agar /akun tetap terjangkau di layar lebar.
+        $this->assertMatchesRegularExpression(
+            '/<div class="nav-aksi">[\s\S]{0,600}?class="nav-profil-dalam"/',
+            $html,
+            'Tombol profil desktop (.nav-profil-dalam) tidak ada di dalam .nav-aksi.'
+        );
+    }
+
+    public function test_drawer_guru_tetap_tidak_menawarkan_pemilihan(): void
+    {
+        // Drawer baru tidak boleh menjadi celah masuknya "Pemilihan" ke halaman guru.
+        $user = $this->buatGuru();
+
+        $html = $this->actingAs($user)
+            ->get(route('guru.beranda'))
+            ->assertOk()
+            ->getContent();
+
+        $panel = $this->panelDrawer($html);
+        $this->assertNotSame('', $panel, 'Panel drawer guru tidak ditemukan.');
+        $this->assertStringNotContainsString('Pemilihan', $panel);
+    }
+
+    /** Isi elemen .drawer-panel, dipakai untuk memeriksa isi hamburger. */
+    private function panelDrawer(string $html): string
+    {
+        $mulai = strpos($html, '<div class="drawer-panel">');
+
+        if ($mulai === false) {
+            return '';
+        }
+
+        $akhir = strpos($html, '</details>', $mulai);
+
+        return $akhir === false ? '' : substr($html, $mulai, $akhir - $mulai);
     }
 
     /** Membuat jadwal untuk guru pada hari tertentu. Mengembalikan id_jadwal. */

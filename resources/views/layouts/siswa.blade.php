@@ -14,3 +14,9 @@
            class="{{ request()->routeIs('siswa.pemilihan.*') ? 'aktif' : '' }}">Pemilihan</a>
     </nav>
 @endsection
+
+{{-- Isi drawer hamburger di ponsel. Tautan nav di atas digantikan panel ini,
+     jadi tujuannya sama: empat kartu Menu Cepat. --}}
+@section('menu-cepat')
+    @include('partials.menu-cepat-siswa')
+@endsection

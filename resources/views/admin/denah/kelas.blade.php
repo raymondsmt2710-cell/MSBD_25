@@ -7,7 +7,6 @@
         <h1>Denah {{ $kelas->nama_kelas }}</h1>
         <p class="subjudul">{{ $jumlahSiswa }} siswa di kelas ini.</p>
     </div>
-    <a class="btn garis" href="{{ route('admin.denah.index', ['tahun' => $kelas->id_tahun_ajaran]) }}">Kembali</a>
 </div>
 
 <div class="grid" style="grid-template-columns:minmax(0,3fr) minmax(260px,2fr);align-items:start">

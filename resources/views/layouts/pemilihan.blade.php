@@ -25,6 +25,13 @@
         .nav-links a:hover{background:#f3f4f6;color:#09656F}
         .nav-links a.aktif{background:rgba(9,101,111,.06);color:#09656F}
         .nav-aksi{display:flex;align-items:center;gap:8px}
+        /* Tombol profil ke /akun. Layout ini tidak punya hamburger, jadi tombolnya
+           tampil di semua lebar; nama pengguna disembunyikan di ponsel agar muat. */
+        .nav-profil{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:rgba(9,101,111,.08);color:#09656F;flex-shrink:0}
+        .nav-profil:hover{background:rgba(9,101,111,.15)}
+        .kembali-wrap{margin-bottom:14px}
+        .tombol-kembali{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(9,101,111,.07);color:#09656F;font-size:12px;font-weight:600;transition:background .15s}
+        .tombol-kembali:hover{background:rgba(9,101,111,.14)}
         main{max-width:1120px;margin:0 auto;padding:22px 16px 60px}
         h1{font-size:22px;margin:0 0 4px}
         .subjudul{font-size:13px;color:#6b7280;margin:0 0 18px}
@@ -103,6 +110,8 @@
         .kecil{font-size:11px;color:#9ca3af}
         @media(max-width:640px){
             .nav-links{display:none}
+            /* Nama pengguna + peran memakan ruang; tombol profil & Keluar tetap. */
+            .nav-aksi .pill{display:none}
             h1{font-size:19px}
             th,td{padding:8px 6px;font-size:12px}
         }
@@ -160,11 +169,10 @@
 
         <div class="nav-aksi">
             @auth
+                <a href="{{ route('akun.profil') }}" class="nav-profil" aria-label="Profil dan ganti password">
+                    <x-ikon nama="person-circle" ukuran="20" />
+                </a>
                 <span class="pill">{{ auth()->user()->username }} · {{ auth()->user()->role?->value ?? auth()->user()->role }}</span>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button class="btn abu" type="submit">Keluar</button>
-                </form>
             @else
                 <a class="btn" href="{{ route('login') }}">Masuk</a>
             @endauth
@@ -173,6 +181,8 @@
 </header>
 
 <main>
+    <x-tombol-kembali />
+
     @if (session('success'))<div class="ok">{{ session('success') }}</div>@endif
     @if (session('error'))<div class="err">{{ session('error') }}</div>@endif
     @if ($errors->any())

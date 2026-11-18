@@ -7,7 +7,6 @@
         <h1>{{ $judul }}</h1>
         <p class="subjudul">{{ $subjudul }}</p>
     </div>
-    <a class="btn garis" href="{{ $kembali }}">Kembali</a>
 </div>
 
 @if (! empty($tahunAjaran))

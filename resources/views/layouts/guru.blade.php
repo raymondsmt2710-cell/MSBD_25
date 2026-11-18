@@ -16,3 +16,8 @@
            class="{{ request()->routeIs('dashboard.presensi.*') ? 'aktif' : '' }}">Presensi</a>
     </nav>
 @endsection
+
+{{-- Isi drawer hamburger di ponsel. Guru hanya punya satu tujuan Menu Cepat. --}}
+@section('menu-cepat')
+    @include('partials.menu-cepat-guru')
+@endsection

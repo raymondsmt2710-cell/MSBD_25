@@ -11,7 +11,6 @@
     </div>
     <div class="aksi-baris">
         <a class="btn garis" href="{{ route('admin.orang-tua.edit', $orangTua->id_orang_tua) }}">Ubah profil</a>
-        <a class="btn garis" href="{{ route('admin.orang-tua.index') }}">Kembali</a>
     </div>
 </div>
 

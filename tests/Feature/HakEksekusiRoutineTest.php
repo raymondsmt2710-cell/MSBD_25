@@ -133,4 +133,31 @@ class HakEksekusiRoutineTest extends TestCase
             'siswa_app tidak punya SELECT pada v_sesi_presensi_siswa.'
         );
     }
+
+    public function test_ketiga_peran_punya_hak_eksekusi_sp_ubah_sandi(): void
+    {
+        // Halaman /akun dipakai siswa, guru, dan orang tua. Tanpa EXECUTE pada
+        // procedure ini, ganti sandi gagal 1370 di semua peran tersebut.
+        foreach (['siswa', 'guru', 'ortu'] as $peran) {
+            $this->assertTrue(
+                $this->punyaHak($this->db[$peran], 'PROCEDURE', 'sp_ubah_sandi'),
+                "{$this->db[$peran]} kehilangan EXECUTE pada sp_ubah_sandi — ganti sandi akan error 1370."
+            );
+        }
+    }
+
+    public function test_siswa_tetap_tidak_punya_hak_update_pada_users(): void
+    {
+        // Ganti sandi sengaja lewat procedure, BUKAN dengan memberi UPDATE pada
+        // tabel users. Kalau hak ini pernah terbuka, siswa bisa mengubah
+        // password_hash milik akun lain langsung lewat SQL.
+        $hak = $this->hakEksekusi($this->db['siswa']);
+        $db = DB::connection()->getDatabaseName();
+
+        $this->assertDoesNotMatchRegularExpression(
+            "/GRANT .*UPDATE.*ON `{$db}`\.`users`/i",
+            $hak,
+            'siswa_app seharusnya tidak punya UPDATE pada tabel users.'
+        );
+    }
 }

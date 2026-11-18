@@ -23,6 +23,13 @@
         aside a.menu.aktif{background:#09656F;color:#fff;font-weight:600}
         .atas{background:#fff;border-bottom:1px solid #eef0f2;padding:10px 22px;display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:0;z-index:20}
         .atas .jalur{font-size:12px;color:#9ca3af}
+        /* Tombol profil ke /akun. Panel admin tidak punya hamburger, jadi tombolnya
+           tampil di semua lebar; nama pengguna disembunyikan di layar sempit. */
+        .nav-profil{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:rgba(9,101,111,.08);color:#09656F;flex-shrink:0}
+        .nav-profil:hover{background:rgba(9,101,111,.15)}
+        .kembali-wrap{margin-bottom:14px}
+        .tombol-kembali{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(9,101,111,.07);color:#09656F;font-size:12px;font-weight:600;transition:background .15s}
+        .tombol-kembali:hover{background:rgba(9,101,111,.14)}
         main{padding:22px;max-width:1180px}
         h1{font-size:22px;margin:0 0 4px}
         .subjudul{font-size:13px;color:#6b7280;margin:0 0 18px}
@@ -75,6 +82,10 @@
             .kerangka{grid-template-columns:1fr}
             aside{position:static;height:auto}
             main{padding:16px}
+        }
+        @media(max-width:640px){
+            /* Nama pengguna memakan ruang di bar atas; profil & Keluar tetap. */
+            .atas .badge{display:none}
         }
     </style>
     @stack('gaya')
@@ -137,14 +148,17 @@
     <div>
         <div class="atas">
             <span class="jalur">@yield('jalur', 'Administrator')</span>
-            <form method="POST" action="{{ route('logout') }}" class="aksi-baris">
-                @csrf
+            <div class="aksi-baris">
+                <a href="{{ route('akun.profil') }}" class="nav-profil" aria-label="Profil dan ganti password">
+                    <x-ikon nama="person-circle" ukuran="20" />
+                </a>
                 <span class="badge admin">{{ auth()->user()->username }} · admin</span>
-                <button class="btn abu kecil" type="submit">Keluar</button>
-            </form>
+            </div>
         </div>
 
         <main>
+            <x-tombol-kembali />
+
             @if (session('success'))<div class="ok">{{ session('success') }}</div>@endif
             @if (session('error'))<div class="err">{{ session('error') }}</div>@endif
             @if ($errors->any())

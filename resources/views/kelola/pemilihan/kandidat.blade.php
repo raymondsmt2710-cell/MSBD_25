@@ -8,7 +8,6 @@
         <h1>Kandidat</h1>
         <p class="subjudul">{{ $pemilihan->judul }} — <span class="badge {{ $pemilihan->status }}">{{ $pemilihan->status }}</span></p>
     </div>
-    <a class="btn garis" href="{{ route('kelola.pemilihan.monitor', $id) }}">Kembali ke Monitor</a>
 </div>
 
 @if (! $draf)

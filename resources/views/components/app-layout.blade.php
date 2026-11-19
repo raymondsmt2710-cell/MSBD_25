@@ -20,13 +20,13 @@
         'admin' => [],
         'guru' => [
             ['label' => 'Beranda', 'route' => 'guru.beranda', 'aktif' => 'guru.beranda'],
-            ['label' => 'Presensi', 'route' => 'dashboard.presensi.index', 'aktif' => 'dashboard.presensi.*'],
+            ['label' => 'Presensi', 'route' => 'guru.presensi.index', 'aktif' => 'guru.presensi.*'],
             ['label' => 'Kas Kelas', 'route' => 'kas.index', 'aktif' => 'kas.*'],
             ['label' => 'Denah', 'route' => 'denah.index', 'aktif' => 'denah.*'],
         ],
         'siswa' => [
             ['label' => 'Beranda', 'route' => 'siswa.beranda', 'aktif' => 'siswa.beranda'],
-            ['label' => 'Presensi', 'route' => 'dashboard.presensi.index', 'aktif' => 'dashboard.presensi.*'],
+            ['label' => 'Presensi', 'route' => 'siswa.presensi.index', 'aktif' => 'siswa.presensi.*'],
             ['label' => 'Kas Kelas', 'route' => 'kas.index', 'aktif' => 'kas.*'],
             ['label' => 'Denah', 'route' => 'denah.index', 'aktif' => 'denah.*'],
         ],

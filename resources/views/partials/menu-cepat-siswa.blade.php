@@ -4,12 +4,12 @@
     pendek dan panel tidak perlu digulir di layar kecil.
 --}}
 <div class="drawer-menu">
-    <a class="drawer-item" href="{{ route('dashboard.presensi.riwayat') }}#ringkasan">
+    <a class="drawer-item" href="{{ route('siswa.presensi.index') }}">
         <span class="ikon"><x-ikon nama="qr-code-scan" ukuran="15" /></span>
         <span class="judul">Presensi</span>
     </a>
 
-    <a class="drawer-item" href="{{ route('dashboard.presensi.riwayat') }}#roster">
+    <a class="drawer-item" href="{{ route('siswa.presensi.riwayat') }}#roster">
         <span class="ikon"><x-ikon nama="calendar-week" ukuran="15" /></span>
         <span class="judul">Roster</span>
     </a>

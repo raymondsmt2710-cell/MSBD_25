@@ -81,7 +81,7 @@ class PresensiCollationTest extends TestCase
         $d = $this->seedPemilihanBerlangsung();
 
         $this->actingAs($this->userDari($d['id_siswa_user'][0]))
-            ->get(route('dashboard.presensi.riwayat'))
+            ->get(route('siswa.presensi.riwayat'))
             ->assertOk();
     }
 }

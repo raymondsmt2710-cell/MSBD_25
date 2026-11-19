@@ -267,7 +267,7 @@ class AkunUbahSandiTest extends TestCase
             ->assertOk()
             ->assertSee(route('logout'), false);
 
-        foreach ([route('siswa.beranda'), route('dashboard.presensi.index')] as $halaman) {
+        foreach ([route('siswa.beranda'), route('siswa.presensi.riwayat')] as $halaman) {
             $this->actingAs($siswa)
                 ->get($halaman)
                 ->assertOk()

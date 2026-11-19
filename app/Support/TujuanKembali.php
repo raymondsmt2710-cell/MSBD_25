@@ -47,7 +47,7 @@ final class TujuanKembali
         }
 
         // Halaman yang memakai parameter navigasi pada dirinya sendiri (mis.
-        // /dashboard/presensi/riwayat?pekan=...) tidak boleh memakai referer:
+        // /siswa/beranda/presensi/riwayat?pekan=...) tidak boleh memakai referer:
         // hasilnya tombol bolak-balik antar pekan tanpa pernah keluar halaman.
         //
         // Hanya berlaku bila yang berbeda adalah QUERY-nya. Referer yang identik

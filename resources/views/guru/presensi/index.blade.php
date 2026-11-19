@@ -27,9 +27,9 @@
                     <td data-label="Mata Pelajaran">{{ $r->nama_mapel }}</td>
                     <td data-label="Aksi">
                         @if ($r->id_sesi)
-                            <a class="btn" href="{{ route('dashboard.presensi.sesi', $r->id_sesi) }}">Lihat Sesi</a>
+                            <a class="btn" href="{{ route('guru.presensi.sesi', $r->id_sesi) }}">Lihat Sesi</a>
                         @elseif ($r->hari === $hariIni)
-                            <form method="POST" action="{{ route('dashboard.presensi.buka', $r->id_jadwal) }}">@csrf
+                            <form method="POST" action="{{ route('guru.presensi.buka', $r->id_jadwal) }}">@csrf
                                 <button class="btn" type="submit">Buat Presensi</button>
                             </form>
                         @else

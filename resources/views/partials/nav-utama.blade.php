@@ -18,17 +18,17 @@
 
     $menu = match ($peran) {
         'siswa' => [
-            ['label' => 'Beranda',   'route' => 'siswa.beranda',            'aktif' => 'siswa.beranda',            'ikon' => 'person-circle'],
-            ['label' => 'Presensi',  'route' => 'dashboard.presensi.riwayat', 'aktif' => 'dashboard.presensi.*',   'ikon' => 'calendar-week'],
-            ['label' => 'Perangkat', 'route' => 'siswa.perangkat',          'aktif' => 'siswa.perangkat',          'ikon' => 'people'],
-            ['label' => 'Pemilihan', 'route' => 'siswa.pemilihan.index',    'aktif' => 'siswa.pemilihan.*',        'ikon' => 'check2-square'],
+            ['label' => 'Beranda',   'route' => 'siswa.beranda',             'aktif' => 'siswa.beranda',            'ikon' => 'person-circle'],
+            ['label' => 'Presensi',  'route' => 'siswa.presensi.index',      'aktif' => 'siswa.presensi.*',         'ikon' => 'calendar-week'],
+            ['label' => 'Perangkat', 'route' => 'siswa.perangkat',           'aktif' => 'siswa.perangkat',          'ikon' => 'people'],
+            ['label' => 'Pemilihan', 'route' => 'siswa.pemilihan.index',     'aktif' => 'siswa.pemilihan.*',        'ikon' => 'check2-square'],
         ],
         'guru' => [
-            ['label' => 'Beranda',   'route' => 'guru.beranda',             'aktif' => 'guru.beranda',             'ikon' => 'person-circle'],
-            ['label' => 'Presensi',  'route' => 'dashboard.presensi.index', 'aktif' => 'dashboard.presensi.*',     'ikon' => 'calendar-week'],
-            ['label' => 'Perangkat', 'route' => 'perangkat.index',          'aktif' => 'perangkat.*',              'ikon' => 'people'],
-            ['label' => 'Kas Kelas', 'route' => 'kas.index',                'aktif' => 'kas.*',                    'ikon' => 'cash-coin'],
-            ['label' => 'Denah',     'route' => 'denah.index',              'aktif' => 'denah.*',                  'ikon' => 'grid-3x3'],
+            ['label' => 'Beranda',   'route' => 'guru.beranda',              'aktif' => 'guru.beranda',             'ikon' => 'person-circle'],
+            ['label' => 'Presensi',  'route' => 'guru.presensi.index',       'aktif' => 'guru.presensi.*',          'ikon' => 'calendar-week'],
+            ['label' => 'Perangkat', 'route' => 'perangkat.index',           'aktif' => 'perangkat.*',              'ikon' => 'people'],
+            ['label' => 'Kas Kelas', 'route' => 'kas.index',                 'aktif' => 'kas.*',                    'ikon' => 'cash-coin'],
+            ['label' => 'Denah',     'route' => 'denah.index',               'aktif' => 'denah.*',                  'ikon' => 'grid-3x3'],
         ],
         // Catatan: guru TIDAK ditawari "Pemilihan" di sini. Guru hanya boleh
         // mengelola pemilihan bila ditunjuk sebagai panitia, dan menu itu

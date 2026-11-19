@@ -65,7 +65,7 @@
     const inputBerkas   = document.getElementById('berkas');
     const pesan         = document.getElementById('pesan');
 
-    const urlKonfirmasi = @json(url('/dashboard/presensi/scan'));
+    const urlKonfirmasi = @json(url('/siswa/beranda/presensi/scan'));
 
     let pemindai = null;
     let sedangJalan = false;

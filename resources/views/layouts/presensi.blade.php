@@ -175,7 +175,7 @@
 
 <header class="nav">
     <div class="nav-inner">
-        <a href="{{ auth()->check() ? route('dashboard.presensi.index') : url('/') }}" class="brand">
+        <a href="{{ auth()->check() ? ((auth()->user()->role?->value ?? auth()->user()->role) === 'siswa' ? route('siswa.presensi.index') : route('guru.presensi.index')) : url('/') }}" class="brand">
             <x-logo mark tinggi="34" />
             <div>
                 <div class="nama">SakuSaka</div>

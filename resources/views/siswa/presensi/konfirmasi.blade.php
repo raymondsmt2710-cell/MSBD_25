@@ -11,7 +11,7 @@
             Lokasi akan diminta sebagai bukti kehadiran; jika izin ditolak, presensi tetap tercatat.
         </p>
 
-        <form method="POST" action="{{ route('dashboard.presensi.scan', $kode) }}" id="form-presensi">@csrf
+        <form method="POST" action="{{ route('siswa.presensi.scan', $kode) }}" id="form-presensi">@csrf
             <input type="hidden" name="latitude" id="latitude">
             <input type="hidden" name="longitude" id="longitude">
             <input type="hidden" name="akurasi_meter" id="akurasi_meter">
@@ -27,7 +27,7 @@
         </div>
 
         <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f1f2f4">
-            <a class="btn garis" href="{{ route('dashboard.presensi.index') }}">&larr; Kembali</a>
+            <a class="btn garis" href="{{ route('guru.presensi.index') }}">&larr; Kembali</a>
         </div>
     </div>
 
@@ -90,8 +90,8 @@
             QR sudah kedaluwarsa, atau sesi sudah ditutup. Pindai QR yang ditampilkan guru.
         </div>
         <div class="aksi-baris">
-            <a class="btn" href="{{ route('dashboard.presensi.pindai') }}">Pindai Ulang</a>
-            <a class="btn abu" href="{{ route('dashboard.presensi.index') }}">Kembali</a>
+            <a class="btn" href="{{ route('siswa.presensi.pindai') }}">Pindai Ulang</a>
+            <a class="btn abu" href="{{ route('guru.presensi.index') }}">Kembali</a>
         </div>
     </div>
 @endif

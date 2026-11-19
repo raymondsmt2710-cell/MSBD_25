@@ -76,7 +76,7 @@ class LayoutSiswaRegresiTest extends TestCase
             ->get(route('siswa.beranda'))
             ->assertOk()
             ->assertSee(route('siswa.beranda'), false)
-            ->assertSee(route('dashboard.presensi.riwayat'), false)
+            ->assertSee(route('siswa.presensi.riwayat'), false)
             ->assertSee(route('siswa.perangkat'), false)
             ->assertSee(route('siswa.pemilihan.index'), false);
     }

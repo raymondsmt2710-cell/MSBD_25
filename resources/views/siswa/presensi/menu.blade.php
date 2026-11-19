@@ -5,7 +5,7 @@
 <p class="subjudul">Pilih menu yang ingin dibuka.</p>
 
 <div class="pilihan">
-    <a class="pilihan-kartu" href="{{ route('dashboard.presensi.riwayat') }}">
+    <a class="pilihan-kartu" href="{{ route('siswa.presensi.riwayat') }}">
         <span class="pilihan-ikon"><x-ikon nama="calendar-week" ukuran="22" /></span>
         <h2 class="pilihan-judul">Riwayat Presensi</h2>
         <p class="pilihan-ket">
@@ -13,7 +13,7 @@
         </p>
     </a>
 
-    <a class="pilihan-kartu oranye" href="{{ route('dashboard.presensi.pindai') }}">
+    <a class="pilihan-kartu oranye" href="{{ route('siswa.presensi.pindai') }}">
         <span class="pilihan-ikon"><x-ikon nama="qr-code-scan" ukuran="22" /></span>
         <h2 class="pilihan-judul">Pindai QR</h2>
         <p class="pilihan-ket">

@@ -24,11 +24,11 @@
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <h3 style="margin:0">Roster Sepekan</h3>
         <div class="aksi-baris" style="align-items:center">
-            <a class="btn garis" href="{{ route('dashboard.presensi.riwayat', ['pekan' => $pekanSebelum]) }}">&lsaquo; Pekan lalu</a>
+            <a class="btn garis" href="{{ route('siswa.presensi.riwayat', ['pekan' => $pekanSebelum]) }}">&lsaquo; Pekan lalu</a>
             <span class="kecil">
                 {{ $pekan->copy()->locale('id')->isoFormat('D MMM') }} - {{ $pekan->copy()->addDays(5)->locale('id')->isoFormat('D MMM YYYY') }}
             </span>
-            <a class="btn garis" href="{{ route('dashboard.presensi.riwayat', ['pekan' => $pekanBerikut]) }}">Pekan depan &rsaquo;</a>
+            <a class="btn garis" href="{{ route('siswa.presensi.riwayat', ['pekan' => $pekanBerikut]) }}">Pekan depan &rsaquo;</a>
         </div>
     </div>
 

@@ -40,7 +40,7 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('dashboard.presensi.tutup', $sesi->id_sesi) }}"
+                <form method="POST" action="{{ route('guru.presensi.tutup', $sesi->id_sesi) }}"
                       onsubmit="return confirm('Tutup sesi? Siswa yang belum tercatat akan otomatis alpa/izin/sakit.')">@csrf
                     <button class="btn merah" type="submit">Tutup Sesi</button>
                 </form>
@@ -79,7 +79,7 @@
                         @endif
                     </td>
                     <td data-label="Koreksi">
-                        <form method="POST" action="{{ route('dashboard.presensi.manual', $sesi->id_sesi) }}" style="display:flex;gap:4px">@csrf
+                        <form method="POST" action="{{ route('guru.presensi.manual', $sesi->id_sesi) }}" style="display:flex;gap:4px">@csrf
                             <input type="hidden" name="id_siswa" value="{{ $s->id_siswa }}">
                             <select name="status" style="width:auto">
                                 @foreach (['hadir', 'izin', 'sakit', 'alpa'] as $st)
@@ -100,7 +100,7 @@
 @push('skrip')
 <script>
     // Hanya memperbarui angka hadir/belum. QR tidak diambil ulang karena statis.
-    const url = @json(route('dashboard.presensi.qr', $sesi->id_sesi));
+    const url = @json(route('guru.presensi.qr', $sesi->id_sesi));
     const elHadir = document.getElementById('hadir');
     const elBelum = document.getElementById('belum');
 

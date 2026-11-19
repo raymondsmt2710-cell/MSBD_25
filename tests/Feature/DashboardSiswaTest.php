@@ -117,8 +117,8 @@ class DashboardSiswaTest extends TestCase
         $panel = $this->panelDrawer($html);
         $this->assertNotSame('', $panel, 'Panel drawer tidak ditemukan.');
 
-        $this->assertStringContainsString(route('dashboard.presensi.riwayat').'#ringkasan', $panel);
-        $this->assertStringContainsString(route('dashboard.presensi.riwayat').'#roster', $panel);
+        $this->assertStringContainsString(route('siswa.presensi.index'), $panel);
+        $this->assertStringContainsString(route('siswa.presensi.riwayat').'#roster', $panel);
         $this->assertStringContainsString(route('siswa.perangkat'), $panel);
         $this->assertStringContainsString(route('siswa.pemilihan.index'), $panel);
     }
@@ -178,7 +178,7 @@ class DashboardSiswaTest extends TestCase
 
         // Panel drawer memuat keempat tujuan Menu Cepat.
         $panel = $this->panelDrawer($html);
-        $this->assertStringContainsString(route('dashboard.presensi.riwayat'), $panel);
+        $this->assertStringContainsString(route('siswa.presensi.riwayat'), $panel);
         $this->assertStringContainsString(route('siswa.perangkat'), $panel);
         $this->assertStringContainsString(route('siswa.pemilihan.index'), $panel);
     }
@@ -369,7 +369,7 @@ class DashboardSiswaTest extends TestCase
         $user = $this->buatSiswa();
 
         $this->actingAs($user)
-            ->get(route('dashboard.presensi.riwayat'))
+            ->get(route('siswa.presensi.riwayat'))
             ->assertOk()
             ->assertSee('id="ringkasan"', false)
             ->assertSee('id="roster"', false);

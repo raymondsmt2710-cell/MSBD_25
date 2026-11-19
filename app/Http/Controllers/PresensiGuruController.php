@@ -32,19 +32,6 @@ class PresensiGuruController extends Controller
     }
 
     /**
-     * Halaman masuk fitur presensi.
-     * Siswa melihat dua pilihan; guru langsung melihat roster jadwalnya.
-     */
-    public function masuk()
-    {
-        if ((Auth::user()->role?->value ?? Auth::user()->role) === 'guru') {
-            return $this->index();
-        }
-
-        return app(PresensiSiswaController::class)->menu();
-    }
-
-    /**
      * Roster presensi: seluruh jadwal guru (berulang tiap pekan), dengan penanda
      * apakah sesi untuk hari ini sudah dibuat.
      */
@@ -122,7 +109,7 @@ class PresensiGuruController extends Controller
             return back()->with('error', 'Gagal membuka sesi: '.$e->getMessage());
         }
 
-        return redirect()->route('dashboard.presensi.sesi', $idSesi);
+        return redirect()->route('guru.presensi.sesi', $idSesi);
     }
 
     /**
@@ -222,7 +209,7 @@ class PresensiGuruController extends Controller
 
         $qrSvg = null;
         if ($token && $sesi->status === 'dibuka') {
-            $qrSvg = $this->svgQr(route('dashboard.presensi.konfirmasi', $token->kode_token));
+            $qrSvg = $this->svgQr(route('siswa.presensi.konfirmasi', $token->kode_token));
         }
 
         return view('guru.presensi.sesi', compact('sesi', 'siswa', 'token', 'qrSvg'));

@@ -90,13 +90,13 @@ class PresensiSiswaController extends Controller
             if ($status === null) {
                 Log::error($e);
 
-                return redirect()->route('dashboard.presensi.riwayat')->with('error', 'Terjadi kesalahan saat mencatat presensi.');
+                return redirect()->route('siswa.presensi.riwayat')->with('error', 'Terjadi kesalahan saat mencatat presensi.');
             }
         }
 
         $pesan = self::PESAN[$status] ?? 'Status tidak dikenal.';
 
-        return redirect()->route('dashboard.presensi.riwayat')->with($status === 'BERHASIL' ? 'success' : 'error', $pesan);
+        return redirect()->route('siswa.presensi.riwayat')->with($status === 'BERHASIL' ? 'success' : 'error', $pesan);
     }
 
     /**

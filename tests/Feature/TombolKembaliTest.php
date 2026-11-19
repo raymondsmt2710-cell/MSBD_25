@@ -118,10 +118,10 @@ class TombolKembaliTest extends TestCase
         $user = $this->buatAkun();
 
         $request = Request::create('http://127.0.0.1:8000/akun/profil', 'GET');
-        $request->headers->set('referer', 'http://127.0.0.1:8000/dashboard/presensi');
+        $request->headers->set('referer', 'http://127.0.0.1:8000/siswa/beranda/presensi');
 
         $this->assertSame(
-            'http://127.0.0.1:8000/dashboard/presensi',
+            'http://127.0.0.1:8000/siswa/beranda/presensi',
             TujuanKembali::untuk($request, $user)
         );
     }
@@ -134,11 +134,11 @@ class TombolKembaliTest extends TestCase
         $user = $this->buatAkun('siswa', 'kb_riwayat');
 
         $this->actingAs($user)
-            ->withHeader('referer', route('dashboard.presensi.riwayat', ['pekan' => '2026-11-09']))
-            ->get(route('dashboard.presensi.riwayat'))
+            ->withHeader('referer', route('siswa.presensi.riwayat', ['pekan' => '2026-11-09']))
+            ->get(route('siswa.presensi.riwayat'))
             ->assertOk()
             ->assertSee('class="tombol-kembali"', false)
-            ->assertSee('href="'.route('dashboard.presensi.index').'"', false);
+            ->assertSee('href="'.route('siswa.presensi.index').'"', false);
     }
 
     public function test_referer_sama_dengan_halaman_ini_tidak_dipakai(): void
@@ -182,10 +182,18 @@ class TombolKembaliTest extends TestCase
     {
         // Satu komponen dipasang di tiap layout; kalau salah satu terlewat,
         // halaman di layout itu kehilangan tombolnya.
+        // Halaman presensi guru memakai akun guru, karena route-nya sudah dipisah per peran.
+        $guru = $this->buatAkun('guru', 'kb_guru');
+        $this->actingAs($guru)
+            ->withHeader('referer', route('guru.beranda'))
+            ->get(route('guru.presensi.index'))
+            ->assertOk()
+            ->assertSee('class="tombol-kembali"', false);
+
         $siswa = $this->buatAkun('siswa', 'kb_siswa');
         $this->actingAs($siswa)
             ->withHeader('referer', route('siswa.beranda'))
-            ->get(route('dashboard.presensi.index'))
+            ->get(route('siswa.presensi.riwayat'))
             ->assertOk()
             ->assertSee('class="tombol-kembali"', false);
 
@@ -235,7 +243,7 @@ class TombolKembaliTest extends TestCase
 
         $guru = $this->buatAkun('guru', 'kb_beranda_guru');
         $this->actingAs($guru)
-            ->withHeader('referer', route('dashboard.presensi.index'))
+            ->withHeader('referer', route('guru.presensi.index'))
             ->get(route('guru.beranda'))
             ->assertOk()
             ->assertDontSee('class="tombol-kembali"', false);

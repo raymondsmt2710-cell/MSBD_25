@@ -71,7 +71,7 @@ class NavigasiTest extends TestCase
         $this->actingAs($this->userDari($d['id_panitia_user']))
             // Sejak dashboard guru, guru (termasuk panitia) sengaja tidak ditawari tautan
             // pemilihan dari halaman presensi; sejalan dengan DashboardGuruTest.
-            ->get(route('dashboard.presensi.index'))
+            ->get(route('guru.presensi.index'))
             ->assertOk()
             ->assertDontSee(route('kelola.pemilihan.index'), false);
     }

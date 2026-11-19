@@ -78,7 +78,7 @@ class AkunNonaktifTest extends TestCase
         // Admin menonaktifkan akun.
         $this->nonaktifkan($user);
 
-        $this->get('/dashboard/presensi')->assertRedirect(route('login'));
+        $this->get('/siswa/beranda/presensi')->assertRedirect(route('login'));
 
         // Session benar-benar dicabut, bukan hanya dialihkan.
         $this->assertGuest('web');
@@ -102,7 +102,7 @@ class AkunNonaktifTest extends TestCase
         $this->loginSebagai($user->username);
 
         // Akun uji tanpa profil siswa boleh saja ditolak halaman (403), yang penting tidak dilogout.
-        $respons = $this->get('/dashboard/presensi');
+        $respons = $this->get('/siswa/beranda/presensi');
         $this->assertNotSame(route('login'), $respons->headers->get('Location'));
 
         $this->assertAuthenticatedAs($user->fresh());

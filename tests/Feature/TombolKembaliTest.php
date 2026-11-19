@@ -220,4 +220,90 @@ class TombolKembaliTest extends TestCase
             'Halaman memuat lebih dari satu tombol kembali.'
         );
     }
+
+    public function test_beranda_tidak_menampilkan_tombol_kembali_meski_ada_referer(): void
+    {
+        // Beranda adalah puncak navigasi, jadi tombol kembali tidak dipasang di
+        // sana. Diuji dengan referer sah supaya yang gagal benar-benar
+        // pengecualian beranda, bukan sekadar TujuanKembali mengembalikan null.
+        $siswa = $this->buatAkun('siswa', 'kb_beranda_siswa');
+        $this->actingAs($siswa)
+            ->withHeader('referer', route('siswa.perangkat'))
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->assertDontSee('class="tombol-kembali"', false);
+
+        $guru = $this->buatAkun('guru', 'kb_beranda_guru');
+        $this->actingAs($guru)
+            ->withHeader('referer', route('dashboard.presensi.index'))
+            ->get(route('guru.beranda'))
+            ->assertOk()
+            ->assertDontSee('class="tombol-kembali"', false);
+    }
+
+    public function test_halaman_turunan_tetap_punya_tombol_kembali(): void
+    {
+        // Pengecualian beranda tidak boleh ikut menghapus tombol di /akun dan
+        // /siswa/perangkat: keduanya halaman turunan yang butuh jalan pulang.
+        $siswa = $this->buatAkun('siswa', 'kb_turunan');
+
+        $this->actingAs($siswa)
+            ->withHeader('referer', route('siswa.beranda'))
+            ->get(route('siswa.perangkat'))
+            ->assertOk()
+            ->assertSee('class="tombol-kembali"', false);
+
+        $this->actingAs($siswa)
+            ->withHeader('referer', route('siswa.beranda'))
+            ->get(route('akun.profil'))
+            ->assertOk()
+            ->assertSee('class="tombol-kembali"', false);
+    }
+
+    public function test_pemilihan_punya_jalan_pasti_ke_dashboard(): void
+    {
+        // Tombol kembali berbasis riwayat bisa menunjuk halaman pilih yang sudah
+        // tidak boleh dibuka setelah suara terkirim. Tautan ini selalu ke beranda.
+        $siswa = $this->buatAkun('siswa', 'kb_pemilihan');
+
+        $this->actingAs($siswa)
+            ->get(route('siswa.pemilihan.index'))
+            ->assertOk()
+            ->assertSee('Kembali ke Dashboard')
+            ->assertSee('href="'.route('siswa.beranda').'"', false);
+    }
+
+    public function test_footer_menempel_di_dasar_halaman(): void
+    {
+        // Footer menggantung di tengah layar pada halaman pendek (mis. /akun di
+        // ponsel) karena body bukan flex kolom. Perbaikannya: body flex kolom
+        // setinggi layar + footer{margin-top:auto}.
+        $siswa = $this->buatAkun('siswa', 'kb_footer');
+
+        $html = $this->actingAs($siswa)
+            ->get(route('akun.profil'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/body\{[^}]*display:flex[^}]*flex-direction:column[^}]*min-height:100vh/',
+            $html,
+            'body harus flex kolom setinggi layar agar footer bisa didorong ke dasar.'
+        );
+        $this->assertMatchesRegularExpression(
+            '/footer\{[^}]*margin-top:auto/',
+            $html,
+            'footer butuh margin-top:auto untuk menempel di dasar halaman.'
+        );
+
+        // Isi halaman WAJIB dibungkus .isi-utama. Tanpa pembungkus, .hero dan
+        // .statistik menjadi flex item sehingga margin:auto-nya berhenti
+        // meregangkan lebar: kartu statistik runtuh jadi satu kolom sempit.
+        $this->assertStringContainsString('<div class="isi-utama">', $html);
+        $this->assertMatchesRegularExpression(
+            '/\.isi-utama\{[^}]*flex:1/',
+            $html,
+            '.isi-utama harus flex:1 agar mengisi tinggi dan mendorong footer ke dasar.'
+        );
+    }
 }

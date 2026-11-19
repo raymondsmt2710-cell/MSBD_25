@@ -1,4 +1,4 @@
-{{--
+﻿{{--
     Isi panel hamburger untuk siswa.
     Satu baris per tujuan: ikon + judul, tanpa keterangan, supaya kartunya
     pendek dan panel tidak perlu digulir di layar kecil.

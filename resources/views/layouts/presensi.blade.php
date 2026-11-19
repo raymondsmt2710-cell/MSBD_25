@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('judul', 'Presensi') — SI-SMANSAKA</title>
+    <title>@yield('judul', 'Presensi') - SakuSaka</title>
+    <link rel="icon" href="{{ asset('images/logo-sakusaka-mark.png') }}" type="image/png">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet">
     <style>
@@ -144,6 +145,22 @@
             .nav-aksi .pill{display:none}
             h1{font-size:19px}
             th,td{padding:8px 6px;font-size:12px}
+            .nav-hamburger{display:inline-flex}
+        }
+
+        /* ---------- Hamburger + drawer (ponsel) ---------- */
+        .nav-hamburger{display:none;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:rgba(9,101,111,.08);color:#09656F;cursor:pointer;list-style:none;flex-shrink:0}
+        .nav-hamburger::-webkit-details-marker{display:none}
+        .nav-drawer{display:none}
+        .drawer-panel{display:none}
+        @media(max-width:640px){
+            .nav-drawer{display:block}
+            .drawer-panel{display:block;position:absolute;left:0;right:0;top:100%;background:#fff;border-bottom:1px solid #eef0f2;box-shadow:0 12px 24px rgba(16,24,40,.1);padding:12px 16px 16px;z-index:60;max-height:calc(100vh - 64px);overflow-y:auto}
+            .drawer-menu{display:flex;flex-direction:column;gap:6px}
+            .drawer-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid #eef0f2;border-radius:11px;font-size:13px;font-weight:600;color:#374151}
+            .drawer-item:hover{background:#f7f8f9;border-color:rgba(9,101,111,.2)}
+            .drawer-item.aktif{background:rgba(9,101,111,.08);color:#09656F;border-color:rgba(9,101,111,.25)}
+            .nav-inner{position:relative}
         }
     </style>
 </head>
@@ -159,26 +176,30 @@
 <header class="nav">
     <div class="nav-inner">
         <a href="{{ auth()->check() ? route('dashboard.presensi.index') : url('/') }}" class="brand">
-            <div class="logo">SM</div>
+            <x-logo mark tinggi="34" />
             <div>
-                <div class="nama">SI-SMANSAKA</div>
+                <div class="nama">SakuSaka</div>
                 <div class="sub">SMA Negeri 1 Kabanjahe</div>
             </div>
         </a>
 
         <nav class="nav-links">
             @auth
-                @if ((auth()->user()->role?->value ?? auth()->user()->role) === 'siswa')
-                    <a href="{{ route('dashboard.presensi.index') }}"
-                       class="{{ request()->routeIs('dashboard.presensi.index') ? 'aktif' : '' }}">Presensi</a>
-                @elseif ((auth()->user()->role?->value ?? auth()->user()->role) === 'guru')
-                    <a href="{{ route('dashboard.presensi.index') }}"
-                       class="{{ request()->routeIs('dashboard.presensi.*') ? 'aktif' : '' }}">Roster Presensi</a>
-                @elseif ((auth()->user()->role?->value ?? auth()->user()->role) === 'orang_tua')
-                    <a href="{{ route('ortu.index') }}">Portal Orang Tua</a>
-                @endif
+                @include('partials.nav-utama', ['gaya' => 'nav'])
             @endauth
         </nav>
+
+        {{-- Hamburger: di ponsel tautan nav disembunyikan, jadi menu pindah ke sini. --}}
+        @auth
+            <details class="nav-drawer">
+                <summary class="nav-hamburger" aria-label="Buka menu">
+                    <x-ikon nama="list" ukuran="20" />
+                </summary>
+                <div class="drawer-panel">
+                    @include('partials.drawer-peran')
+                </div>
+            </details>
+        @endauth
 
         <div class="nav-aksi">
             @auth

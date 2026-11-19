@@ -141,7 +141,8 @@
     <div class="wrap">
         <div class="kartu">
             <p class="kosong" style="margin-bottom:12px">Selesai menggunakan akun ini?</p>
-            <form method="POST" action="{{ route('logout') }}">
+            <form method="POST" action="{{ route('logout') }}"
+                  onsubmit="try{sessionStorage.removeItem('sidebar-admin-scroll')}catch(e){}">
                 @csrf
                 <button class="btn garis" type="submit">
                     <x-ikon nama="box-arrow-in-right" ukuran="15" /> Keluar

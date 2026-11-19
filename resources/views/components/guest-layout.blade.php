@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $judul ? $judul.' — ' : '' }}E-Learning SMAN 1 Kabanjahe</title>
+    <title>{{ $judul ? $judul.' - ' : '' }}SakuSaka - SMA Negeri 1 Kabanjahe</title>
 
-    <link rel="icon" href="{{ asset('images/logo-sekolah.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('images/logo-sakusaka-mark.png') }}" type="image/png">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -21,10 +21,9 @@
 
         <div class="relative w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl shadow-black/30 sm:p-10">
             <div class="mb-7 flex items-center gap-3 border-b border-gray-100 pb-6">
-                <img src="{{ asset('images/logo-sekolah.png') }}" alt="Logo SMAN 1 Kabanjahe"
-                     class="h-14 w-14 rounded-2xl object-contain ring-1 ring-gray-100">
+                <x-logo mark tinggi="48" kelas="rounded-2xl" />
                 <div>
-                    <p class="text-lg font-extrabold leading-tight tracking-tight text-sekolah-ink">E-Learning</p>
+                    <p class="text-lg font-extrabold leading-tight tracking-tight text-sekolah-ink">SakuSaka</p>
                     <p class="text-xs font-medium text-gray-500">SMA Negeri 1 Kabanjahe</p>
                 </div>
             </div>
@@ -32,7 +31,7 @@
             {{ $slot }}
 
             <p class="mt-8 text-center text-[11px] text-gray-400">
-                © {{ date('Y') }} E-Learning SMA Negeri 1 Kabanjahe
+                &copy; {{ date('Y') }} SakuSaka &middot; SMA Negeri 1 Kabanjahe
             </p>
         </div>
     </div>

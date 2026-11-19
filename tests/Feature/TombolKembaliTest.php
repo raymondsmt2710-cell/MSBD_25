@@ -110,6 +110,37 @@ class TombolKembaliTest extends TestCase
         $this->assertNull($this->untuk($user, 'https://situs-lain.example/halaman'));
     }
 
+    public function test_referer_dari_host_yang_sama_dengan_request_tetap_dipakai(): void
+    {
+        // Kasus nyata: aplikasi dibuka lewat 127.0.0.1 padahal APP_URL=localhost.
+        // Perbandingan harus memakai host request, bukan APP_URL, supaya tombol
+        // kembali tidak hilang begitu saja.
+        $user = $this->buatAkun();
+
+        $request = Request::create('http://127.0.0.1:8000/akun/profil', 'GET');
+        $request->headers->set('referer', 'http://127.0.0.1:8000/dashboard/presensi');
+
+        $this->assertSame(
+            'http://127.0.0.1:8000/dashboard/presensi',
+            TujuanKembali::untuk($request, $user)
+        );
+    }
+
+    public function test_halaman_riwayat_presensi_selalu_kembali_ke_dashboard_presensi(): void
+    {
+        // Riwayat memakai navigasi ?pekan=... pada halaman yang sama. Kalau tombol
+        // kembali mengikuti referer, hasilnya bolak-balik antara dua pekan tanpa
+        // pernah keluar dari halaman itu.
+        $user = $this->buatAkun('siswa', 'kb_riwayat');
+
+        $this->actingAs($user)
+            ->withHeader('referer', route('dashboard.presensi.riwayat', ['pekan' => '2026-11-09']))
+            ->get(route('dashboard.presensi.riwayat'))
+            ->assertOk()
+            ->assertSee('class="tombol-kembali"', false)
+            ->assertSee('href="'.route('dashboard.presensi.index').'"', false);
+    }
+
     public function test_referer_sama_dengan_halaman_ini_tidak_dipakai(): void
     {
         // Tombol yang membawa pengguna ke halaman yang sedang dibuka itu sia-sia.

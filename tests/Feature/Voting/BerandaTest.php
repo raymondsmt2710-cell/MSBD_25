@@ -26,7 +26,7 @@ class BerandaTest extends TestCase
 
         $this->get('/')
             ->assertOk()
-            ->assertSee('SI-SMANSAKA')
+            ->assertSee('SakuSaka')
             ->assertSee('SMA Negeri 1 Kabanjahe');
     }
 
@@ -86,6 +86,6 @@ class BerandaTest extends TestCase
         // Tidak seed apa pun — statistik harus 0, bukan error.
         $this->get('/')
             ->assertOk()
-            ->assertSee('SI-SMANSAKA');
+            ->assertSee('SakuSaka');
     }
 }

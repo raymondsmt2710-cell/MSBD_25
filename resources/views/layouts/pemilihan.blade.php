@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('judul', 'Pemilihan') — SI-SMANSAKA</title>
+    <title>@yield('judul', 'Pemilihan') - SakuSaka</title>
+    <link rel="icon" href="{{ asset('images/logo-sakusaka-mark.png') }}" type="image/png">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet">
     <style>
@@ -114,10 +115,40 @@
             .nav-aksi .pill{display:none}
             h1{font-size:19px}
             th,td{padding:8px 6px;font-size:12px}
+            .nav-hamburger{display:inline-flex}
+        }
+
+        /* ---------- Hamburger + drawer (ponsel) ---------- */
+        .nav-hamburger{display:none;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:rgba(9,101,111,.08);color:#09656F;cursor:pointer;list-style:none;flex-shrink:0}
+        .nav-hamburger::-webkit-details-marker{display:none}
+        .nav-drawer{display:none}
+        .drawer-panel{display:none}
+        @media(max-width:640px){
+            .nav-drawer{display:block}
+            .drawer-panel{display:block;position:absolute;left:0;right:0;top:100%;background:#fff;border-bottom:1px solid #eef0f2;box-shadow:0 12px 24px rgba(16,24,40,.1);padding:12px 16px 16px;z-index:60;max-height:calc(100vh - 64px);overflow-y:auto}
+            .drawer-menu{display:flex;flex-direction:column;gap:6px}
+            .drawer-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid #eef0f2;border-radius:11px;font-size:13px;font-weight:600;color:#374151}
+            .drawer-item:hover{background:#f7f8f9;border-color:rgba(9,101,111,.2)}
+            .drawer-item.aktif{background:rgba(9,101,111,.08);color:#09656F;border-color:rgba(9,101,111,.25)}
+            .nav-inner{position:relative}
         }
     </style>
 </head>
+@php
+    // Admin memakai sidebar di SEMUA halaman, termasuk yang memakai layout ini.
+    $peranAktif = auth()->user()?->role;
+    $peranAktif = $peranAktif instanceof \App\Enums\Role ? $peranAktif->value : (string) $peranAktif;
+    $pakaiSidebarAdmin = $peranAktif === 'admin';
+@endphp
+@if ($pakaiSidebarAdmin)
+    @include('partials.css-sidebar-admin')
+@endif
 <body>
+@if ($pakaiSidebarAdmin)
+<div class="kerangka-admin">
+    @include('partials.sidebar-admin')
+    <div class="isi-admin">
+@endif
 <div class="topbar">
     <div class="topbar-inner">
         <span class="dot"></span>
@@ -139,33 +170,30 @@
 <header class="nav">
     <div class="nav-inner">
         <a href="{{ url('/') }}" class="brand">
-            <div class="logo">SM</div>
+            <x-logo mark tinggi="34" />
             <div>
-                <div class="nama">SI-SMANSAKA</div>
+                <div class="nama">SakuSaka</div>
                 <div class="sub">SMA Negeri 1 Kabanjahe</div>
             </div>
         </a>
 
         <nav class="nav-links">
             @auth
-                @if ((auth()->user()->role?->value ?? auth()->user()->role) === 'siswa')
-                    <a href="{{ route('siswa.pemilihan.index') }}"
-                       class="{{ request()->routeIs('siswa.pemilihan.*') ? 'aktif' : '' }}">Pemilihan</a>
-                    <a href="{{ route('dashboard.presensi.index') }}">Presensi</a>
-                @elseif ((auth()->user()->role?->value ?? auth()->user()->role) === 'orang_tua')
-                    {{-- Tanpa cabang ini akun orang tua jatuh ke @else dan melihat menu
-                         "Kelola Pemilihan" yang menuju 403. --}}
-                    <a href="{{ route('ortu.index') }}"
-                       class="{{ request()->routeIs('ortu.*') ? 'aktif' : '' }}">Portal Orang Tua</a>
-                @else
-                    @if ((auth()->user()->role?->value ?? auth()->user()->role) === 'admin')
-                        <a href="{{ route('admin.dashboard') }}">Panel Admin</a>
-                    @endif
-                    <a href="{{ route('kelola.pemilihan.index') }}"
-                       class="{{ request()->routeIs('kelola.pemilihan.*') ? 'aktif' : '' }}">Kelola Pemilihan</a>
-                @endif
+                @include('partials.nav-utama', ['gaya' => 'nav'])
             @endauth
         </nav>
+
+        {{-- Hamburger: di ponsel tautan nav disembunyikan, jadi menu pindah ke sini. --}}
+        @auth
+            <details class="nav-drawer">
+                <summary class="nav-hamburger" aria-label="Buka menu">
+                    <x-ikon nama="list" ukuran="20" />
+                </summary>
+                <div class="drawer-panel">
+                    @include('partials.drawer-peran')
+                </div>
+            </details>
+        @endauth
 
         <div class="nav-aksi">
             @auth
@@ -195,5 +223,10 @@
 
     @yield('isi')
 </main>
+@if ($pakaiSidebarAdmin)
+    </div>{{-- .isi-admin --}}
+</div>{{-- .kerangka-admin --}}
+@endif
+@include('partials.script-sidebar-admin')
 </body>
 </html>

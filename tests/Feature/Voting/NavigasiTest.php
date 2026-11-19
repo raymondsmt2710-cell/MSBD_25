@@ -25,7 +25,7 @@ class NavigasiTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('SI-SMANSAKA')
+            ->assertSee('SakuSaka')
             ->assertSee(route('login'), false);
     }
 

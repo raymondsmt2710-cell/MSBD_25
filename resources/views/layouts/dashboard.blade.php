@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('judul', 'Beranda') — SI-SMANSAKA</title>
+    <title>@yield('judul', 'Beranda') - SakuSaka</title>
+    <link rel="icon" href="{{ asset('images/logo-sakusaka-mark.png') }}" type="image/png">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet">
     <style>
@@ -137,6 +138,8 @@
 
         /* ---------- Footer ---------- */
         footer{background:#111827;color:#9ca3af;padding:34px 16px 26px;font-size:12px;margin-top:20px}
+        /* Logo asli berlatar krem; di footer gelap diberi alas krem agar tetap terbaca. */
+        .logo-footer{display:inline-flex;align-items:center;justify-content:center;background:#F9F5E9;border-radius:10px;padding:5px 8px}
         .footer-inner{max-width:1120px;margin:0 auto;display:flex;justify-content:space-between;gap:22px;flex-wrap:wrap}
         .footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:10px}
         .footer-brand .logo{width:34px;height:34px;border-radius:10px;background:#09656F;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
@@ -209,9 +212,9 @@
                 </summary>
                 <div class="drawer-panel">
                     <div class="drawer-kepala">
-                        <div class="logo">SM</div>
+                        <x-logo mark tinggi="30" />
                         <div>
-                            <div class="nama">SI-SMANSAKA</div>
+                            <div class="nama">SakuSaka</div>
                             <div class="sub">SMA Negeri 1 Kabanjahe</div>
                         </div>
                     </div>
@@ -221,9 +224,9 @@
         @endif
 
         <a href="@yield('brand-href', url('/'))" class="brand">
-            <div class="logo">SM</div>
+            <x-logo mark tinggi="36" />
             <div>
-                <div class="nama">SI-SMANSAKA</div>
+                <div class="nama">SakuSaka</div>
                 <div class="sub">SMA Negeri 1 Kabanjahe</div>
             </div>
         </a>
@@ -252,9 +255,11 @@
     <div class="footer-inner">
         <div class="footer-kolom" style="max-width:320px">
             <div class="footer-brand">
-                <div class="logo">SM</div>
+                <span class="logo-footer">
+                    <x-logo mark tinggi="26" />
+                </span>
                 <div>
-                    <div style="color:#fff;font-weight:800;font-size:13px">SI-SMANSAKA</div>
+                    <div style="color:#fff;font-weight:800;font-size:13px">SakuSaka</div>
                     <div style="font-size:11px">SMA Negeri 1 Kabanjahe</div>
                 </div>
             </div>

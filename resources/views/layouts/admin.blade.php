@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('judul', 'Admin') — Admin SI-SMANSAKA</title>
+    <title>@yield('judul', 'Admin') - SakuSaka</title>
+    <link rel="icon" href="{{ asset('images/logo-sakusaka-mark.png') }}" type="image/png">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet">
     <style>
@@ -17,6 +18,8 @@
         .brand .logo{width:34px;height:34px;border-radius:10px;background:#C97A14;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
         .brand .nama{font-size:13px;font-weight:800;color:#fff;line-height:1.1}
         .brand .sub{font-size:11px;color:#8fc3c8}
+        /* Logo asli berlatar krem; di sidebar gelap diberi alas krem agar tetap terbaca. */
+        .logo-sidebar{display:inline-flex;align-items:center;justify-content:center;background:#F9F5E9;border-radius:9px;padding:4px 6px;flex-shrink:0}
         .grup{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#7fb1b6;font-weight:700;padding:14px 10px 6px}
         aside a.menu{display:block;padding:7px 10px;border-radius:9px;font-size:13px;color:#d7eef0}
         aside a.menu:hover{background:rgba(255,255,255,.07);color:#fff}
@@ -90,6 +93,8 @@
     </style>
     @stack('gaya')
 </head>
+{{-- Skrip posisi gulir sidebar (dipakai bersama layout lain). --}}
+@include('partials.css-sidebar-admin')
 <body>
 @php
     // Kelompok menu mengikuti daftar fitur admin (Akun, Data master, Akademik, Organisasi, Pemilihan, Pemantauan).
@@ -127,23 +132,7 @@
     ];
 @endphp
 <div class="kerangka">
-    <aside>
-        <a href="{{ route('admin.dashboard') }}" class="brand">
-            <div class="logo">SM</div>
-            <div>
-                <div class="nama">SI-SMANSAKA</div>
-                <div class="sub">Panel Administrator</div>
-            </div>
-        </a>
-        <nav>
-            @foreach ($menu as $grup => $item)
-                <div class="grup">{{ $grup }}</div>
-                @foreach ($item as [$rute, $teks, $pola])
-                    <a class="menu {{ request()->routeIs($pola) ? 'aktif' : '' }}" href="{{ route($rute) }}">{{ $teks }}</a>
-                @endforeach
-            @endforeach
-        </nav>
-    </aside>
+    @include('partials.sidebar-admin')
 
     <div>
         <div class="atas">
@@ -182,5 +171,6 @@
     });
 </script>
 @stack('skrip')
+@include('partials.script-sidebar-admin')
 </body>
 </html>

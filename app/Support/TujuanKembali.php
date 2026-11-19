@@ -35,8 +35,27 @@ final class TujuanKembali
         }
 
         // Host berbeda: jangan kirim pengguna ke luar aplikasi.
-        if (parse_url($asal, PHP_URL_HOST) !== parse_url(URL::to('/'), PHP_URL_HOST)) {
+        //
+        // Pembandingnya host REQUEST, bukan URL::to('/'): aplikasi bisa dibuka
+        // lewat 127.0.0.1 maupun localhost (APP_URL hanya salah satunya).
+        // Memakai APP_URL membuat tombol kembali hilang tanpa alasan.
+        $hostAplikasi = $request->getHost();
+        $hostAsal = parse_url($asal, PHP_URL_HOST);
+
+        if ($hostAsal === null || ! hash_equals($hostAplikasi, $hostAsal)) {
             return null;
+        }
+
+        // Halaman yang memakai parameter navigasi pada dirinya sendiri (mis.
+        // /dashboard/presensi/riwayat?pekan=...) tidak boleh memakai referer:
+        // hasilnya tombol bolak-balik antar pekan tanpa pernah keluar halaman.
+        //
+        // Hanya berlaku bila yang berbeda adalah QUERY-nya. Referer yang identik
+        // dengan halaman ini (tanpa beda query) tetap dianggap tidak berguna.
+        $pathAsal = parse_url($asal, PHP_URL_PATH) ?: '/';
+
+        if ($pathAsal === $request->getPathInfo() && $asal !== $request->fullUrl()) {
+            return self::induk($request, $pengguna);
         }
 
         $path = parse_url($asal, PHP_URL_PATH) ?: '/';
@@ -56,5 +75,37 @@ final class TujuanKembali
 
         // Referer yang sama dengan halaman ini: tombolnya tidak ada gunanya.
         return $asal === $request->fullUrl() ? null : $asal;
+    }
+
+    /**
+     * Halaman induk untuk halaman yang bernavigasi pada dirinya sendiri
+     * (mis. riwayat presensi dengan ?pekan=...).
+     *
+     * Aturannya: naik satu tingkat dari path saat ini. Bila tidak ada induk
+     * yang masuk akal, kembalikan beranda peran.
+     */
+    private static function induk(Request $request, User $pengguna): ?string
+    {
+        $segmen = array_values(array_filter(explode('/', $request->getPathInfo())));
+
+        // Buang segmen terakhir, lalu cari rute GET pertama yang cocok.
+        while (count($segmen) > 1) {
+            array_pop($segmen);
+            $calon = '/'.implode('/', $segmen);
+
+            try {
+                Route::getRoutes()->match(Request::create($calon, 'GET'));
+
+                $tujuan = $request->getSchemeAndHttpHost().$calon;
+
+                return $tujuan === $request->fullUrl() ? null : $tujuan;
+            } catch (MethodNotAllowedHttpException|NotFoundHttpException) {
+                // lanjut naik satu tingkat lagi
+            }
+        }
+
+        $beranda = route($pengguna->role->home());
+
+        return $beranda === $request->fullUrl() ? null : $beranda;
     }
 }

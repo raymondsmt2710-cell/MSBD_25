@@ -26,7 +26,7 @@ class LoginTampilanTest extends TestCase
 
         $this->get(route('login'))
             ->assertOk()
-            ->assertSee('SI-SMANSAKA')
+            ->assertSee('SakuSaka')
             ->assertSee('Selamat datang')
             ->assertSee('name="username"', false)
             ->assertSee('name="password"', false);

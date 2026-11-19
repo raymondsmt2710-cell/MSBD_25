@@ -96,7 +96,7 @@ class DashboardGuruTest extends TestCase
 
         $this->assertStringContainsString('#09656F', $html);
         $this->assertStringContainsString('Figtree', $html);
-        $this->assertStringContainsString('SI-SMANSAKA', $html);
+        $this->assertStringContainsString('SakuSaka', $html);
         $this->assertStringContainsString('1120px', $html);
     }
 

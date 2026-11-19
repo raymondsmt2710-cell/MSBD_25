@@ -8,16 +8,12 @@
     Presensi &middot; Roster<br>Perangkat Kelas &amp; Organisasi
 @endsection
 
+{{-- Nav horizontal memakai sumber bersama (partials.nav-utama); daftar guru di
+     sana sengaja tanpa "Pemilihan". Drawer tetap memakai menu-cepat-guru. --}}
 @section('nav')
-    <nav class="nav-links">
-        <a href="{{ route('guru.beranda') }}"
-           class="{{ request()->routeIs('guru.beranda') ? 'aktif' : '' }}">Beranda</a>
-        <a href="{{ route('dashboard.presensi.index') }}"
-           class="{{ request()->routeIs('dashboard.presensi.*') ? 'aktif' : '' }}">Presensi</a>
-    </nav>
+    @include('partials.nav-utama', ['gaya' => 'nav'])
 @endsection
 
-{{-- Isi drawer hamburger di ponsel. Guru hanya punya satu tujuan Menu Cepat. --}}
 @section('menu-cepat')
     @include('partials.menu-cepat-guru')
 @endsection

@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Masuk — SI-SMANSAKA</title>
+    <title>Masuk - SakuSaka</title>
+    <link rel="icon" href="{{ asset('images/logo-sakusaka-mark.png') }}" type="image/png">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet">
     <style>
@@ -25,7 +26,7 @@
         .panel-brand::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 85% 12%,rgba(201,122,20,.25),transparent 58%);pointer-events:none}
         .panel-brand > *{position:relative;z-index:1}
         .brand{display:flex;align-items:center;gap:10px;margin-bottom:30px}
-        .brand .logo{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+        .brand .logo{width:40px;height:40px;border-radius:12px;background:#F9F5E9;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
         .brand .nama{font-size:14px;font-weight:800;line-height:1.15}
         .brand .sub{font-size:11px;color:rgba(255,255,255,.65);line-height:1.2}
         .panel-brand h2{font-size:23px;font-weight:800;line-height:1.25;margin-bottom:10px;letter-spacing:-.01em}
@@ -77,7 +78,7 @@
 <div class="topbar">
     <div class="topbar-inner">
         <span class="dot"></span>
-        <strong>SI-SMANSAKA</strong>
+        <strong>SakuSaka</strong>
         <span style="opacity:.75">SMA Negeri 1 Kabanjahe</span>
     </div>
 </div>
@@ -89,9 +90,9 @@
         <div class="panel-brand">
             <div>
                 <a href="{{ route('beranda') }}" class="brand">
-                    <div class="logo">SM</div>
+                    <span class="logo"><x-logo mark tinggi="26" /></span>
                     <div>
-                        <div class="nama">SI-SMANSAKA</div>
+                        <div class="nama">SakuSaka</div>
                         <div class="sub">SMA Negeri 1 Kabanjahe</div>
                     </div>
                 </a>

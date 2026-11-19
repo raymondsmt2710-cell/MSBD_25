@@ -9,7 +9,17 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet">
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:Figtree,system-ui,-apple-system,sans-serif;background:#f6f7f8;color:#1f2937;line-height:1.5}
+        /* Flex kolom setinggi layar, dipadukan dengan footer{margin-top:auto}:
+           footer selalu menempel di dasar, juga pada halaman pendek (mis. /akun
+           di ponsel). Pada halaman panjang sisa ruangnya nol, jadi tampilannya
+           sama seperti sebelumnya.
+           Catatan penting: isi halaman dibungkus .isi-utama, BUKAN diletakkan
+           langsung di dalam body. Kalau .hero/.statistik/.kembali-wrap menjadi
+           flex item, properti margin:auto mereka tidak lagi meregangkan lebar
+           (flex item menyusut ke ukuran isi), sehingga kartu statistik runtuh
+           menjadi satu kolom sempit dan konten berhenti di tengah layar. */
+        body{font-family:Figtree,system-ui,-apple-system,sans-serif;background:#f6f7f8;color:#1f2937;line-height:1.5;display:flex;flex-direction:column;min-height:100vh}
+        .isi-utama{flex:1;min-width:0}
         a{color:inherit;text-decoration:none}
 
         /* ---------- Bar atas ---------- */
@@ -136,7 +146,9 @@
         .notif-gagal{background:rgba(220,38,38,.07);border-color:rgba(220,38,38,.22);color:#b91c1c;font-weight:600}
 
         /* ---------- Footer ---------- */
-        footer{background:#111827;color:#9ca3af;padding:34px 16px 26px;font-size:12px;margin-top:20px}
+        /* margin-top:auto mendorong footer ke dasar layar. Nilai 20px lama
+           diganti karena auto sudah mencakup jarak pada halaman panjang. */
+        footer{background:#111827;color:#9ca3af;padding:34px 16px 26px;font-size:12px;margin-top:auto}
         .footer-inner{max-width:1120px;margin:0 auto;display:flex;justify-content:space-between;gap:22px;flex-wrap:wrap}
         .footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:10px}
         .footer-brand .logo{width:34px;height:34px;border-radius:10px;background:#09656F;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
@@ -244,9 +256,16 @@
     </div>
 </header>
 
-<x-tombol-kembali />
+{{-- Beranda peran tidak menampilkan tombol kembali: beranda adalah puncak
+     navigasi, jadi tidak ada "halaman sebelumnya" yang berguna. Halaman turunan
+     yang memakai layout ini (/akun, /siswa/perangkat) tetap memilikinya. --}}
+<div class="isi-utama">
+    @unless (request()->routeIs('siswa.beranda', 'guru.beranda'))
+        <x-tombol-kembali />
+    @endunless
 
-@yield('isi')
+    @yield('isi')
+</div>
 
 <footer>
     <div class="footer-inner">

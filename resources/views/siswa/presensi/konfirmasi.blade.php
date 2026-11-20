@@ -26,8 +26,11 @@
             Presensi tetap tercatat, hanya kolom lokasi yang kosong.
         </div>
 
+        {{-- Jalan pulang disediakan komponen <x-tombol-kembali> di layout.
+             Tautan manual di sini dulu menunjuk route guru, sehingga siswa yang
+             menekannya mendapat 403. --}}
         <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f1f2f4">
-            <a class="btn garis" href="{{ route('guru.presensi.index') }}">&larr; Kembali</a>
+            <a class="btn garis" href="{{ route('siswa.presensi.pindai') }}">Pindai QR Lain</a>
         </div>
     </div>
 
@@ -91,7 +94,7 @@
         </div>
         <div class="aksi-baris">
             <a class="btn" href="{{ route('siswa.presensi.pindai') }}">Pindai Ulang</a>
-            <a class="btn abu" href="{{ route('guru.presensi.index') }}">Kembali</a>
+            <a class="btn abu" href="{{ route('siswa.presensi.index') }}">Menu Presensi</a>
         </div>
     </div>
 @endif

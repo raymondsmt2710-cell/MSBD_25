@@ -34,6 +34,11 @@ class PresensiGuruController extends Controller
     /**
      * Roster presensi: seluruh jadwal guru (berulang tiap pekan), dengan penanda
      * apakah sesi untuk hari ini sudah dibuat.
+     *
+     * Dibatasi ke tahun ajaran aktif. Tanpa filter ini, jadwal tahun-tahun lalu
+     * ikut tampil sebagai baris ganda dan tombol "Buat Presensi" muncul untuk
+     * kelas yang sudah tidak berjalan. Logikanya sama dengan
+     * DashboardGuruController::idTahunAjaranAktif().
      */
     public function index()
     {
@@ -44,6 +49,7 @@ class PresensiGuruController extends Controller
                 $j->on('sp.id_jadwal', '=', 'jp.id_jadwal')->whereRaw('sp.tanggal = CURDATE()');
             })
             ->where('jp.id_guru', $this->idGuru())
+            ->when($this->idTahunAjaranAktif(), fn ($q, $idTahun) => $q->where('k.id_tahun_ajaran', $idTahun))
             ->orderByRaw("FIELD(jp.hari, 'senin','selasa','rabu','kamis','jumat','sabtu')")
             ->orderBy('jp.jam_mulai')
             ->select(
@@ -55,6 +61,24 @@ class PresensiGuruController extends Controller
         $hariIni = $this->hariIni();
 
         return view('guru.presensi.index', compact('roster', 'hariIni'));
+    }
+
+    /**
+     * Id tahun ajaran aktif, atau null bila tidak ada yang ditandai aktif.
+     *
+     * Null berarti "jangan difilter": roster tidak boleh kosong total hanya karena
+     * data tahun ajaran belum diisi. Beberapa baris bisa bertanda aktif sekaligus
+     * (data lama), jadi yang paling baru dipilih agar hasilnya deterministik.
+     */
+    private function idTahunAjaranAktif(): ?int
+    {
+        $id = DB::table('tahun_ajaran')
+            ->where('is_aktif', true)
+            ->orderByDesc('tanggal_mulai')
+            ->orderByDesc('id_tahun_ajaran')
+            ->value('id_tahun_ajaran');
+
+        return $id === null ? null : (int) $id;
     }
 
     /**
@@ -241,16 +265,28 @@ class PresensiGuruController extends Controller
             return response()->json(['status' => 'TANPA_TOKEN'], 409);
         }
 
-        $hadir = DB::table('presensi')->where('id_sesi', $idSesi)->where('status', 'hadir')->count();
+        // Angka dihitung dari sumber yang SAMA dengan tampilan awal halaman
+        // (PresensiGuruController::tampil): satu baris per anggota kelas, dengan
+        // status presensi bila sudah ada.
+        //
+        // Versi sebelumnya menghitung `semua anggota kelas - hadir`, sehingga
+        // siswa berstatus izin/sakit/alpa ikut terhitung "belum". Akibatnya angka
+        // "Belum" bertambah sendiri 4 detik setelah halaman dimuat, padahal tidak
+        // ada siswa baru. Query itu juga tidak memfilter tanggal, jadi sesi lain
+        // pada jadwal yang sama membuat angkanya membengkak.
+        $baris = DB::table('anggota_kelas as ak')
+            ->leftJoin('presensi as p', function ($j) use ($idSesi) {
+                $j->on('p.id_siswa', '=', 'ak.id_siswa')->where('p.id_sesi', '=', $idSesi);
+            })
+            ->where('ak.id_kelas', $sesi->id_kelas)
+            ->select('p.status')
+            ->get();
 
         return response()->json([
             'status' => 'OK',
             'kode'   => $token->kode_token,
-            'hadir'  => $hadir,
-            'belum'  => DB::table('anggota_kelas')
-                ->join('jadwal_pelajaran as jp', 'jp.id_kelas', '=', 'anggota_kelas.id_kelas')
-                ->where('jp.id_jadwal', $sesi->id_jadwal)
-                ->count() - $hadir,
+            'hadir'  => $baris->where('status', 'hadir')->count(),
+            'belum'  => $baris->whereNull('status')->count(),
         ]);
     }
 

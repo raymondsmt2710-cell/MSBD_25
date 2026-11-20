@@ -109,7 +109,10 @@
 
 <header class="nav">
     <div class="nav-inner">
-        <a href="{{ url('/') }}" class="brand">
+        {{-- Logo mengarah ke BERANDA PERAN, sama seperti layout lain. Dulu
+             menunjuk url('/') sehingga pengguna yang login terlempar ke halaman
+             depan (tamu) alih-alih beranda perannya. --}}
+        <a href="{{ auth()->check() ? route(auth()->user()->role->home()) : url('/') }}" class="brand">
             <x-logo mark tinggi="34" />
             <div>
                 <div class="nama">SakuSaka</div>

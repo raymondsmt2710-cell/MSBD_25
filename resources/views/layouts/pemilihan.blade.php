@@ -169,7 +169,10 @@
 
 <header class="nav">
     <div class="nav-inner">
-        <a href="{{ url('/') }}" class="brand">
+        {{-- Logo mengarah ke BERANDA PERAN, sama seperti layout presensi. Dulu
+             menunjuk url('/') sehingga admin/guru/siswa yang menekannya keluar
+             dari area perannya (dan siswa mendarat di halaman tamu). --}}
+        <a href="{{ auth()->check() ? route(auth()->user()->role->home()) : url('/') }}" class="brand">
             <x-logo mark tinggi="34" />
             <div>
                 <div class="nama">SakuSaka</div>
@@ -177,11 +180,11 @@
             </div>
         </a>
 
-        <nav class="nav-links">
-            @auth
-                @include('partials.nav-utama', ['gaya' => 'nav'])
-            @endauth
-        </nav>
+        {{-- partials.nav-utama sudah membungkus daftar tautan dengan
+             <nav class="nav-links">. Jangan menambah pembungkus kedua di sini. --}}
+        @auth
+            @include('partials.nav-utama', ['gaya' => 'nav'])
+        @endauth
 
         {{-- Hamburger: di ponsel tautan nav disembunyikan, jadi menu pindah ke sini. --}}
         @auth

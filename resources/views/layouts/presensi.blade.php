@@ -175,7 +175,12 @@
 
 <header class="nav">
     <div class="nav-inner">
-        <a href="{{ auth()->check() ? ((auth()->user()->role?->value ?? auth()->user()->role) === 'siswa' ? route('siswa.presensi.index') : route('guru.presensi.index')) : url('/') }}" class="brand">
+        {{-- Logo mengarah ke BERANDA PERAN, bukan ke halaman fitur yang sedang
+             dibuka. Sebelumnya siswa yang membuka presensi lalu menekan logo
+             akan memuat ulang halaman presensi itu (terasa seperti tombol
+             refresh), sehingga tidak ada jalan pulang yang bisa ditebak.
+             Tamu (belum login) tetap diarahkan ke halaman depan. --}}
+        <a href="{{ auth()->check() ? route(auth()->user()->role->home()) : url('/') }}" class="brand">
             <x-logo mark tinggi="34" />
             <div>
                 <div class="nama">SakuSaka</div>
@@ -183,11 +188,11 @@
             </div>
         </a>
 
-        <nav class="nav-links">
-            @auth
-                @include('partials.nav-utama', ['gaya' => 'nav'])
-            @endauth
-        </nav>
+        {{-- partials.nav-utama sudah membungkus daftar tautan dengan
+             <nav class="nav-links">. Jangan menambah pembungkus kedua di sini. --}}
+        @auth
+            @include('partials.nav-utama', ['gaya' => 'nav'])
+        @endauth
 
         {{-- Hamburger: di ponsel tautan nav disembunyikan, jadi menu pindah ke sini. --}}
         @auth

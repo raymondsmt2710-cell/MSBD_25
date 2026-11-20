@@ -7,8 +7,14 @@
     beranda setelah masuk ke presensi.
 
     Parameter:
-      $gaya : 'nav'    -> untuk header (tautan horizontal)
-              'drawer' -> untuk panel hamburger (item vertikal dengan ikon)
+      $gaya : 'nav'    -> tautan horizontal, dibungkus <nav class="nav-links">
+              'drawer' -> item vertikal dengan ikon, di dalam .drawer-menu
+
+    Catatan: mode 'nav' membungkus dirinya dengan <nav class="nav-links"> karena
+    layouts/dashboard.blade.php memakai @yield('nav') tanpa pembungkus. Layout
+    yang SUDAH punya pembungkus sendiri (presensi, pemilihan) harus memanggil
+    partial ini langsung di dalam <nav class="nav-links"> yang sama - jangan
+    menambah pembungkus kedua, karena itu menghasilkan <nav> bersarang.
 --}}
 @php
     $gaya = $gaya ?? 'nav';
@@ -57,6 +63,11 @@
         @endforeach
     </div>
 @else
+    {{-- Pembungkus <nav class="nav-links"> disediakan di sini, BUKAN di layout
+         pemanggil. layouts/dashboard.blade.php memakai @yield('nav') tanpa
+         pembungkus, jadi layout guru & siswa bergantung pada partial ini.
+         Layout yang sudah punya pembungkus sendiri (presensi, pemilihan) tidak
+         boleh menambahkannya lagi - dulu itu menghasilkan <nav> bersarang. --}}
     <nav class="nav-links">
         @foreach ($menu as $m)
             <a href="{{ route($m['route']) }}"

@@ -54,19 +54,35 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
 
 Route::middleware(['auth', 'role:guru'])->prefix('guru/beranda/presensi')->name('guru.presensi.')->group(function () {
     Route::get('/', [PresensiGuruController::class, 'index'])->name('index');
-    Route::post('/jadwal/{idJadwal}/buka', [PresensiGuruController::class, 'buka'])->name('buka');
-    Route::get('/sesi/{idSesi}', [PresensiGuruController::class, 'tampil'])->name('sesi');
-    Route::get('/sesi/{idSesi}/qr', [PresensiGuruController::class, 'qr'])->name('qr');
-    Route::post('/sesi/{idSesi}/tutup', [PresensiGuruController::class, 'tutup'])->name('tutup');
-    Route::post('/sesi/{idSesi}/manual', [PresensiGuruController::class, 'manual'])->name('manual');
+
+    // Batas parameter: PolaRute::ID menolak huruf dan angka di luar rentang
+    // PHP_INT_MAX, sehingga masukan ngawur berhenti sebagai 404 - bukan TypeError
+    // yang tampil sebagai 500. Pola yang sama dipakai fitur lain di proyek ini.
+    Route::post('/jadwal/{idJadwal}/buka', [PresensiGuruController::class, 'buka'])
+        ->where('idJadwal', PolaRute::ID)->name('buka');
+    Route::get('/sesi/{idSesi}', [PresensiGuruController::class, 'tampil'])
+        ->where('idSesi', PolaRute::ID)->name('sesi');
+    Route::get('/sesi/{idSesi}/qr', [PresensiGuruController::class, 'qr'])
+        ->where('idSesi', PolaRute::ID)->name('qr');
+    Route::post('/sesi/{idSesi}/tutup', [PresensiGuruController::class, 'tutup'])
+        ->where('idSesi', PolaRute::ID)->name('tutup');
+    Route::post('/sesi/{idSesi}/manual', [PresensiGuruController::class, 'manual'])
+        ->where('idSesi', PolaRute::ID)->name('manual');
 });
 
 Route::middleware(['auth', 'role:siswa'])->prefix('siswa/beranda/presensi')->name('siswa.presensi.')->group(function () {
     Route::get('/', [PresensiSiswaController::class, 'menu'])->name('index');
     Route::get('/riwayat', [PresensiSiswaController::class, 'riwayat'])->name('riwayat');
     Route::get('/pindai', [PresensiSiswaController::class, 'pindai'])->name('pindai');
-    Route::get('/scan/{kode}', [PresensiSiswaController::class, 'konfirmasi'])->name('konfirmasi');
-    Route::post('/scan/{kode}', [PresensiSiswaController::class, 'scan'])->name('scan')->middleware('throttle:10,1');
+
+    // Kode token presensi selalu 64 karakter hex (lihat pastikanToken di
+    // PresensiGuruController). Membatasi bentuknya membuat kode asal-asalan
+    // berhenti sebagai 404, sekaligus mencegah error 1406 "Data too long for
+    // column p_kode" ketika kode lebih panjang dari VARCHAR(64) di database.
+    Route::get('/scan/{kode}', [PresensiSiswaController::class, 'konfirmasi'])
+        ->where('kode', '[A-Fa-f0-9]{64}')->name('konfirmasi');
+    Route::post('/scan/{kode}', [PresensiSiswaController::class, 'scan'])
+        ->where('kode', '[A-Fa-f0-9]{64}')->name('scan')->middleware('throttle:10,1');
 });
 
 // ---- Fitur 7: Pemantauan orang tua/wali (hanya-baca, tidak ada rute tulis) ----

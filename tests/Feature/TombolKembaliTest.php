@@ -59,11 +59,15 @@ class TombolKembaliTest extends TestCase
         return TujuanKembali::untuk($request, $user);
     }
 
-    public function test_tanpa_referer_tidak_ada_tujuan(): void
+    public function test_tanpa_referer_tetap_ada_jalan_pulang_satu_tingkat(): void
     {
+        // Perilaku berubah: dulu tanpa referer tombolnya dihilangkan, sehingga
+        // pengguna yang membuka halaman dari bookmark tidak punya jalan pulang.
+        // Sekarang tombolnya tetap ada dan menunjuk induk halaman (beranda peran
+        // untuk /akun).
         $user = $this->buatAkun();
 
-        $this->assertNull($this->untuk($user, ''));
+        $this->assertSame(route('siswa.beranda'), $this->untuk($user, ''));
     }
 
     public function test_referer_sah_dipakai_apa_adanya(): void
@@ -105,9 +109,14 @@ class TombolKembaliTest extends TestCase
 
     public function test_referer_host_asing_tidak_dipakai(): void
     {
+        // Referer dari domain lain tidak boleh dipakai sebagai tujuan, tetapi
+        // tombolnya tetap ada dan menunjuk induk halaman - bukan hilang.
         $user = $this->buatAkun();
 
-        $this->assertNull($this->untuk($user, 'https://situs-lain.example/halaman'));
+        $this->assertSame(
+            route('siswa.beranda'),
+            $this->untuk($user, 'https://situs-lain.example/halaman')
+        );
     }
 
     public function test_referer_dari_host_yang_sama_dengan_request_tetap_dipakai(): void
@@ -141,12 +150,17 @@ class TombolKembaliTest extends TestCase
             ->assertSee('href="'.route('siswa.presensi.index').'"', false);
     }
 
-    public function test_referer_sama_dengan_halaman_ini_tidak_dipakai(): void
+    public function test_referer_sama_dengan_halaman_ini_naik_satu_tingkat(): void
     {
-        // Tombol yang membawa pengguna ke halaman yang sedang dibuka itu sia-sia.
+        // Pengguna mengklik menu halaman yang sedang dibuka (mis. menekan
+        // "Presensi" dua kali di navbar). Dulu tombolnya hilang; sekarang naik
+        // satu tingkat supaya tetap ada jalan pulang.
         $user = $this->buatAkun();
 
-        $this->assertNull($this->untuk($user, route('akun.profil')));
+        $this->assertSame(
+            route('siswa.beranda'),
+            $this->untuk($user, route('akun.profil'))
+        );
     }
 
     public function test_tamu_tidak_punya_tujuan(): void

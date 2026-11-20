@@ -141,12 +141,18 @@ class TombolKembaliTest extends TestCase
             ->assertSee('href="'.route('siswa.presensi.index').'"', false);
     }
 
-    public function test_referer_sama_dengan_halaman_ini_tidak_dipakai(): void
+    public function test_referer_sama_dengan_halaman_ini_diarahkan_ke_induk(): void
     {
-        // Tombol yang membawa pengguna ke halaman yang sedang dibuka itu sia-sia.
+        // Kasus ini muncul setiap kali form disimpan: back() mengembalikan
+        // pengguna ke halaman yang sama, jadi referer = URL halaman ini.
+        // Tombol Kembali tidak boleh hilang; ia diarahkan ke halaman induk,
+        // dan tidak boleh menunjuk halaman yang sedang dibuka.
         $user = $this->buatAkun();
 
-        $this->assertNull($this->untuk($user, route('akun.profil')));
+        $tujuan = $this->untuk($user, route('akun.profil'));
+
+        $this->assertNotNull($tujuan, 'Tombol Kembali tidak boleh hilang setelah simpan.');
+        $this->assertNotSame(route('akun.profil'), $tujuan);
     }
 
     public function test_tamu_tidak_punya_tujuan(): void

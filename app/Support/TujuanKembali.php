@@ -73,8 +73,20 @@ final class TujuanKembali
             return $beranda === $request->fullUrl() ? null : $beranda;
         }
 
-        // Referer yang sama dengan halaman ini: tombolnya tidak ada gunanya.
-        return $asal === $request->fullUrl() ? null : $asal;
+        // Referer yang sama dengan halaman ini: tombolnya tidak ada gunanya
+        // BILA diarahkan ke halaman itu sendiri. Kasus ini muncul setiap kali
+        // sebuah form disimpan: back() mengembalikan pengguna ke halaman yang
+        // sama, sehingga browser mengirim referer = URL halaman ini dan tombol
+        // Kembali hilang tepat setelah pengguna melihat pesan berhasil.
+        //
+        // Karena itu arahkan ke halaman INDUK, bukan membuang tombolnya. Dengan
+        // begitu halaman yang sedang dibuka tidak pernah menjadi tujuan, tetapi
+        // pengguna tetap punya jalan pulang.
+        if ($asal === $request->fullUrl()) {
+            return self::induk($request, $pengguna);
+        }
+
+        return $asal;
     }
 
     /**

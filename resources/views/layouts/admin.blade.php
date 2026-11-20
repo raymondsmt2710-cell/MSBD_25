@@ -12,6 +12,12 @@
         *{box-sizing:border-box}
         body{margin:0;font-family:Figtree,system-ui,-apple-system,sans-serif;background:#f6f7f8;color:#1f2937}
         a{color:inherit;text-decoration:none}
+        /* Bar atas tipis, sama seperti halaman lain. Diletakkan di atas bar
+           breadcrumb, di dalam kolom konten supaya sidebar tetap penuh. */
+        .topbar{background:#09656F;color:#fff;padding:9px 22px;font-size:12px}
+        .topbar-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+        .topbar .dot{width:6px;height:6px;border-radius:999px;background:#C97A14;display:inline-block;animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
         .kerangka{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
         aside{background:#043d44;color:#d7eef0;padding:18px 12px;position:sticky;top:0;height:100vh;overflow-y:auto}
         .brand{display:flex;align-items:center;gap:10px;padding:0 8px 16px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:10px}
@@ -135,6 +141,17 @@
     @include('partials.sidebar-admin')
 
     <div>
+        {{-- Bar atas: halaman admin sebelumnya hanya punya bar breadcrumb,
+             sehingga terasa berbeda dari halaman lain. Strip ini menyamakannya
+             tanpa mengulang logo SakuSaka yang sudah ada di sidebar. --}}
+        <div class="topbar">
+            <div class="topbar-inner">
+                <span class="dot"></span>
+                <strong>Sistem Informasi Sekolah</strong>
+                <span style="opacity:.75">SMA Negeri 1 Kabanjahe</span>
+            </div>
+        </div>
+
         <div class="atas">
             <span class="jalur">@yield('jalur', 'Administrator')</span>
             <div class="aksi-baris">

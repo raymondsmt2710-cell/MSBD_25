@@ -202,6 +202,7 @@
             .footer-inner{flex-direction:column}
         }
     </style>
+    @include('partials.css-nav-tengah')
 </head>
 <body>
 

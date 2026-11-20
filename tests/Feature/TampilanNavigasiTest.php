@@ -1,0 +1,158 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use App\Support\TujuanKembali;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Tests\TestCase;
+
+// Regresi tampilan yang ditemukan saat memakai aplikasi:
+//
+//  1. Tombol "Kembali" hilang setelah menyimpan form. Penyebabnya bukan
+//     tombolnya yang dilepas, melainkan back() yang mengembalikan pengguna ke
+//     halaman yang SAMA. Browser lalu mengirim referer = URL halaman itu
+//     sendiri, dan aturan "referer sama dengan halaman ini" membuat tujuan
+//     kembali menjadi null.
+//  2. Panel admin hanya punya bar tipis berisi breadcrumb, tanpa header seperti
+//     halaman lain.
+//  3. Halaman /kelola/pemilihan menampilkan tautan "Dashboard" di tengah bar
+//     padahal admin sudah punya sidebar; tautan itu dobel dan membingungkan.
+class TampilanNavigasiTest extends TestCase
+{
+    use DatabaseTruncation;
+
+    private function buatAkun(string $role, string $username): User
+    {
+        $idUser = DB::table('users')->insertGetId([
+            'username' => $username,
+            'password_hash' => Hash::make('password'),
+            'role' => $role,
+            'is_active' => true,
+        ]);
+
+        return User::find($idUser);
+    }
+
+    // ---------------------------------------------------------------- 1. Kembali
+
+    public function test_setelah_simpan_form_tombol_kembali_tetap_ada(): void
+    {
+        // Referer yang dikirim browser setelah back() sama dengan halaman yang
+        // sedang dibuka. Dulu ini menghasilkan null sehingga tombol hilang.
+        $admin = $this->buatAkun('admin', 'nav_admin_kembali');
+        $halaman = route('admin.denah.index');
+
+        $request = Request::create($halaman, 'GET');
+        $request->headers->set('referer', $halaman);
+
+        $this->assertNotNull(
+            TujuanKembali::untuk($request, $admin),
+            'Setelah menyimpan form, tombol Kembali harus tetap punya tujuan.'
+        );
+    }
+
+    public function test_tujuan_kembali_setelah_simpan_bukan_halaman_itu_sendiri(): void
+    {
+        $admin = $this->buatAkun('admin', 'nav_admin_tujuan');
+        $halaman = route('admin.denah.index');
+
+        $request = Request::create($halaman, 'GET');
+        $request->headers->set('referer', $halaman);
+
+        $this->assertNotSame(
+            $halaman,
+            TujuanKembali::untuk($request, $admin),
+            'Tombol Kembali tidak boleh menunjuk halaman yang sedang dibuka.'
+        );
+    }
+
+    public function test_halaman_beranda_tetap_tanpa_tombol_kembali(): void
+    {
+        // Perbaikan di atas tidak boleh memunculkan tombol di beranda: beranda
+        // adalah puncak navigasi.
+        $siswa = $this->buatAkun('siswa', 'nav_siswa_beranda');
+        DB::table('siswa')->insert([
+            'id_user' => $siswa->id_user,
+            'nis' => '20269901',
+            'nisn' => '0020269901',
+            'nama_siswa' => 'Siswa Navigasi',
+            'jenis_kelamin' => 'L',
+            'status' => 'aktif',
+        ]);
+
+        $this->actingAs($siswa)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->assertDontSee('class="tombol-kembali"', false);
+    }
+
+    // ----------------------------------------------------------------- 2. Header
+
+    public function test_panel_admin_punya_topbar_seperti_halaman_lain(): void
+    {
+        $admin = $this->buatAkun('admin', 'nav_admin_topbar');
+
+        $this->actingAs($admin)
+            ->get(route('admin.kelas.index'))
+            ->assertOk()
+            ->assertSee('class="topbar"', false)
+            ->assertSee('Sistem Informasi Sekolah')
+            ->assertSee('SMA Negeri 1 Kabanjahe');
+    }
+
+    public function test_semua_halaman_admin_punya_topbar(): void
+    {
+        // Satu partial dipasang di layout admin, jadi semua halaman di bawahnya
+        // ikut mendapat header. Kalau layout admin diganti, tes ini menangkapnya.
+        $admin = $this->buatAkun('admin', 'nav_admin_semua');
+
+        foreach ([
+            route('admin.dashboard'),
+            route('admin.kelas.index'),
+            route('admin.denah.index'),
+            route('admin.siswa.index'),
+            route('admin.mapel.index'),
+        ] as $halaman) {
+            $this->actingAs($admin)
+                ->get($halaman)
+                ->assertOk()
+                ->assertSee('class="topbar"', false);
+        }
+    }
+
+    // ------------------------------------------------------- 3. Nav tengah dobel
+
+    public function test_admin_tidak_melihat_tautan_dashboard_di_tengah_halaman_pemilihan(): void
+    {
+        // Admin sudah punya sidebar berisi "Dasbor". Tautan di tengah bar hanya
+        // mengulang tujuan yang sama.
+        $admin = $this->buatAkun('admin', 'nav_admin_pemilihan');
+
+        $html = $this->actingAs($admin)
+            ->get(route('kelola.pemilihan.index'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString(
+            'class="nav-links"',
+            $html,
+            'Admin tidak boleh mendapat tautan di tengah bar pada halaman pemilihan.'
+        );
+    }
+
+    public function test_admin_tetap_punya_sidebar_di_halaman_pemilihan(): void
+    {
+        // Menghapus tautan tengah tidak boleh ikut menghapus navigasi admin.
+        $admin = $this->buatAkun('admin', 'nav_admin_sidebar');
+
+        $this->actingAs($admin)
+            ->get(route('kelola.pemilihan.index'))
+            ->assertOk()
+            ->assertSee(route('admin.dashboard'), false)
+            ->assertSee('Akun Pengguna');
+    }
+}

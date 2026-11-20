@@ -133,6 +133,7 @@
             .nav-inner{position:relative}
         }
     </style>
+    @include('partials.css-nav-tengah')
 </head>
 @php
     // Admin memakai sidebar di SEMUA halaman, termasuk yang memakai layout ini.
@@ -180,22 +181,32 @@
             </div>
         </a>
 
-        {{-- partials.nav-utama sudah membungkus daftar tautan dengan
-             <nav class="nav-links">. Jangan menambah pembungkus kedua di sini. --}}
-        @auth
-            @include('partials.nav-utama', ['gaya' => 'nav'])
-        @endauth
+        {{-- Admin sudah punya sidebar berisi "Dasbor" dan menu lengkap. Tautan
+             di tengah bar hanya mengulang tujuan yang sama, jadi untuk admin
+             elemennya tidak dirender sama sekali (bukan sekadar dikosongkan).
 
-        {{-- Hamburger: di ponsel tautan nav disembunyikan, jadi menu pindah ke sini. --}}
+             partials.nav-utama SUDAH membungkus daftar tautan dengan
+             <nav class="nav-links">, jadi jangan menambah pembungkus kedua. --}}
+        @unless ($pakaiSidebarAdmin)
+            @auth
+                @include('partials.nav-utama', ['gaya' => 'nav'])
+            @endauth
+        @endunless
+
+        {{-- Hamburger: di ponsel tautan nav disembunyikan, jadi menu pindah ke sini.
+             Admin tidak memerlukannya: sidebar admin sudah berubah menjadi daftar
+             horizontal di layar sempit, dan isi drawer-nya hanya mengulang "Dasbor". --}}
         @auth
-            <details class="nav-drawer">
-                <summary class="nav-hamburger" aria-label="Buka menu">
-                    <x-ikon nama="list" ukuran="20" />
-                </summary>
-                <div class="drawer-panel">
-                    @include('partials.drawer-peran')
-                </div>
-            </details>
+            @unless ($pakaiSidebarAdmin)
+                <details class="nav-drawer">
+                    <summary class="nav-hamburger" aria-label="Buka menu">
+                        <x-ikon nama="list" ukuran="20" />
+                    </summary>
+                    <div class="drawer-panel">
+                        @include('partials.drawer-peran')
+                    </div>
+                </details>
+            @endunless
         @endauth
 
         <div class="nav-aksi">

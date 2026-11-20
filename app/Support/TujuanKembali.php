@@ -225,6 +225,12 @@ final class TujuanKembali
         //
         // Memakai referer pada kedua kasus membuat tombol kembali membawa
         // pengguna MAJU lagi, sehingga bolak-balik tanpa pernah naik.
+        //
+        // Catatan gabungan: kasus "referer sama dengan halaman ini setelah form
+        // disimpan" (back() mengembalikan ke halaman yang sama) sudah tertangani
+        // oleh pemeriksaan samaPath() di atas, dan lebih luas - samaPath()
+        // membandingkan path saja, sehingga referer yang hanya beda query pun
+        // ikut tertangani.
         if (self::satuCabang($pathAsal, $sekarang, $pengguna)) {
             return self::tujuanDariInduk($request, $pengguna);
         }

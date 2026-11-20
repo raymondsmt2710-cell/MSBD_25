@@ -163,6 +163,7 @@
             .nav-inner{position:relative}
         }
     </style>
+    @include('partials.css-nav-tengah')
 </head>
 <body>
 <div class="topbar">

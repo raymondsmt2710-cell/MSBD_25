@@ -152,15 +152,20 @@ class TombolKembaliTest extends TestCase
 
     public function test_referer_sama_dengan_halaman_ini_naik_satu_tingkat(): void
     {
-        // Pengguna mengklik menu halaman yang sedang dibuka (mis. menekan
-        // "Presensi" dua kali di navbar). Dulu tombolnya hilang; sekarang naik
-        // satu tingkat supaya tetap ada jalan pulang.
+        // Dua kasus nyata yang harus tertangani:
+        //   1. Pengguna mengklik menu halaman yang sedang dibuka (mis. menekan
+        //      "Presensi" dua kali di navbar).
+        //   2. Form disimpan: back() mengembalikan ke halaman yang sama sehingga
+        //      browser mengirim referer = URL halaman ini.
+        // Keduanya tidak boleh membuat tombol hilang, dan tujuannya tidak boleh
+        // halaman yang sedang dibuka.
         $user = $this->buatAkun();
 
-        $this->assertSame(
-            route('siswa.beranda'),
-            $this->untuk($user, route('akun.profil'))
-        );
+        $tujuan = $this->untuk($user, route('akun.profil'));
+
+        $this->assertNotNull($tujuan, 'Tombol Kembali tidak boleh hilang setelah simpan.');
+        $this->assertNotSame(route('akun.profil'), $tujuan);
+        $this->assertSame(route('siswa.beranda'), $tujuan);
     }
 
     public function test_tamu_tidak_punya_tujuan(): void

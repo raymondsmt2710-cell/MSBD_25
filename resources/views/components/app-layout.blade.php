@@ -83,6 +83,7 @@
             .nav-links{display:none}
         }
     </style>
+    @include('partials.css-nav-tengah')
 </head>
 @php
     // Admin memakai sidebar di SEMUA halaman, termasuk halaman kas & denah.

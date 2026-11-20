@@ -25,6 +25,8 @@
         .brand .logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#043d44,#09656F);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
         .brand .nama{font-size:13px;font-weight:800;color:#09656F;line-height:1.1}
         .brand .sub{font-size:11px;color:#9ca3af;line-height:1.2}
+        /* Tautan nav dipusatkan oleh partials/css-nav-tengah (grid 1fr auto 1fr),
+           bukan oleh space-between, agar tidak bergeser ke kanan. */
         .nav-links{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
         .nav-links a{padding:7px 11px;border-radius:10px;font-size:13px;font-weight:500;color:#4b5563}
         .nav-links a:hover{background:#f3f4f6;color:#09656F}
@@ -108,6 +110,7 @@
             .footer-inner{flex-direction:column}
         }
     </style>
+    @include('partials.css-nav-tengah')
 </head>
 <body>
 

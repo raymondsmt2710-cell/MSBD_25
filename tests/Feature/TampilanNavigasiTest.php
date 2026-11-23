@@ -263,6 +263,30 @@ class TampilanNavigasiTest extends TestCase
             $html,
             'Kolom grid di layar sempit harus minmax(0,1fr) agar bisa menyusut.'
         );
+
+        // Panel menu harus MENGAMBANG di atas konten (absolute), bukan mendorong
+        // konten ke bawah. Dengan posisi statis, membuka 16 menu menggeser
+        // konten sejauh ~665px sehingga pengguna kehilangan tempatnya.
+        $this->assertMatchesRegularExpression(
+            '/\.kerangka-admin\s*>\s*aside\s*\{[^}]*position\s*:\s*relative/',
+            $html,
+            'Sidebar di layar sempit harus position:relative agar panel bisa mengambang.'
+        );
+
+        $this->assertMatchesRegularExpression(
+            '/\.sidebar-terbuka\s+nav[^{]*\{[^}]*position\s*:\s*absolute/',
+            $html,
+            'Panel menu harus position:absolute supaya tidak menggeser konten.'
+        );
+
+        // Panel absolute akan TERPOTONG oleh overflow-y:auto milik aside (aturan
+        // desktop), sehingga menu tidak terlihat sama sekali saat dibuka.
+        // Di layar sempit aside harus overflow:visible.
+        $this->assertMatchesRegularExpression(
+            '/\.kerangka-admin\s*>\s*aside\s*\{[^}]*overflow\s*:\s*visible/',
+            $html,
+            'Sidebar di layar sempit harus overflow:visible agar panel mengambang tidak terpotong.'
+        );
     }
 
     public function test_skrip_sidebar_admin_mengatur_buka_tutup_panel(): void

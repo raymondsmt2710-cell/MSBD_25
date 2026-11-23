@@ -43,10 +43,16 @@
            lebar). Akibatnya seluruh grid melebar melewati viewport dan sidebar
            ikut membengkak. */
         .kerangka-admin{grid-template-columns:minmax(0,1fr)}
-        .kerangka-admin > aside{position:static;height:auto;max-height:none;padding:10px 12px}
+        /* position:relative menjadi acuan panel mengambang di bawah.
+           overflow:visible WAJIB: aturan desktop memberi aside overflow-y:auto,
+           yang akan memotong panel absolute sehingga menu tidak terlihat. */
+        .kerangka-admin > aside{position:relative;height:auto;max-height:none;overflow:visible;padding:10px 12px}
         .kerangka-admin > aside .brand{padding:0;border-bottom:0;margin-bottom:0}
         .kerangka-admin .sidebar-toggle{display:inline-flex}
         .kerangka-admin > aside nav{display:none;flex-direction:column;gap:2px;margin-top:10px;max-height:calc(100vh - 120px);overflow-y:auto;-webkit-overflow-scrolling:touch}
-        .kerangka-admin > aside.sidebar-terbuka nav{display:flex}
+        /* Panel MENGAMBANG di bawah bar: absolute, bukan static. Dengan static,
+           membuka 16 menu mendorong seluruh konten ke bawah (~665px) sehingga
+           pengguna kehilangan tempatnya — spec meminta konten tidak bergeser. */
+        .kerangka-admin > aside.sidebar-terbuka nav{display:flex;position:absolute;left:0;right:0;top:100%;z-index:60;margin-top:0;padding:10px 12px 14px;background:#043d44;box-shadow:0 14px 26px rgba(16,24,40,.35)}
     }
 </style>

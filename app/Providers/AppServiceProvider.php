@@ -25,7 +25,18 @@ class AppServiceProvider extends ServiceProvider
         // Paksa URL absolut memakai APP_URL. Tanpa ini, route() memakai alamat yang
         // sedang dibuka di peramban guru, sehingga QR yang dihasilkan bisa berisi
         // "localhost" dan tidak dapat dibuka dari ponsel siswa.
-        if ($appUrl = config('app.url')) {
+        //
+        // PENGECUALIAN: bila permintaan datang lewat tunnel Cloudflare, pakai host
+        // tunnel yang sedang dipakai pengunjung. Alasannya, nilai APP_URL di .env
+        // "terkunci" pada saat `php artisan serve` dijalankan (diwarisi lewat
+        // putenv() ke proses anak php -S, dan Dotenv bersifat immutable). Jadi URL
+        // tunnel yang berubah tidak terbaca sampai server di-restart. Dengan cara
+        // ini, URL tunnel baru langsung dipakai tanpa perlu restart atau ubah .env.
+        $host = request()->getHost();
+
+        if (str_ends_with($host, '.trycloudflare.com')) {
+            URL::forceRootUrl(request()->getSchemeAndHttpHost());
+        } elseif ($appUrl = config('app.url')) {
             URL::forceRootUrl($appUrl);
         }
 

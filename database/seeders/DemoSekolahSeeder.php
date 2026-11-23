@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\JenisKas;
 use App\Enums\KategoriKas;
+use App\Enums\Role;
 use App\Enums\StatusIuran;
 use App\Models\AnggotaKelas;
 use App\Models\DenahKelas;
@@ -147,6 +148,49 @@ class DemoSekolahSeeder extends Seeder
             ]);
 
             $userBendahara = $daftarSiswa[1]->user;
+
+            // ---------- Akun demo peran "Siswa Bendahara Kas" ----------
+            // Peran ini memberi hak kelola kas kelasnya sendiri tanpa menjadi
+            // admin. Profilnya tetap baris tabel siswa, jadi presensi/perangkat/
+            // pemilihan tetap berlaku. Dibuat terpisah dari 8 siswa di atas agar
+            // tidak mengacak daftar nama dan nomor absen yang sudah dipakai
+            // matriks iuran.
+            $userBendaharaKas = User::firstOrCreate(
+                ['username' => 'bendahara'],
+                ['password_hash' => $hash, 'role' => Role::BendaharaKas, 'is_active' => true],
+            );
+
+            if (! Hash::isHashed((string) $userBendaharaKas->password_hash)) {
+                $userBendaharaKas->update(['password_hash' => $hash]);
+            }
+
+            // Pastikan perannya benar walau akunnya sudah ada dari seed lama.
+            if ($userBendaharaKas->role !== Role::BendaharaKas) {
+                $userBendaharaKas->update(['role' => Role::BendaharaKas]);
+            }
+
+            $siswaBendaharaKas = Siswa::firstOrCreate(
+                ['id_user' => $userBendaharaKas->id_user],
+                [
+                    'nis' => '2026099',
+                    'nisn' => '0061234099',
+                    'nama_siswa' => 'Bendahara Kas (Demo)',
+                    'jenis_kelamin' => 'L',
+                    'tempat_lahir' => 'Bandung',
+                    'tanggal_lahir' => '2009-01-15',
+                    'alamat' => 'Jl. Pendidikan No. 99',
+                    'no_hp' => '08120000099',
+                    'status' => 'aktif',
+                ],
+            );
+
+            $noAbsenBendahara = (int) AnggotaKelas::where('id_kelas', $kelas->id_kelas)
+                ->max('no_absen');
+
+            AnggotaKelas::firstOrCreate(
+                ['id_kelas' => $kelas->id_kelas, 'id_siswa' => $siswaBendaharaKas->id_siswa],
+                ['no_absen' => $noAbsenBendahara + 1],
+            );
 
             $orangTuaUser = User::firstOrCreate(
                 ['username' => 'ortu1'],

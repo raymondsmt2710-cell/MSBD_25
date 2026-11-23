@@ -108,6 +108,7 @@ Buka `http://127.0.0.1:8000`. Semua akun demo memakai password `password`:
 | `siswa1` | Siswa (Ketua Kelas) | Riwayat presensi, kelola denah kelas |
 | `siswa2` | Siswa (Bendahara) | Catat dan verifikasi kas kelas |
 | `ortu1` | Orang tua | Lihat kas dan denah anak (hanya-baca) |
+| `bendahara` | Siswa Bendahara Kas | Kelola kas kelasnya: catat transaksi, verifikasi iuran |
 
 ### Orang tua melaporkan pembayaran iuran
 

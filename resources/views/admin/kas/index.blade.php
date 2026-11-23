@@ -1,9 +1,9 @@
 @extends('layouts.admin')
-@section('judul', 'Kas Semua Kelas')
-@section('jalur', 'Pemantauan / Kas')
+@section('judul', 'Keuangan Semua Kelas')
+@section('jalur', 'Pemantauan / Keuangan')
 @section('isi')
 @php $rp = fn ($n) => 'Rp '.number_format((float) $n, 0, ',', '.'); @endphp
-<h1>Kas Semua Kelas</h1>
+<h1>Keuangan Semua Kelas</h1>
 <p class="subjudul">Pencatatan harian oleh bendahara kelas. Admin dapat membatalkan transaksi sebagai koreksi — transaksi tidak pernah dihapus, dan saldo tidak menghitung transaksi batal.</p>
 
 <div class="kartu">

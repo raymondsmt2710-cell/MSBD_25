@@ -37,7 +37,7 @@ Route::middleware('auth')->prefix('akun')->name('akun.')->group(function () {
 });
 
 // ---- Dashboard siswa & guru (hanya-baca) ----
-Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
+Route::middleware(['auth', 'role:siswa,bendahara_kas'])->prefix('siswa')->name('siswa.')->group(function () {
     Route::get('/beranda', [DashboardSiswaController::class, 'index'])->name('beranda');
     Route::get('/perangkat', [DashboardSiswaController::class, 'perangkat'])->name('perangkat');
 });
@@ -70,7 +70,7 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru/beranda/presensi')->name(
         ->where('idSesi', PolaRute::ID)->name('manual');
 });
 
-Route::middleware(['auth', 'role:siswa'])->prefix('siswa/beranda/presensi')->name('siswa.presensi.')->group(function () {
+Route::middleware(['auth', 'role:siswa,bendahara_kas'])->prefix('siswa/beranda/presensi')->name('siswa.presensi.')->group(function () {
     Route::get('/', [PresensiSiswaController::class, 'menu'])->name('index');
     Route::get('/riwayat', [PresensiSiswaController::class, 'riwayat'])->name('riwayat');
     Route::get('/pindai', [PresensiSiswaController::class, 'pindai'])->name('pindai');
@@ -95,7 +95,7 @@ Route::middleware(['auth', 'role:orang_tua'])->prefix('ortu')->name('ortu.')->gr
 });
 
 // ---- Fitur 3: Pemilihan suara elektronik (e-voting) ----
-Route::middleware(['auth', 'role:siswa'])->prefix('siswa/pemilihan')->name('siswa.pemilihan.')->group(function () {
+Route::middleware(['auth', 'role:siswa,bendahara_kas'])->prefix('siswa/pemilihan')->name('siswa.pemilihan.')->group(function () {
     Route::get('/', [SiswaPemilihanController::class, 'index'])->name('index');
     Route::get('/{id}/pilih', [SiswaPemilihanController::class, 'pilih'])->name('pilih');
     Route::post('/{id}/pilih', [SiswaPemilihanController::class, 'simpan'])->name('simpan')->middleware('throttle:10,1');
@@ -132,7 +132,8 @@ Route::middleware(['auth', 'role:admin,guru'])->prefix('kelola/pemilihan')->name
 
 // ---- Fitur 5: Perangkat organisasi & kelas ----
 // Lihat: siswa, guru, admin. Orang tua sengaja tidak diberi akses.
-Route::middleware(['auth', 'role:siswa,guru,admin'])->prefix('perangkat')->name('perangkat.')->group(function () {
+// 'bendahara_kas' adalah siswa dengan hak tambahan di kas, jadi ikut di sini.
+Route::middleware(['auth', 'role:siswa,bendahara_kas,guru,admin'])->prefix('perangkat')->name('perangkat.')->group(function () {
     Route::get('/', [PerangkatController::class, 'index'])->name('index');
     Route::get('/kelas/{id}', [PerangkatController::class, 'kelas'])->whereNumber('id')->name('kelas');
     Route::get('/organisasi/{id}', [PerangkatController::class, 'organisasi'])->whereNumber('id')->name('organisasi');

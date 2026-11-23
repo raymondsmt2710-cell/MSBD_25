@@ -35,7 +35,7 @@ class KasTest extends TestCase
         $this->actingAs($this->sekolah['admin'])
             ->get('/kas')
             ->assertOk()
-            ->assertSee('Kas Kelas');
+            ->assertSee('Keuangan Kelas');
     }
 
     public function test_wadah_tabel_transaksi_bisa_digeser_bukan_memotong(): void
@@ -246,7 +246,7 @@ class KasTest extends TestCase
         $this->actingAs($this->sekolah['bendahara'])
             ->get('/kas/cetak')
             ->assertOk()
-            ->assertSee('Laporan Keuangan Kas Kelas');
+            ->assertSee('Laporan Keuangan Kelas');
     }
 
     /** @return array<string, mixed> */

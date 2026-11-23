@@ -109,6 +109,19 @@ Buka `http://127.0.0.1:8000`. Semua akun demo memakai password `password`:
 | `siswa2` | Siswa (Bendahara) | Catat dan verifikasi kas kelas |
 | `ortu1` | Orang tua | Lihat kas dan denah anak (hanya-baca) |
 
+### Peran "Siswa Bendahara Kas"
+
+Selain empat peran bawaan (`admin`, `guru`, `siswa`, `orang_tua`), tersedia peran
+`bendahara_kas`. Akun ini **tetap siswa** — profilnya baris di tabel `siswa`,
+sehingga presensi, perangkat, dan pemilihan berjalan seperti biasa — tetapi
+mendapat hak tambahan untuk mengelola kas **kelasnya sendiri**: mencatat dan
+membatalkan transaksi, membuat tagihan iuran, serta memverifikasi/membatalkan
+iuran. Hak ini melekat pada akunnya (kolom `users.role`), tidak bergantung pada
+nama jabatan, dan tidak memberi akses ke panel administrator maupun kelas lain.
+
+Untuk membuatnya: **Admin → Akun Pengguna → Tambah**, pilih peran
+"Siswa Bendahara Kas", lalu lengkapi profil siswanya seperti akun siswa biasa.
+
 ## Metodologi Pengembangan
 
 Model **Waterfall** (SDLC) dengan tahapan:

@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">Kas Kelas</h2>
+                <h2 class="text-xl font-semibold leading-tight text-gray-800">Keuangan Kelas</h2>
                 <p class="text-sm text-gray-500">{{ $initial['kelas']['nama_kelas'] }}</p>
             </div>
         </div>

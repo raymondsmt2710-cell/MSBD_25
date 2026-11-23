@@ -59,7 +59,7 @@ class AkunController extends Controller
      */
     private function dataDiri(User $pengguna): array
     {
-        if ($pengguna->role === Role::Siswa) {
+        if ($pengguna->role->punyaProfilSiswa()) {
             $siswa = $pengguna->siswa;
 
             if ($siswa === null) {

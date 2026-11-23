@@ -24,6 +24,10 @@ class DBDynamicConnection
         'admin'     => 'mysql_admin',
         'guru'      => 'mysql_guru',
         'siswa'     => 'mysql_siswa',
+        // bendahara_kas tetap memakai koneksi siswa: hak tulis kas memang sudah
+        // dimiliki siswa_app, dan pembatasan "hanya kelasnya sendiri" dijaga
+        // Gate kas.kelola di aplikasi.
+        'bendahara_kas' => 'mysql_siswa',
         'orang_tua' => 'mysql_orangtua',
     ];
 

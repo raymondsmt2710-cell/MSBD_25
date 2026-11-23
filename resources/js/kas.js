@@ -190,15 +190,15 @@ export default function kasPage(initial) {
             const alasan = window.prompt(`Batalkan transaksi "${transaksi.keterangan}"? Tulis alasan pembatalan:`);
             if (!alasan) return;
 
-            const data = new FormData();
-            data.append('_method', 'DELETE');
-            data.append('alasan_batal', alasan);
-
+            // Kirim JSON, bukan FormData: headers(false) tidak menyertakan
+            // Content-Type sehingga PHP tidak mengurai body FormData dan
+            // `_method=DELETE` tidak pernah terbaca -> request jatuh ke route
+            // POST /kas/transaksi (store) dan gagal validasi.
             try {
                 const res = await fetch(`/kas/transaksi/${transaksi.id_transaksi}`, {
-                    method: 'POST',
-                    headers: this.headers(false),
-                    body: data,
+                    method: 'DELETE',
+                    headers: this.headers(),
+                    body: JSON.stringify({ alasan_batal: alasan }),
                 });
                 const payload = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(payload.message ?? 'Gagal membatalkan transaksi.');

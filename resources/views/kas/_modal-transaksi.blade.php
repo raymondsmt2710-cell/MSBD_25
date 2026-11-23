@@ -51,7 +51,7 @@
 
             <label class="block sm:col-span-2">
                 <span class="mb-1 block text-sm font-medium text-gray-700">Keterangan</span>
-                <textarea x-model="form.keterangan" rows="3" placeholder="Contoh: Iuran kas bulan November"
+                <textarea x-model="form.keterangan" rows="3" placeholder="Contoh: Iuran keuangan kelas bulan November"
                           class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
                 <span x-show="error('keterangan')" x-text="error('keterangan')" class="mt-1 block text-xs text-rose-600"></span>
             </label>

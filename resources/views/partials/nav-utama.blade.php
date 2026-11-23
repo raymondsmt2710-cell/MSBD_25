@@ -23,17 +23,21 @@
     $peran = $peran instanceof \App\Enums\Role ? $peran->value : (string) $peran;
 
     $menu = match ($peran) {
-        'siswa' => [
+        'siswa', 'bendahara_kas' => [
             ['label' => 'Beranda',   'route' => 'siswa.beranda',             'aktif' => 'siswa.beranda',            'ikon' => 'person-circle'],
             ['label' => 'Presensi',  'route' => 'siswa.presensi.index',      'aktif' => 'siswa.presensi.*',         'ikon' => 'calendar-week'],
             ['label' => 'Perangkat', 'route' => 'siswa.perangkat',           'aktif' => 'siswa.perangkat',          'ikon' => 'people'],
             ['label' => 'Pemilihan', 'route' => 'siswa.pemilihan.index',     'aktif' => 'siswa.pemilihan.*',        'ikon' => 'check2-square'],
+            // Kas kelas terbuka untuk seluruh siswa (transparansi, hanya-baca
+            // bagi siswa biasa). Peran bendahara_kas mendapat hak kelola.
+            ['label' => 'Keuangan Kelas', 'route' => 'kas.index',            'aktif' => 'kas.*',                    'ikon' => 'cash-coin'],
+            ['label' => 'Denah',     'route' => 'denah.index',               'aktif' => 'denah.*',                  'ikon' => 'grid-3x3'],
         ],
         'guru' => [
             ['label' => 'Beranda',   'route' => 'guru.beranda',              'aktif' => 'guru.beranda',             'ikon' => 'person-circle'],
             ['label' => 'Presensi',  'route' => 'guru.presensi.index',       'aktif' => 'guru.presensi.*',          'ikon' => 'calendar-week'],
             ['label' => 'Perangkat', 'route' => 'perangkat.index',           'aktif' => 'perangkat.*',              'ikon' => 'people'],
-            ['label' => 'Kas Kelas', 'route' => 'kas.index',                 'aktif' => 'kas.*',                    'ikon' => 'cash-coin'],
+            ['label' => 'Keuangan Kelas', 'route' => 'kas.index',            'aktif' => 'kas.*',                    'ikon' => 'cash-coin'],
             ['label' => 'Denah',     'route' => 'denah.index',               'aktif' => 'denah.*',                  'ikon' => 'grid-3x3'],
         ],
         // Catatan: guru TIDAK ditawari "Pemilihan" di sini. Guru hanya boleh

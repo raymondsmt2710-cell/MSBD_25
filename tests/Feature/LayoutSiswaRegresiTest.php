@@ -80,4 +80,20 @@ class LayoutSiswaRegresiTest extends TestCase
             ->assertSee(route('siswa.perangkat'), false)
             ->assertSee(route('siswa.pemilihan.index'), false);
     }
+
+    /**
+     * Regresi: menu "Keuangan Kelas" dulu tidak pernah dirender untuk siswa,
+     * padahal halaman /kas memang terbuka bagi mereka (transparansi kas kelas).
+     * Akibatnya akun bendahara_kas tidak punya jalan masuk dari beranda.
+     */
+    public function test_nav_siswa_memuat_tautan_keuangan_kelas(): void
+    {
+        $user = $this->buatSiswa();
+
+        $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->assertSee('Keuangan Kelas')
+            ->assertSee(route('kas.index'), false);
+    }
 }

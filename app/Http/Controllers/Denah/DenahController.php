@@ -32,6 +32,9 @@ class DenahController extends Controller
         $denah = $this->denah->denahAktif($kelas, $bisaKelolaKursi, $request->user()->id_user);
         $ruangan = $this->denah->ruangan();
 
+        // Orang tua hanya boleh melihat kursi anaknya; null = seluruh kelas.
+        $idSiswaTerlihat = $this->akses->siswaTerlihat($request->user(), $kelas);
+
         return view('denah.index', [
             'initial' => [
                 'idKelas' => $kelas->id_kelas,
@@ -45,8 +48,8 @@ class DenahController extends Controller
                 'bisaKelolaKursi' => $bisaKelolaKursi,
                 'bisaKelolaRuangan' => Gate::allows('denah.kelola-ruangan'),
                 'denah' => $denah,
-                'kursi' => $denah ? $this->denah->kursi($denah, $kelas) : [],
-                'siswa' => $this->denah->siswa($kelas),
+                'kursi' => $denah ? $this->denah->kursi($denah, $kelas, $idSiswaTerlihat) : [],
+                'siswa' => $this->denah->siswa($kelas, $idSiswaTerlihat),
                 'ruangan' => $ruangan,
                 'gedung' => collect($ruangan)->pluck('gedung')->unique()->values()->all(),
                 'lantai' => collect($ruangan)->pluck('lantai')->unique()->sort()->values()->all(),

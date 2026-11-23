@@ -24,7 +24,7 @@ final class Akses
                 ->get();
         }
 
-        if ($user->role === Role::Siswa) {
+        if ($user->role->siswaSeperti()) {
             $kelas = $this->kelasAktifSiswa($user);
 
             return $kelas ? collect([$kelas]) : collect();
@@ -99,11 +99,17 @@ final class Akses
      */
     public function siswaTerlihat(User $user, Kelas $kelas): ?Collection
     {
-        if ($this->isBendahara($user, $kelas) || $this->isKetuaKelas($user, $kelas)) {
+        // Peran bendahara_kas boleh mengelola kas kelasnya, jadi harus melihat
+        // seluruh baris matriks iuran — sama seperti bendahara dan ketua kelas.
+        if (
+            $user->role === Role::BendaharaKas
+            || $this->isBendahara($user, $kelas)
+            || $this->isKetuaKelas($user, $kelas)
+        ) {
             return null;
         }
 
-        if ($user->role === Role::Siswa) {
+        if ($user->role->siswaSeperti()) {
             $siswa = $user->siswa;
 
             return $siswa ? collect([$siswa->id_siswa]) : collect();
@@ -166,12 +172,26 @@ final class Akses
 
     public function bisaKelolaKas(User $user, Kelas $kelas): bool
     {
+        // Peran bendahara_kas: ditandai langsung di akunnya, tidak bergantung
+        // pada nama jabatan, tetapi tetap terbatas pada kelasnya sendiri
+        // (kelas diverifikasi lewat bisaLihatKelas).
+        if ($user->role === Role::BendaharaKas) {
+            return $this->bisaLihatKelas($user, $kelas);
+        }
+
         return $user->role === Role::Admin || $this->isBendahara($user, $kelas);
     }
 
+    /**
+     * Denah kelas hanya boleh diubah administrator. Semua peran lain —
+     * termasuk ketua kelas dan bendahara kas — hanya dapat melihat.
+     * $kelas tetap diterima agar tanda tangan sama dengan gate lain dan
+     * pemanggil tidak perlu diubah; nilainya sengaja tidak dipakai karena
+     * wewenang ini tidak lagi bergantung pada jabatan di kelas.
+     */
     public function bisaKelolaKursi(User $user, Kelas $kelas): bool
     {
-        return $user->role === Role::Admin || $this->isKetuaKelas($user, $kelas);
+        return $user->role === Role::Admin;
     }
 
     public function bisaKelolaRuangan(User $user): bool

@@ -48,7 +48,7 @@ class AuthController extends Controller
         return match ($role) {
             Role::Admin => route('admin.dashboard'),
             Role::Guru => route('guru.beranda'),
-            Role::Siswa => route('siswa.beranda'),
+            Role::Siswa, Role::BendaharaKas => route('siswa.beranda'),
             Role::OrangTua => route('ortu.index'),
             default => route('beranda'),
         };

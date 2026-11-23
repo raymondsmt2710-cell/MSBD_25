@@ -8,6 +8,7 @@ use App\Models\Kelas;
 use App\Models\PengurusKelas;
 use App\Models\PosisiDuduk;
 use App\Models\RuanganSekolah;
+use Illuminate\Support\Collection;
 
 class DenahService
 {
@@ -40,9 +41,13 @@ class DenahService
      * Bentuk tiap entri:
      *   ['baris' => int, 'kolom' => int, 'murid' => ['kiri' => ?array, 'kanan' => ?array]]
      *
+     * $idSiswaTerlihat membatasi murid yang dikembalikan. Null berarti seluruh
+     * anggota kelas; orang tua hanya boleh melihat anaknya sendiri.
+     *
+     * @param  Collection<int, int>|null  $idSiswaTerlihat
      * @return array<int, array<string, mixed>>
      */
-    public function kursi(DenahKelas $denah, Kelas $kelas): array
+    public function kursi(DenahKelas $denah, Kelas $kelas, ?Collection $idSiswaTerlihat = null): array
     {
         $jabatan = PengurusKelas::query()
             ->where('id_kelas', $kelas->id_kelas)
@@ -53,6 +58,7 @@ class DenahService
 
         return PosisiDuduk::query()
             ->where('id_denah', $denah->id_denah)
+            ->when($idSiswaTerlihat !== null, fn ($q) => $q->whereIn('id_siswa', $idSiswaTerlihat))
             ->with('siswa:id_siswa,nama_siswa,nis')
             ->orderBy('baris')
             ->orderBy('kolom')
@@ -90,10 +96,11 @@ class DenahService
     }
 
     /** @return array<int, array<string, mixed>> */
-    public function siswa(Kelas $kelas): array
+    public function siswa(Kelas $kelas, ?Collection $idSiswaTerlihat = null): array
     {
         return $kelas->anggotaKelas()
             ->with('siswa:id_siswa,nama_siswa,nis')
+            ->when($idSiswaTerlihat !== null, fn ($q) => $q->whereIn('id_siswa', $idSiswaTerlihat))
             ->get()
             ->sortBy(fn ($item) => $item->no_absen ?? 999)
             ->map(fn ($item) => [

@@ -61,7 +61,7 @@ class SiswaController extends AdminController
     {
         return view('admin.siswa.form', [
             'siswa' => new Siswa(['id_user' => $request->integer('id_user') ?: null, 'status' => 'aktif']),
-            'akun' => $this->akunTanpaProfil('siswa', 'siswa'),
+            'akun' => $this->akunTanpaProfilSiswa(),
             'statusList' => self::STATUS,
         ]);
     }
@@ -69,7 +69,7 @@ class SiswaController extends AdminController
     public function store(Request $request)
     {
         $data = $this->validasi($request);
-        $data['id_user'] = $request->validate(['id_user' => $this->aturanIdUserProfil('siswa', 'siswa')])['id_user'];
+        $data['id_user'] = $request->validate(['id_user' => $this->aturanIdUserSiswa()])['id_user'];
         $data['foto_url'] = $this->simpanFoto($request);
 
         Siswa::create($data);
@@ -149,6 +149,32 @@ class SiswaController extends AdminController
     private function simpanFoto(Request $request): ?string
     {
         return $request->hasFile('foto') ? $request->file('foto')->store('siswa', 'public') : null;
+    }
+
+    /**
+     * Akun tanpa profil siswa yang boleh dihubungkan ke profil baru.
+     * Termasuk 'bendahara_kas': peran itu tetap memakai baris tabel `siswa`,
+     * hanya berbeda pada hak kelola kasnya.
+     *
+     * @return \Illuminate\Support\Collection<int, object>
+     */
+    private function akunTanpaProfilSiswa()
+    {
+        return DB::table('users as u')
+            ->whereIn('u.role', ['siswa', 'bendahara_kas'])
+            ->whereNotExists(fn ($q) => $q->from('siswa as s')->whereColumn('s.id_user', 'u.id_user'))
+            ->orderBy('u.username')
+            ->get(['u.id_user', 'u.username', 'u.is_active', 'u.role']);
+    }
+
+    /** Aturan id_user untuk profil siswa baru: akun ada, peran siswa/bendahara_kas, belum dipakai profil lain. */
+    private function aturanIdUserSiswa(): array
+    {
+        return [
+            'required', 'integer',
+            Rule::exists('users', 'id_user')->whereIn('role', ['siswa', 'bendahara_kas']),
+            Rule::unique('siswa', 'id_user'),
+        ];
     }
 
     private function hapusFoto(?string $path): void

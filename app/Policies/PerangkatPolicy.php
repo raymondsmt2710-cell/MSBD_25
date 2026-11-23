@@ -31,7 +31,9 @@ class PerangkatPolicy
     /** Melihat daftar kelas & organisasi beserta pengurusnya. */
     public function lihat(User $user): bool
     {
-        return in_array($this->peran($user), ['admin', 'guru', 'siswa'], true);
+        // 'bendahara_kas' adalah siswa dengan hak tambahan di kas, jadi tetap
+        // boleh melihat perangkat seperti siswa biasa.
+        return in_array($this->peran($user), ['admin', 'guru', 'siswa', 'bendahara_kas'], true);
     }
 
     /** Boleh membuka halaman kelola (daftar yang bisa dikelola). */

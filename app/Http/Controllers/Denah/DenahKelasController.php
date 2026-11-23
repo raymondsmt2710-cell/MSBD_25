@@ -11,6 +11,7 @@ use App\Models\DenahKelas;
 use App\Models\Kelas;
 use App\Models\PosisiDuduk;
 use App\Services\DenahService;
+use App\Support\Akses;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,11 +27,12 @@ class DenahKelasController extends Controller
 
         $bisaKelola = Gate::allows('denah.kelola-kursi', $kelas);
         $denah = $this->denah->denahAktif($kelas, $bisaKelola, $request->user()->id_user);
+        $idSiswaTerlihat = app(Akses::class)->siswaTerlihat($request->user(), $kelas);
 
         return response()->json([
             'denah' => $denah,
-            'kursi' => $denah ? $this->denah->kursi($denah, $kelas) : [],
-            'siswa' => $this->denah->siswa($kelas),
+            'kursi' => $denah ? $this->denah->kursi($denah, $kelas, $idSiswaTerlihat) : [],
+            'siswa' => $this->denah->siswa($kelas, $idSiswaTerlihat),
             'bisa_kelola' => $bisaKelola,
         ]);
     }
@@ -46,6 +48,26 @@ class DenahKelasController extends Controller
                 ->latest('id_denah')
                 ->first();
 
+            // Jangan hapus kursi di luar grid baru secara diam-diam: data kursi
+            // tidak punya jalur pemulihan dan tidak tampil di UI. Tolak dengan
+            // pesan yang menyebut jumlah murid yang akan kehilangan tempat.
+            if ($denah) {
+                $terdampak = PosisiDuduk::query()
+                    ->where('id_denah', $denah->id_denah)
+                    ->where(function ($query) use ($request) {
+                        $query->where('baris', '>', $request->integer('jumlah_baris'))
+                            ->orWhere('kolom', '>', $request->integer('jumlah_kolom'));
+                    })
+                    ->count();
+
+                abort_if(
+                    $terdampak > 0,
+                    422,
+                    "Tidak bisa memperkecil denah: {$terdampak} murid berada di luar ukuran baru. "
+                    .'Pindahkan mereka ke kursi di dalam grid terlebih dahulu.',
+                );
+            }
+
             if ($denah) {
                 $denah->update($request->validated());
             } else {
@@ -57,14 +79,6 @@ class DenahKelasController extends Controller
                     'is_aktif' => true,
                 ]);
             }
-
-            PosisiDuduk::query()
-                ->where('id_denah', $denah->id_denah)
-                ->where(function ($query) use ($denah) {
-                    $query->where('baris', '>', $denah->jumlah_baris)
-                        ->orWhere('kolom', '>', $denah->jumlah_kolom);
-                })
-                ->delete();
 
             return $denah;
         });

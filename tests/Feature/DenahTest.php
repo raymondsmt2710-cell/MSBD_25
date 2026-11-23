@@ -42,11 +42,11 @@ class DenahTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_ketua_kelas_dapat_mengacak_posisi(): void
+    public function test_admin_dapat_mengacak_posisi(): void
     {
         $this->buatDenah();
 
-        $this->actingAs($this->sekolah['ketua'])
+        $this->actingAs($this->sekolah['admin'])
             ->postJson('/denah/kelas/'.$this->sekolah['kelas']->id_kelas.'/acak')
             ->assertOk();
 
@@ -60,7 +60,7 @@ class DenahTest extends TestCase
         $a = PosisiDuduk::where('id_denah', $denah->id_denah)->where('baris', 1)->where('kolom', 1)->firstOrFail();
         $b = PosisiDuduk::where('id_denah', $denah->id_denah)->where('baris', 1)->where('kolom', 2)->firstOrFail();
 
-        $this->actingAs($this->sekolah['ketua'])
+        $this->actingAs($this->sekolah['admin'])
             ->postJson('/denah/kelas/'.$this->sekolah['kelas']->id_kelas.'/swap', [
                 'posisi_a' => $a->id_posisi,
                 'posisi_b' => $b->id_posisi,
@@ -89,7 +89,7 @@ class DenahTest extends TestCase
             ->where('id_siswa', $this->sekolah['siswa'][3]->id_siswa)
             ->delete();
 
-        $this->actingAs($this->sekolah['ketua'])
+        $this->actingAs($this->sekolah['admin'])
             ->postJson('/denah/kelas/'.$this->sekolah['kelas']->id_kelas.'/tempatkan', [
                 'id_siswa' => $this->sekolah['siswa'][3]->id_siswa,
                 'baris' => 2,
@@ -136,7 +136,9 @@ class DenahTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_simpan_denah_memangkas_kursi_di_luar_grid(): void
+    // Dulu kursi di luar grid dihapus diam-diam (bug #9). Sekarang request
+    // ditolak agar tidak ada murid yang kehilangan tempat tanpa disadari.
+    public function test_simpan_denah_menolak_memperkecil_grid_selama_ada_kursi_di_luar(): void
     {
         $denah = $this->buatDenah();
 
@@ -149,9 +151,34 @@ class DenahTest extends TestCase
             'id_siswa' => $this->sekolah['siswa'][3]->id_siswa,
             'baris' => 6,
             'kolom' => 4,
+            'sisi' => 'kiri',
         ]);
 
-        $this->actingAs($this->sekolah['ketua'])
+        $this->actingAs($this->sekolah['admin'])
+            ->putJson('/denah/kelas/'.$this->sekolah['kelas']->id_kelas, [
+                'jumlah_baris' => 2,
+                'jumlah_kolom' => 2,
+                'posisi_meja_guru' => 'depan_tengah',
+                'posisi_pintu' => 'kanan',
+            ])
+            ->assertStatus(422);
+
+        // Ukuran denah dan seluruh kursi tetap utuh.
+        $this->assertSame(6, $denah->fresh()->jumlah_baris);
+        $this->assertSame(1, PosisiDuduk::where('baris', 6)->count());
+        $this->assertSame(4, PosisiDuduk::where('id_denah', $denah->id_denah)->count());
+    }
+
+    public function test_simpan_denah_dapat_memperkecil_grid_setelah_kursi_dipindahkan(): void
+    {
+        $denah = $this->buatDenah();
+
+        // Semua murid ditaruh di dalam grid 2x2 yang baru.
+        PosisiDuduk::where('id_denah', $denah->id_denah)
+            ->where(fn ($q) => $q->where('baris', '>', 2)->orWhere('kolom', '>', 2))
+            ->delete();
+
+        $this->actingAs($this->sekolah['admin'])
             ->putJson('/denah/kelas/'.$this->sekolah['kelas']->id_kelas, [
                 'jumlah_baris' => 2,
                 'jumlah_kolom' => 2,
@@ -161,7 +188,6 @@ class DenahTest extends TestCase
             ->assertOk();
 
         $this->assertSame(2, $denah->fresh()->jumlah_baris);
-        $this->assertSame(0, PosisiDuduk::where('baris', 6)->count());
     }
 
     private function buatDenah(): DenahKelas

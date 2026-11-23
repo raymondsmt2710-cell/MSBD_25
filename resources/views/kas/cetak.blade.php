@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Laporan Kas {{ $kelas->nama_kelas }}</title>
+    <title>Laporan Keuangan {{ $kelas->nama_kelas }}</title>
     @vite('resources/css/app.css')
     <style>
         @media print {
@@ -23,7 +23,7 @@
 
         <header class="border-b-2 border-gray-800 pb-4 text-center">
             <h1 class="text-xl font-bold uppercase tracking-wide">Sistem Informasi Sekolah</h1>
-            <p class="mt-1 text-sm text-gray-600">Laporan Keuangan Kas Kelas</p>
+            <p class="mt-1 text-sm text-gray-600">Laporan Keuangan Kelas</p>
             <h2 class="mt-2 text-lg font-semibold">{{ $kelas->nama_kelas }}</h2>
             <p class="text-xs text-gray-500">
                 Periode:

@@ -20,11 +20,13 @@ use Illuminate\Validation\Rules\Password;
  */
 class AkunController extends AdminController
 {
-    public const ROLE = ['admin', 'guru', 'siswa', 'orang_tua'];
+    public const ROLE = ['admin', 'guru', 'siswa', 'orang_tua', 'bendahara_kas'];
 
     /** Role yang wajib punya baris profil, beserta rute pembuatan profilnya. */
     private const RUTE_PROFIL = [
         'siswa' => 'admin.siswa.create',
+        // Siswa dengan hak kelola kas tetap memakai profil siswa.
+        'bendahara_kas' => 'admin.siswa.create',
         'guru' => 'admin.guru.create',
         'orang_tua' => 'admin.orang-tua.create',
     ];

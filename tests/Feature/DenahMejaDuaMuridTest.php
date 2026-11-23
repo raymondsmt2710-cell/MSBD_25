@@ -63,7 +63,7 @@ class DenahMejaDuaMuridTest extends TestCase
     {
         $this->buatDenah();
 
-        $this->actingAs($this->sekolah['ketua'])
+        $this->actingAs($this->sekolah['admin'])
             ->postJson('/denah/kelas/'.$this->sekolah['kelas']->id_kelas.'/acak')
             ->assertOk();
 
@@ -86,7 +86,7 @@ class DenahMejaDuaMuridTest extends TestCase
         $denah->update(['jumlah_baris' => 1, 'jumlah_kolom' => 2]);
 
         // 4 murid masih muat.
-        $this->actingAs($this->sekolah['ketua'])
+        $this->actingAs($this->sekolah['admin'])
             ->postJson('/denah/kelas/'.$this->sekolah['kelas']->id_kelas.'/acak')
             ->assertOk();
 
@@ -100,7 +100,7 @@ class DenahMejaDuaMuridTest extends TestCase
         $this->tempatkan($denah, $this->sekolah['siswa'][0]->id_siswa, 1, 1, 'kiri')->assertOk();
         $posisi = PosisiDuduk::firstOrFail();
 
-        $this->actingAs($this->sekolah['ketua'])
+        $this->actingAs($this->sekolah['admin'])
             ->patchJson("/denah/posisi/{$posisi->id_posisi}", [
                 'baris' => 2,
                 'kolom' => 2,
@@ -123,7 +123,7 @@ class DenahMejaDuaMuridTest extends TestCase
         $this->tempatkan($denah, $this->sekolah['siswa'][0]->id_siswa, 1, 1, 'kiri')->assertOk();
         $this->tempatkan($denah, $this->sekolah['siswa'][1]->id_siswa, 1, 1, 'kanan')->assertOk();
 
-        $response = $this->actingAs($this->sekolah['ketua'])
+        $response = $this->actingAs($this->sekolah['admin'])
             ->getJson('/denah/kelas/'.$this->sekolah['kelas']->id_kelas.'/data')
             ->assertOk();
 
@@ -136,7 +136,7 @@ class DenahMejaDuaMuridTest extends TestCase
 
     private function tempatkan(DenahKelas $denah, int $idSiswa, int $baris, int $kolom, string $sisi)
     {
-        return $this->actingAs($this->sekolah['ketua'])
+        return $this->actingAs($this->sekolah['admin'])
             ->postJson('/denah/kelas/'.$this->sekolah['kelas']->id_kelas.'/tempatkan', [
                 'id_siswa' => $idSiswa,
                 'baris' => $baris,

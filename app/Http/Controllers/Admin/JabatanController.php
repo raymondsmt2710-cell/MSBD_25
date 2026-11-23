@@ -7,13 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
-/**
- * Fitur 7 — Kelola master jabatan.
- *
- * `lingkup` menentukan apakah jabatan dipakai di pengurus kelas atau pengurus organisasi;
- * `kuota` membatasi jumlah pemegang jabatan per kelas / per organisasi per tahun ajaran
- * dan diperiksa saat penetapan pengurus (fitur 12).
- */
 class JabatanController extends AdminController
 {
     public function index()
@@ -21,7 +14,7 @@ class JabatanController extends AdminController
         return $this->halaman();
     }
 
-    /** Daftar dan form berbagi satu halaman: form berisi baris yang sedang diubah, atau kosong. */
+
     private function halaman(?Jabatan $edit = null)
     {
         $jabatan = DB::table('jabatan as j')

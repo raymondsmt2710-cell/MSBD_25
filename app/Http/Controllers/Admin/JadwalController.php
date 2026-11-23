@@ -10,15 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Fitur 10 — Kelola jadwal pelajaran.
- *
- * Jadwal menjadi dasar pembukaan sesi presensi oleh guru, jadi bentrok jadwal
- * berakibat langsung ke presensi. Dua jenis bentrok ditolak:
- *  - kelas yang sama punya dua pelajaran pada jam yang beririsan;
- *  - guru yang sama mengajar di dua kelas pada jam yang beririsan
- *    (dalam tahun ajaran dan semester yang sama).
- */
 class JadwalController extends AdminController
 {
     public const HARI = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
@@ -97,7 +88,7 @@ class JadwalController extends AdminController
     {
         $data = $this->validasi($request, $jadwal);
 
-        // Sesi presensi lama merujuk jadwal ini; memindah kelasnya akan membuat riwayat presensi salah kelas.
+
         if ((int) $data['id_kelas'] !== (int) $jadwal->id_kelas && $this->punyaSesi($jadwal)) {
             return back()->withInput()->with('error', 'Kelas tidak dapat dipindah karena jadwal ini sudah punya sesi presensi.');
         }
@@ -110,8 +101,8 @@ class JadwalController extends AdminController
 
     public function destroy(JadwalPelajaran $jadwal)
     {
-        // FK sesi_presensi → jadwal berjenis CASCADE: menghapus jadwal yang sudah dipakai
-        // akan menghapus seluruh riwayat presensinya.
+
+
         if ($this->punyaSesi($jadwal)) {
             return back()->with('error', 'Jadwal tidak dapat dihapus karena sudah dipakai membuka sesi presensi. Riwayat presensi akan ikut terhapus.');
         }
@@ -126,7 +117,7 @@ class JadwalController extends AdminController
         return DB::table('sesi_presensi')->where('id_jadwal', $jadwal->id_jadwal)->exists();
     }
 
-    /** Juli–Desember = ganjil, Januari–Juni = genap (kalender akademik Indonesia). */
+
     private function semesterSekarang(): string
     {
         return now()->month >= 7 ? 'ganjil' : 'genap';

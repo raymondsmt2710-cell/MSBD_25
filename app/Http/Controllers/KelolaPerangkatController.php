@@ -7,18 +7,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Halaman KELOLA perangkat (input susunan pengurus).
- *
- * - admin  : semua kelas & organisasi
- * - guru   : hanya kelas yang menjadi wali kelasnya, dan organisasi yang dibinanya
- *
- * Penyimpanan memakai pola "hapus lalu insert ulang" karena form menampilkan
- * seluruh susunan pengurus sekaligus; mengirim kosong berarti mengosongkan jabatan.
- */
 class KelolaPerangkatController extends Controller
 {
-    /** Daftar kelas & organisasi yang boleh dikelola user ini. */
+
     public function index()
     {
         $this->authorize('perangkat.kelola');
@@ -26,8 +17,8 @@ class KelolaPerangkatController extends Controller
         $policy = new \App\Policies\PerangkatPolicy;
         $user = Auth::user();
 
-        // User::$role di-cast ke App\Enums\Role, jadi harus dinormalkan dulu
-        // sebelum dibandingkan dengan string.
+
+
         $peran = $user->role instanceof \App\Enums\Role ? $user->role->value : (string) $user->role;
         $bukanAdmin = $peran !== \App\Enums\Role::Admin->value;
 
@@ -53,7 +44,7 @@ class KelolaPerangkatController extends Controller
         return view('perangkat.kelola.index', compact('kelas', 'organisasi'));
     }
 
-    /** Form input pengurus satu kelas. */
+
     public function kelas(int $id)
     {
         $this->authorize('perangkat.kelolaKelas', $id);
@@ -67,7 +58,7 @@ class KelolaPerangkatController extends Controller
         $jabatan = DB::table('jabatan')->where('lingkup', 'kelas')
             ->orderBy('urutan')->orderBy('id_jabatan')->get();
 
-        // Hanya anggota kelas ini yang boleh dipilih.
+
         $siswa = DB::table('anggota_kelas as ak')
             ->join('siswa as s', 's.id_siswa', '=', 'ak.id_siswa')
             ->where('ak.id_kelas', $id)
@@ -75,7 +66,7 @@ class KelolaPerangkatController extends Controller
             ->select('s.id_siswa', 's.nis', 's.nama_siswa', 'ak.no_absen')
             ->get();
 
-        // Pengurus yang sudah ada: [id_jabatan => id_siswa]
+
         $terpilih = DB::table('pengurus_kelas')
             ->where('id_kelas', $id)
             ->pluck('id_siswa', 'id_jabatan')
@@ -85,7 +76,7 @@ class KelolaPerangkatController extends Controller
         return view('perangkat.kelola.kelas', compact('kelas', 'jabatan', 'siswa', 'terpilih'));
     }
 
-    /** Simpan susunan pengurus kelas. */
+
     public function simpanKelas(Request $request, int $id)
     {
         $this->authorize('perangkat.kelolaKelas', $id);
@@ -97,7 +88,7 @@ class KelolaPerangkatController extends Controller
 
         $pengurus = array_filter($data['pengurus'] ?? [], fn ($v) => $v !== null && $v !== '');
 
-        // Satu siswa tidak boleh mengisi dua jabatan pada kelas yang sama.
+
         $duplikat = array_diff_assoc($pengurus, array_unique($pengurus));
         if ($duplikat !== []) {
             return back()->withInput()->with('error',
@@ -130,7 +121,7 @@ class KelolaPerangkatController extends Controller
             ->with('success', 'Susunan pengurus berhasil disimpan.');
     }
 
-    /** Form input pengurus satu organisasi. */
+
     public function organisasi(Request $request, int $id)
     {
         $this->authorize('perangkat.kelolaOrganisasi', $id);
@@ -151,7 +142,7 @@ class KelolaPerangkatController extends Controller
         $jabatan = DB::table('jabatan')->where('lingkup', 'organisasi')
             ->orderBy('urutan')->orderBy('id_jabatan')->get();
 
-        // Siswa yang boleh dipilih: semua siswa aktif.
+
         $siswa = DB::table('siswa')->where('status', 'aktif')
             ->orderBy('nama_siswa')
             ->select('id_siswa', 'nis', 'nama_siswa')
@@ -173,7 +164,7 @@ class KelolaPerangkatController extends Controller
         ));
     }
 
-    /** Simpan susunan pengurus organisasi. */
+
     public function simpanOrganisasi(Request $request, int $id)
     {
         $this->authorize('perangkat.kelolaOrganisasi', $id);

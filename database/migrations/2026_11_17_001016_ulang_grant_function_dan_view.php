@@ -4,12 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-// Migration 000033 memberi GRANT EXECUTE untuk stored function. Karena urutan migrasi,
-// sebagian fungsi (mis. fn_jumlah_presensi) belum ada saat grant dijalankan sehingga
-// grant terlewat diam-diam (ditangkap try/catch). Akibatnya portal orang tua gagal:
-// "execute command denied to user 'ortu_app' for routine fn_jumlah_presensi".
-//
-// Migration ini mengulang grant function/view setelah semua objek pasti ada.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -17,7 +11,7 @@ return new class extends Migration
         return in_array(DB::getDriverName(), ['mysql', 'mariadb'], true);
     }
 
-    /** @return array<int, string> */
+
     private function accounts(): array
     {
         return [
@@ -27,7 +21,7 @@ return new class extends Migration
         ];
     }
 
-    /** @return array<int, string> */
+
     private function functions(): array
     {
         return [
@@ -39,13 +33,7 @@ return new class extends Migration
         ];
     }
 
-    /**
-     * View yang boleh dibaca semua role hanya bila memang tidak memuat data sensitif.
-     * CATATAN: v_kandidat_pemilihan_hasil / v_hasil_pemilihan TIDAK dimasukkan —
-     * view itu berisi perolehan suara dan hanya untuk yang berhak (lihat GrantTest).
-     *
-     * @return array<int, string>
-     */
+
     private function views(): array
     {
         return [
@@ -107,6 +95,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Grant tidak dicabut: objek masih dipakai aplikasi.
+
     }
 };

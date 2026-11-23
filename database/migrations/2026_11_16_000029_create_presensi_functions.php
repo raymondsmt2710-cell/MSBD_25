@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Stored Function presensi (materi Stored Function): hanya MEMBACA data, dipanggil lewat SELECT dari Model.
 return new class extends Migration
 {
     private function mysql(): bool

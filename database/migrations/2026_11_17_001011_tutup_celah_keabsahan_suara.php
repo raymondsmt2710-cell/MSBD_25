@@ -3,20 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Menutup celah keabsahan suara yang ditemukan pada review akhir.
-//
-// Latar belakang: migration 000005 hanya menjaga `suara` dan sebagian `pemilihan`.
-// Akibatnya, kredensial database per role (guru_app memegang INSERT/UPDATE/DELETE pada
-// tabel pemilihan) masih bisa:
-//   1. DELETE pemilihan -> cascadeOnDelete menghapus semua suara TANPA memicu
-//      trg_before_suara_delete / trg_before_kandidat_delete (MySQL tidak menjalankan
-//      trigger pada baris yang dihapus lewat ON DELETE CASCADE).
-//   2. UPDATE daftar_pemilih SET sudah_memilih = 0 -> siswa bisa memilih dua kali.
-//   3. INSERT kandidat / daftar_pemilih saat pemilihan sudah berlangsung.
-//   4. Mengubah status selesai -> berlangsung, lalu menambah suara setelah hasil terbit.
-//
-// Trigger di bawah ini menutup keempatnya di level database, sehingga aturan tetap
-// berlaku walaupun ada kode aplikasi (atau manusia dengan kredensial role) yang salah.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -42,8 +28,8 @@ return new class extends Migration
             DB::unprepared("DROP TRIGGER IF EXISTS {$t}");
         }
 
-        // 1. Pemilihan yang sudah punya suara tidak boleh dihapus. Ini yang menutup
-        //    jalan pintas lewat ON DELETE CASCADE.
+
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_before_pemilihan_delete
 BEFORE DELETE ON pemilihan
@@ -62,8 +48,8 @@ BEGIN
 END
 SQL);
 
-        // 2. Hak pilih yang sudah dipakai tidak boleh dikembalikan. Tanpa ini, satu
-        //    UPDATE sudah_memilih = 0 membuat siswa bisa memilih dua kali.
+
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_before_daftar_pemilih_update
 BEFORE UPDATE ON daftar_pemilih
@@ -81,7 +67,7 @@ BEGIN
 END
 SQL);
 
-        // 3. Pemilih hanya boleh didaftarkan saat pemilihan masih draf.
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_before_daftar_pemilih_insert
 BEFORE INSERT ON daftar_pemilih
@@ -103,7 +89,7 @@ BEGIN
 END
 SQL);
 
-        // 4. Kandidat hanya boleh ditambah saat pemilihan masih draf.
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_before_kandidat_insert
 BEFORE INSERT ON kandidat
@@ -125,7 +111,7 @@ BEGIN
 END
 SQL);
 
-        // 5. Kandidat hanya boleh diubah saat pemilihan masih draf.
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_before_kandidat_update
 BEFORE UPDATE ON kandidat
@@ -147,10 +133,10 @@ BEGIN
 END
 SQL);
 
-        // 6. Perketat trigger lama: `status` sebelumnya tidak dijaga sama sekali,
-        //    sehingga pemilihan yang sudah `selesai` bisa dibuka lagi dan ditambah
-        //    suara setelah hasil terbit. Sekarang hanya transisi berikut yang sah:
-        //      draf -> berlangsung, berlangsung -> selesai, berlangsung -> draf.
+
+
+
+
         DB::unprepared('DROP TRIGGER IF EXISTS trg_before_pemilihan_update');
 
         DB::unprepared(<<<'SQL'
@@ -194,7 +180,7 @@ SQL);
             DB::unprepared("DROP TRIGGER IF EXISTS {$t}");
         }
 
-        // Kembalikan trigger lama (tanpa penjagaan status).
+
         DB::unprepared('DROP TRIGGER IF EXISTS trg_before_pemilihan_update');
 
         DB::unprepared(<<<'SQL'

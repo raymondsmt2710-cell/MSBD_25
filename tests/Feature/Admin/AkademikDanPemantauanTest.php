@@ -4,7 +4,6 @@ namespace Tests\Feature\Admin;
 
 use Illuminate\Support\Facades\DB;
 
-/** Fitur 8–12 dan 18–20. */
 class AkademikDanPemantauanTest extends AdminTestCase
 {
     public function test_siswa_hanya_satu_kelas_per_tahun_ajaran(): void
@@ -39,25 +38,25 @@ class AkademikDanPemantauanTest extends AdminTestCase
         ])->assertSessionHas('error');
 
         $this->sebagaiAdmin()->post(route('admin.kelas.anggota.urutkan', $this->d['id_kelas']));
-        $this->assertSame(1, (int) DB::table('anggota_kelas')->where('id_siswa', $this->d['id_siswa1'])->value('no_absen')); // Ani
-        $this->assertSame(2, (int) DB::table('anggota_kelas')->where('id_siswa', $this->d['id_siswa2'])->value('no_absen')); // Budi
+        $this->assertSame(1, (int) DB::table('anggota_kelas')->where('id_siswa', $this->d['id_siswa1'])->value('no_absen'));
+        $this->assertSame(2, (int) DB::table('anggota_kelas')->where('id_siswa', $this->d['id_siswa2'])->value('no_absen'));
     }
 
     public function test_jadwal_bentrok_kelas_dan_guru_ditolak(): void
     {
         $dasar = ['id_mapel' => $this->d['id_mapel'], 'semester' => 'ganjil', 'hari' => 'senin'];
 
-        // Bentrok kelas: X-1 sudah ada pelajaran 07:30–09:00.
+
         $this->sebagaiAdmin()->post(route('admin.jadwal.store'), $dasar + [
             'id_kelas' => $this->d['id_kelas'], 'id_guru' => $this->d['id_guru2'], 'jam_mulai' => '08:00', 'jam_selesai' => '09:30',
         ])->assertSessionHasErrors('jam_mulai');
 
-        // Bentrok guru: Bu Guru sedang mengajar di X-1.
+
         $this->sebagaiAdmin()->post(route('admin.jadwal.store'), $dasar + [
             'id_kelas' => $this->d['id_kelas2'], 'id_guru' => $this->d['id_guru'], 'jam_mulai' => '08:30', 'jam_selesai' => '10:00',
         ])->assertSessionHasErrors('id_guru');
 
-        // Bersebelahan (09:00 tepat) tidak dianggap bentrok.
+
         $this->sebagaiAdmin()->post(route('admin.jadwal.store'), $dasar + [
             'id_kelas' => $this->d['id_kelas'], 'id_guru' => $this->d['id_guru'], 'jam_mulai' => '09:00', 'jam_selesai' => '10:30',
         ])->assertSessionHasNoErrors();
@@ -79,11 +78,11 @@ class AkademikDanPemantauanTest extends AdminTestCase
         $this->sebagaiAdmin()->post($url, ['id_jabatan' => $this->d['id_bendahara'], 'id_siswa' => $this->d['id_siswa1']])
             ->assertSessionHasNoErrors();
 
-        // Kuota bendahara = 1.
+
         $this->sebagaiAdmin()->post($url, ['id_jabatan' => $this->d['id_bendahara'], 'id_siswa' => $this->d['id_siswa2']])
             ->assertSessionHasErrors('id_jabatan');
 
-        // Jabatan organisasi tidak boleh dipakai di kelas.
+
         $this->sebagaiAdmin()->post($url, ['id_jabatan' => $this->d['id_ketua_org'], 'id_siswa' => $this->d['id_siswa2']])
             ->assertSessionHasErrors('id_jabatan');
     }
@@ -125,7 +124,7 @@ class AkademikDanPemantauanTest extends AdminTestCase
         $this->sebagaiAdmin()->post($url, ['alasan_batal' => 'Kedua kali'])->assertSessionHas('error');
         $this->assertSame('Salah input nominal', DB::table('transaksi_kas')->where('id_transaksi', $this->d['id_transaksi'])->value('alasan_batal'));
 
-        // Saldo tidak menghitung transaksi batal.
+
         $this->sebagaiAdmin()->get(route('admin.kas.index'))->assertOk()->assertSee('Rp 0', false);
     }
 
@@ -153,7 +152,7 @@ class AkademikDanPemantauanTest extends AdminTestCase
         $this->sebagaiAdmin()->put($url, ['kursi' => [1 => [1 => $this->d['id_siswa3']]]])
             ->assertSessionHasErrors('kursi');
 
-        $this->sebagaiAdmin()->put($url, ['kursi' => [3 => [1 => $this->d['id_siswa1']]]]) // di luar 2×2
+        $this->sebagaiAdmin()->put($url, ['kursi' => [3 => [1 => $this->d['id_siswa1']]]])
             ->assertSessionHasErrors('kursi');
 
         $this->sebagaiAdmin()->put($url, ['kursi' => [2 => [2 => $this->d['id_siswa1'], 1 => $this->d['id_siswa2']]]])

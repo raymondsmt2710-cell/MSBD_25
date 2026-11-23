@@ -15,7 +15,7 @@ class GenerateIuranRequest extends FormRequest
         return $kelas ? Gate::allows('kas.kelola', $kelas) : true;
     }
 
-    /** @return array<string, mixed> */
+
     public function rules(): array
     {
         return [

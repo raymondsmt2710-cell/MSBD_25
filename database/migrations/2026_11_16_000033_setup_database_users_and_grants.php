@@ -5,8 +5,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-// DCL (materi Manajemen User & Hak Akses): user MySQL per role dengan prinsip least privilege.
-// Siswa TIDAK punya INSERT ke tabel presensi; ia hanya boleh EXECUTE sp_scan_presensi.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -24,11 +22,7 @@ return new class extends Migration
         ];
     }
 
-    /**
-     * Host pada akun MySQL. Nilai bawaan 'localhost' hanya bisa login dari mesin yang sama
-     * dengan server MySQL. Set DB_USER_HOST=% (atau IP server aplikasi) bila database
-     * berada di mesin terpisah, misalnya saat deploy.
-     */
+
     private function userHost(): string
     {
         return env('DB_USER_HOST', 'localhost');
@@ -40,9 +34,9 @@ return new class extends Migration
             return;
         }
 
-        // Di shared hosting / akun DB tanpa hak CREATE USER & GRANT, pembuatan user per role
-        // tidak mungkin dilakukan. Migration dilewati dengan peringatan, bukan menggagalkan deploy.
-        // Set DB_SKIP_ROLE_USERS=true untuk melewati secara sengaja.
+
+
+
         if (filter_var(env('DB_SKIP_ROLE_USERS', false), FILTER_VALIDATE_BOOLEAN)) {
             Log::warning('Migration 000033 dilewati karena DB_SKIP_ROLE_USERS=true. Hak akses per role tidak dibuat.');
 
@@ -60,7 +54,7 @@ return new class extends Migration
 
             $this->beriHak($a, $db, $host);
         } catch (QueryException $e) {
-            // 1227 = butuh hak CREATE USER/SUPER, 1044/1142 = akses ditolak
+
             if (in_array((int) ($e->errorInfo[1] ?? 0), [1044, 1142, 1227], true)) {
                 Log::warning(
                     'Migration 000033 tidak dapat membuat user MySQL (hak CREATE USER/GRANT tidak tersedia). '.
@@ -78,8 +72,8 @@ return new class extends Migration
     {
         $grant = function (string $user, array $map) use ($db, $host) {
             foreach ($map as $object => $privileges) {
-                // Toleran: objek bisa belum ada karena urutan migrasi (grant ulang
-                // diberikan oleh migration yang membuat objek tersebut).
+
+
                 try {
                     DB::unprepared("GRANT {$privileges} ON {$object} TO '{$user}'@'{$host}'");
                 } catch (\Throwable $e) {
@@ -91,10 +85,10 @@ return new class extends Migration
         $proc = fn (string $name) => "PROCEDURE `{$db}`.`{$name}`";
         $func = fn (string $name) => "FUNCTION `{$db}`.`{$name}`";
 
-        // Admin: penuh, hanya pada database aplikasi
+
         DB::unprepared("GRANT ALL PRIVILEGES ON `{$db}`.* TO '{$a['admin'][0]}'@'{$host}'");
 
-        // Guru
+
         $grant($a['guru'][0], [
             $t('users') => 'SELECT',
             $t('guru') => 'SELECT',
@@ -105,7 +99,7 @@ return new class extends Migration
             $t('jadwal_pelajaran') => 'SELECT',
             $t('sesi_presensi') => 'SELECT',
             $t('token_presensi') => 'SELECT',
-            $t('presensi') => 'SELECT, INSERT, UPDATE',   // koreksi manual oleh guru
+            $t('presensi') => 'SELECT, INSERT, UPDATE',
             $t('pengajuan_izin') => 'SELECT',
             $t('log_presensi') => 'SELECT',
             $t('v_rekap_presensi_siswa') => 'SELECT',
@@ -117,7 +111,7 @@ return new class extends Migration
             $func('fn_jumlah_presensi') => 'EXECUTE',
         ]);
 
-        // Siswa
+
         $grant($a['siswa'][0], [
             $t('users') => 'SELECT',
             $t('siswa') => 'SELECT',
@@ -128,7 +122,7 @@ return new class extends Migration
             $func('fn_jumlah_presensi') => 'EXECUTE',
         ]);
 
-        // Orang tua / wali: hanya-baca
+
         $grant($a['orangtua'][0], [
             $t('users') => 'SELECT',
             $t('orang_tua') => 'SELECT',

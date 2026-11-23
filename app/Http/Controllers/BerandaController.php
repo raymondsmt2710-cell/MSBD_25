@@ -4,21 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
 
-/**
- * Halaman awal untuk tamu (belum login).
- *
- * Statistik diambil langsung dari database, tetapi dibungkus try/catch:
- * halaman publik tidak boleh error hanya karena database belum siap
- * (mis. sebelum migration dijalankan di komputer lain).
- */
 class BerandaController extends Controller
 {
     public function index()
     {
-        // Kalau sudah login, langsung ke halaman sesuai peran.
-        // Cabang orang_tua wajib ada: tanpa itu akun wali murid dilempar ke halaman
-        // kelola pemilihan yang menolaknya dengan 403.
-        // Catatan: kolom users.role di-cast ke enum, jadi bandingkan lewat value-nya.
+
+
+
+
         if (auth()->check()) {
             $peran = auth()->user()->role?->value ?? (string) auth()->user()->role;
 
@@ -80,7 +73,7 @@ class BerandaController extends Controller
         ]);
     }
 
-    /** Statistik ringkas; 0 bila tabel belum ada atau database belum siap. */
+
     private function statistik(): array
     {
         $hitung = function (string $tabel): int {

@@ -8,13 +8,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Regresi fitur presensi (fitur 1).
- *
- * Setiap tes di sini menangkap bug yang pernah lolos ke `main`, jadi pesan
- * kegagalannya menjelaskan gejala yang dilihat pengguna, bukan sekadar nama
- * method.
- */
 class PresensiRegresiTest extends TestCase
 {
     use DatabaseTruncation;
@@ -59,11 +52,7 @@ class PresensiRegresiTest extends TestCase
         return User::find($idUser);
     }
 
-    /**
-     * Halaman konfirmasi presensi milik SISWA tidak boleh memuat tautan ke route
-     * guru. Versi lama memakai route('guru.presensi.index') sebagai tombol
-     * "Kembali", sehingga siswa yang menekannya mendapat 403.
-     */
+
     public function test_halaman_konfirmasi_siswa_tidak_menautkan_route_guru(): void
     {
         $siswa = $this->buatSiswa('pr_konfirmasi');
@@ -82,10 +71,7 @@ class PresensiRegresiTest extends TestCase
         );
     }
 
-    /**
-     * Satu halaman satu tombol kembali. Halaman konfirmasi dulu merender tombol
-     * dari komponen layout PLUS tautan manual di dalam view.
-     */
+
     public function test_halaman_konfirmasi_hanya_punya_satu_tombol_kembali(): void
     {
         $siswa = $this->buatSiswa('pr_ganda');
@@ -103,12 +89,7 @@ class PresensiRegresiTest extends TestCase
         );
     }
 
-    /**
-     * Setelah siswa memindai QR, scan() me-redirect ke riwayat. Referer yang
-     * terlihat halaman riwayat adalah URL POST /scan/<kode>. Karena path itu juga
-     * punya rute GET, dulu lolos validasi dan tombol kembali menunjuk halaman
-     * konfirmasi lagi - siswa berputar tanpa pernah keluar.
-     */
+
     public function test_setelah_scan_tombol_kembali_menuju_menu_presensi_bukan_scan_lagi(): void
     {
         $siswa = $this->buatSiswa('pr_scan');
@@ -123,11 +104,7 @@ class PresensiRegresiTest extends TestCase
             ->assertDontSee('href="'.route('siswa.presensi.scan', $kode).'"', false);
     }
 
-    /**
-     * Referer tidak lagi dipakai: tombol kembali SELALU menuju dashboard, dari
-     * halaman mana pun. Dulu setelah menyimpan koreksi guru diarahkan ke roster
-     * presensi; sekarang aturannya seragam untuk semua halaman.
-     */
+
     public function test_referer_url_post_tetap_menuju_dashboard(): void
     {
         $guru = $this->buatGuru('pr_induk');
@@ -142,10 +119,7 @@ class PresensiRegresiTest extends TestCase
         );
     }
 
-    /**
-     * Parameter rute ngawur harus berhenti sebagai 404, bukan 500.
-     * Tanpa batas, "abc" memicu TypeError pada parameter bertipe int.
-     */
+
     public function test_parameter_sesi_ngawur_menghasilkan_404_bukan_500(): void
     {
         $guru = $this->buatGuru('pr_404');
@@ -159,10 +133,7 @@ class PresensiRegresiTest extends TestCase
             ->assertNotFound();
     }
 
-    /**
-     * Skenario yang dilaporkan pengguna: klik "Presensi" di navbar DUA KALI.
-     * Dulu tombol kembali hilang karena referer sama dengan halaman ini.
-     */
+
     public function test_klik_menu_yang_sama_dua_kali_tetap_punya_tombol_kembali(): void
     {
         $siswa = $this->buatSiswa('pr_dua_kali');
@@ -175,25 +146,21 @@ class PresensiRegresiTest extends TestCase
             ->assertSee('href="'.route('siswa.beranda').'"', false);
     }
 
-    /**
-     * Skenario yang dilaporkan pengguna: menu presensi -> riwayat -> tekan
-     * kembali (mendarat di menu). Tombol kembali di menu harus naik ke BERANDA,
-     * bukan kembali ke riwayat. Dulu hasilnya bolak-balik tanpa pernah keluar.
-     */
+
     public function test_setelah_kembali_dari_riwayat_tombol_di_menu_naik_ke_beranda(): void
     {
         $siswa = $this->buatSiswa('pr_bolak_balik');
 
-        // Referer adalah halaman yang baru ditinggalkan (riwayat), karena itulah
-        // yang dikirim browser setelah pengguna menekan tombol kembali.
+
+
         $html = $this->actingAs($siswa)
             ->withHeader('referer', route('siswa.presensi.riwayat'))
             ->get(route('siswa.presensi.index'))
             ->assertOk()
             ->getContent();
 
-        // Yang diperiksa HANYA href tombol kembali. Halaman menu memang berisi
-        // kartu tautan ke riwayat; itu bukan tombol kembali.
+
+
         $this->assertSame(
             route('siswa.beranda'),
             $this->hrefKembali($html),
@@ -201,10 +168,7 @@ class PresensiRegresiTest extends TestCase
         );
     }
 
-    /**
-     * Kasus yang sama di halaman pindai: kembali dari pindai mendarat di menu,
-     * lalu tombol kembali di menu harus naik ke beranda, bukan balik ke pindai.
-     */
+
     public function test_setelah_kembali_dari_pindai_tombol_di_menu_naik_ke_beranda(): void
     {
         $siswa = $this->buatSiswa('pr_bolak_pindai');
@@ -222,7 +186,7 @@ class PresensiRegresiTest extends TestCase
         );
     }
 
-    /** Mengambil href tombol kembali dari HTML halaman. */
+
     private function hrefKembali(string $html): ?string
     {
         if (preg_match('/<a class="tombol-kembali" href="([^"]*)"/', $html, $m)) {
@@ -232,9 +196,7 @@ class PresensiRegresiTest extends TestCase
         return null;
     }
 
-    /**
-     * Versi guru dari skenario yang sama: klik "Presensi" dua kali di navbar.
-     */
+
     public function test_guru_klik_menu_presensi_dua_kali_tetap_punya_tombol_kembali(): void
     {
         $guru = $this->buatGuru('pr_guru_dua');
@@ -247,10 +209,7 @@ class PresensiRegresiTest extends TestCase
             ->assertSee('href="'.route('guru.beranda').'"', false);
     }
 
-    /**
-     * Halaman sesi guru juga menuju dashboard: aturan tombol kembali sekarang
-     * seragam untuk semua halaman, bukan lagi anak -> induk fitur.
-     */
+
     public function test_halaman_sesi_guru_kembali_ke_dashboard(): void
     {
         $guru = $this->buatGuru('pr_sesi_induk');
@@ -263,10 +222,7 @@ class PresensiRegresiTest extends TestCase
         );
     }
 
-    /**
-     * Kode token lebih panjang dari VARCHAR(64) dulu memicu error 1406
-     * ("Data too long for column p_kode") yang tampil sebagai 500.
-     */
+
     public function test_kode_token_terlalu_panjang_menghasilkan_404(): void
     {
         $siswa = $this->buatSiswa('pr_token');
@@ -280,11 +236,7 @@ class PresensiRegresiTest extends TestCase
             ->assertNotFound();
     }
 
-    /**
-     * Navigasi tidak boleh membungkus <nav class="nav-links"> di dalam
-     * <nav class="nav-links">. Dulu layouts/presensi dan layouts/pemilihan
-     * menambah pembungkus kedua di sekitar partials.nav-utama.
-     */
+
     public function test_navigasi_tidak_bersarang(): void
     {
         $siswa = $this->buatSiswa('pr_nav');
@@ -301,7 +253,7 @@ class PresensiRegresiTest extends TestCase
             'Navigasi presensi membungkus <nav> di dalam <nav>.'
         );
 
-        // Versi yang lebih longgar: jumlah pembuka dan penutup harus seimbang.
+
         $this->assertSame(
             substr_count($html, '<nav class="nav-links">'),
             substr_count($html, '</nav>'),
@@ -309,14 +261,7 @@ class PresensiRegresiTest extends TestCase
         );
     }
 
-    /**
-     * Tombol "Belum" di halaman sesi guru harus tetap sama setelah 4 detik.
-     *
-     * Versi lama menghitung `semua anggota kelas - hadir`, sehingga siswa
-     * berstatus izin/sakit/alpa ikut terhitung "belum" dan angkanya bertambah
-     * sendiri tanpa ada siswa baru. qr() sekarang memakai sumber yang sama
-     * dengan tampilan awal halaman.
-     */
+
     public function test_penghitung_belum_di_qr_sama_dengan_tampilan_awal(): void
     {
         $guru = $this->buatGuru('pr_hitung');
@@ -341,7 +286,7 @@ class PresensiRegresiTest extends TestCase
             'hari' => 'senin', 'jam_mulai' => '07:00:00', 'jam_selesai' => '08:00:00',
         ]);
 
-        // Tiga siswa: satu hadir, satu izin, satu belum tercatat.
+
         $idSiswa = [];
         foreach (['a', 'b', 'c'] as $i => $huruf) {
             $idUser = DB::table('users')->insertGetId([

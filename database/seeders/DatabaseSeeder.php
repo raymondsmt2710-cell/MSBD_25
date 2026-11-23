@@ -6,17 +6,6 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-/**
- * Data awal untuk menguji fitur presensi. Semua password: "password".
- *
- * IDEMPOTEN: aman dijalankan berulang kali maupun di database yang sudah berisi
- * data (mis. setelah `php artisan migrate --seed` pada project yang sudah jalan).
- * Setiap baris dibuat dengan pola "cari dulu, buat bila belum ada", sehingga
- * `php artisan migrate --seed` tidak gagal dengan "Duplicate entry".
- *
- * Untuk data demo yang lebih lengkap (kas, denah, pengurus, pemilihan),
- * jalankan DemoSekolahSeeder secara terpisah.
- */
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
@@ -24,7 +13,7 @@ class DatabaseSeeder extends Seeder
         $hash = Hash::make('password');
         $now = now();
 
-        // ---------- Akun dasar ----------
+        
 
         $buatUser = function (string $username, string $role) use ($hash, $now): int {
             $ada = DB::table('users')->where('username', $username)->value('id_user');
@@ -41,7 +30,7 @@ class DatabaseSeeder extends Seeder
 
         $buatUser('admin', 'admin');
 
-        // ---------- Tahun ajaran ----------
+        
 
         $idTahun = DB::table('tahun_ajaran')->where('nama', '2026/2027')->value('id_tahun_ajaran')
             ?? DB::table('tahun_ajaran')->insertGetId([
@@ -51,7 +40,7 @@ class DatabaseSeeder extends Seeder
                 'is_aktif' => true,
             ]);
 
-        // ---------- Guru ----------
+        
 
         $idGuruUser = $buatUser('guru1', 'guru');
 
@@ -73,7 +62,7 @@ class DatabaseSeeder extends Seeder
                 'jenis_kelamin' => 'P',
             ]);
 
-        // ---------- Kelas ----------
+        
 
         $idKelas = DB::table('kelas')
             ->where('id_tahun_ajaran', $idTahun)
@@ -88,7 +77,7 @@ class DatabaseSeeder extends Seeder
                 'ruangan' => 'R-101',
             ]);
 
-        // ---------- Mata pelajaran ----------
+        
 
         $idMapel = DB::table('mata_pelajaran')->where('kode_mapel', 'MTK')->value('id_mapel')
             ?? DB::table('mata_pelajaran')->insertGetId([
@@ -96,7 +85,7 @@ class DatabaseSeeder extends Seeder
                 'nama_mapel' => 'Matematika',
             ]);
 
-        // ---------- Siswa + anggota kelas ----------
+        
 
         foreach ([1 => 'Siswa Satu', 2 => 'Siswa Dua', 3 => 'Siswa Tiga'] as $no => $nama) {
             $idSiswaUser = $buatUser("siswa{$no}", 'siswa');
@@ -125,24 +114,24 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // ---------- Jadwal ----------
-        // SENGAJA TIDAK dibuat di sini.
-        //
-        // Versi sebelumnya membuat satu jadwal "hari ini" supaya tombol "Buat
-        // Presensi" langsung bisa dicoba. Akibatnya roster guru terisi satu baris
-        // tanpa guru pernah membuatnya, dan baris itu muncul di hari yang salah
-        // (mis. jadwal "Senin" terbentuk saat seeder dijalankan hari Kamis).
-        //
-        // Jadwal sekarang hanya dibuat lewat panel admin (/admin/jadwal) supaya
-        // data yang tampil selalu berasal dari keputusan pengguna.
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
-        // ---------- Seeder fitur lain ----------
+        
 
-        // PemilihanSeeder sudah idempoten (memakai pola "cari dulu, buat bila belum ada").
+        
         $this->call(PemilihanSeeder::class);
 
-        // Akun orang tua untuk fitur 7 (pemantauan wali murid). Idempoten, dan
-        // dilewati otomatis bila belum ada data siswa.
+        
+        
         $this->call(OrangTuaSeeder::class);
     }
 }

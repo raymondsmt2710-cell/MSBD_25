@@ -1,4 +1,3 @@
-{{-- Pemilih tahun ajaran sebagai filter GET. Variabel: $tahunAjaran, $idTahun. --}}
 <form method="GET" class="filter">
     <select name="tahun" onchange="this.form.submit()">
         @foreach ($tahunAjaran as $t)

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-// Primary key gabungan (id_pemilihan, id_siswa), tanpa timestamps.
 class DaftarPemilih extends Model
 {
     protected $table = 'daftar_pemilih';

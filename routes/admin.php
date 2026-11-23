@@ -18,20 +18,6 @@ use App\Http\Controllers\Admin\TahunAjaranController;
 use App\Support\PolaRute;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Fitur khusus administrator
-|--------------------------------------------------------------------------
-| Dimuat dari routes/web.php sehingga ikut grup middleware `web`
-| (session, CSRF, DBDynamicConnection → koneksi mysql_admin).
-|
-| Fitur 13–17 (pemilihan) sudah ada di /kelola/pemilihan dan tidak diduplikasi
-| di sini; panel admin hanya menautkannya.
-|
-| Setiap parameter id dibatasi PolaRute::ID agar masukan ngawur berhenti sebagai 404,
-| bukan TypeError/500.
-*/
-
 $id = PolaRute::ID;
 
 Route::middleware(['auth', 'role:admin'])
@@ -46,14 +32,14 @@ Route::middleware(['auth', 'role:admin'])
     ->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-        // ---- 1. Akun pengguna (satu-satunya jalur pembuatan akun) ----
+
         Route::resource('akun', AkunController::class)
             ->parameters(['akun' => 'user'])
             ->except(['show', 'destroy']);
         Route::post('akun/{user}/status', [AkunController::class, 'ubahStatus'])->name('akun.status');
         Route::post('akun/{user}/reset-password', [AkunController::class, 'resetPassword'])->name('akun.reset');
 
-        // ---- 2–7. Data master ----
+
         Route::resource('siswa', SiswaController::class)->except(['show', 'destroy']);
         Route::post('siswa/{siswa}/status', [SiswaController::class, 'ubahStatus'])->name('siswa.status');
 
@@ -74,7 +60,7 @@ Route::middleware(['auth', 'role:admin'])
         Route::resource('mapel', MapelController::class)->except(['show', 'create']);
         Route::resource('jabatan', JabatanController::class)->except(['show', 'create']);
 
-        // ---- 8–10. Akademik ----
+
         Route::resource('kelas', KelasController::class)->parameters(['kelas' => 'kelas']);
         Route::post('kelas/{kelas}/anggota', [KelasController::class, 'tambahAnggota'])->name('kelas.anggota.simpan');
         Route::put('kelas/{kelas}/anggota', [KelasController::class, 'simpanNomorAbsen'])->name('kelas.anggota.absen');
@@ -83,7 +69,7 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::resource('jadwal', JadwalController::class)->except(['show', 'create']);
 
-        // ---- 11–12. Organisasi ----
+
         Route::resource('organisasi', OrganisasiController::class)->except(['show']);
 
         Route::get('pengurus', [PengurusController::class, 'index'])->name('pengurus.index');
@@ -94,7 +80,7 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('pengurus/organisasi/{organisasi}', [PengurusController::class, 'simpanOrganisasi'])->name('pengurus.organisasi.simpan');
         Route::delete('pengurus/organisasi/{organisasi}/{pengurus}', [PengurusController::class, 'hapusOrganisasi'])->name('pengurus.organisasi.hapus');
 
-        // ---- 18–20. Pemantauan lintas kelas ----
+
         Route::get('presensi', [PresensiController::class, 'index'])->name('presensi.index');
         Route::get('presensi/sesi/{sesi}', [PresensiController::class, 'sesi'])->name('presensi.sesi');
         Route::get('presensi/izin', [PresensiController::class, 'izin'])->name('presensi.izin');

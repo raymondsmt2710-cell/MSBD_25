@@ -4,12 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-// Laravel memakai cache store untuk throttle / rate-limit (mis. middleware `throttle`
-// pada route scan). CACHE_STORE=database berarti setiap request bisa menulis ke tabel
-// `cache` dan `cache_locks`. Tanpa hak ini, siswa_app/guru_app gagal dengan
-// "1142 SELECT command denied ... for table 'cache'" tepat setelah presensi tercatat.
-//
-// Karena itu keempat user role diberi hak pada tabel cache dan sessions.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -69,7 +63,7 @@ return new class extends Migration
                 try {
                     DB::unprepared("REVOKE ALL PRIVILEGES ON `{$db}`.`{$nama}` FROM '{$user}'@'{$host}'");
                 } catch (\Throwable $e) {
-                    // hak mungkin belum pernah diberikan
+
                 }
             }
         }

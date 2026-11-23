@@ -8,14 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Middleware DBDynamicConnection — menguji perilaku penggantian koneksi
- * tanpa menyentuh database (tidak perlu RefreshDatabase).
- *
- * Catatan: middleware ini otomatis non-aktif saat runningUnitTests() agar data
- * test tidak "hilang" saat koneksi berpindah ke user MySQL per-role. Karena itu
- * method privat `pakaiKoneksiRole()` dipanggil langsung lewat refleksi.
- */
 class DBDynamicConnectionTest extends TestCase
 {
     private function panggilPakaiKoneksiRole(string $asal): void
@@ -28,7 +20,7 @@ class DBDynamicConnectionTest extends TestCase
 
     private function pengguna(Role $role): object
     {
-        // Objek ringan: cukup punya properti role untuk dibaca middleware.
+
         return new class($role)
         {
             public function __construct(public Role $role) {}
@@ -63,7 +55,7 @@ class DBDynamicConnectionTest extends TestCase
 
         $this->panggilPakaiKoneksiRole('mysql_sementara');
 
-        // Gagal konek -> koneksi aplikasi tetap dipakai, tidak melempar exception.
+
         $this->assertSame('mysql_sementara', config('database.default'));
     }
 
@@ -87,7 +79,7 @@ class DBDynamicConnectionTest extends TestCase
 
         (new DBDynamicConnection)->handle(Request::create('/'), fn () => response('ok'));
 
-        // Saat test, koneksi tidak dipindah ke mysql_admin.
+
         $this->assertSame('sqlite', DB::getDefaultConnection());
     }
 }

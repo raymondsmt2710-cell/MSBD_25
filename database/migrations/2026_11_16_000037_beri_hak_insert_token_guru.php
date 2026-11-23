@@ -4,9 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-// Token QR sekarang dibuat langsung oleh controller guru (bukan lewat sp_buat_token_presensi)
-// supaya masa berlakunya mengikuti jam selesai jadwal, bukan durasi detik.
-// Karena itu guru_app memerlukan hak INSERT pada token_presensi.
 return new class extends Migration
 {
     private function mysql(): bool

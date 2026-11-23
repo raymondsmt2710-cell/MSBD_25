@@ -6,15 +6,9 @@ use App\Models\TahunAjaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Halaman LIHAT perangkat organisasi & kelas.
- *
- * Dipakai siswa, guru, dan admin. Orang tua tidak diberi akses
- * (diatur di route + policy).
- */
 class PerangkatController extends Controller
 {
-    /** Daftar semua kelas & organisasi dalam bentuk kartu. */
+
     public function index()
     {
         $this->authorize('perangkat.lihat');
@@ -45,7 +39,7 @@ class PerangkatController extends Controller
         return view('perangkat.index', compact('kelas', 'organisasi'));
     }
 
-    /** Susunan pengurus satu kelas. */
+
     public function kelas(int $id)
     {
         $this->authorize('perangkat.lihat');
@@ -57,7 +51,7 @@ class PerangkatController extends Controller
             ->select('k.*', 'g.nama_guru as wali_kelas', 't.nama as tahun_ajaran')
             ->first() ?? abort(404);
 
-        // Semua jabatan kelas, termasuk yang belum terisi — agar tampil "belum diisi".
+
         $jabatan = DB::table('jabatan')
             ->where('lingkup', 'kelas')
             ->orderBy('urutan')->orderBy('id_jabatan')
@@ -74,7 +68,7 @@ class PerangkatController extends Controller
         return view('perangkat.kelas', compact('kelas', 'jabatan', 'pengurus', 'jumlahAnggota'));
     }
 
-    /** Susunan pengurus satu organisasi, opsional per tahun ajaran. */
+
     public function organisasi(Request $request, int $id)
     {
         $this->authorize('perangkat.lihat');
@@ -85,7 +79,7 @@ class PerangkatController extends Controller
             ->select('o.*', 'g.nama_guru as pembina')
             ->first() ?? abort(404);
 
-        // Tahun ajaran yang punya pengurus, plus yang aktif.
+
         $daftarTahun = DB::table('tahun_ajaran')
             ->orderByDesc('nama')
             ->get();

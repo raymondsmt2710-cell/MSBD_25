@@ -6,10 +6,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-// Mencatat lokasi siswa saat memindai QR. Bersifat informasi/bukti untuk guru,
-// BUKAN pembatas: presensi tetap dicatat walau lokasi ditolak atau tidak tersedia.
-// GPS dapat dipalsukan dan sering meleset di dalam ruangan, sehingga tidak dipakai
-// sebagai syarat sahnya presensi.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -38,10 +34,7 @@ return new class extends Migration
         $this->beriHak();
     }
 
-    /**
-     * sp_scan_presensi menerima koordinat tambahan. Koordinat boleh NULL
-     * (siswa menolak izin lokasi) dan tidak pernah menggagalkan presensi.
-     */
+
     private function buatUlangProcedureScan(): void
     {
         DB::unprepared('DROP PROCEDURE IF EXISTS sp_scan_presensi');
@@ -108,10 +101,10 @@ SQL);
         $guru = env('DB_USERNAME_GURU', 'guru_app');
 
         try {
-            // DROP PROCEDURE menghapus hak EXECUTE, jadi diberikan lagi
+
             DB::unprepared("GRANT EXECUTE ON PROCEDURE `{$db}`.`sp_scan_presensi` TO '{$siswa}'@'{$host}'");
 
-            // Guru perlu membaca kolom lokasi untuk meninjau kehadiran
+
             DB::unprepared("GRANT SELECT ON `{$db}`.`presensi` TO '{$guru}'@'{$host}'");
 
             DB::unprepared('FLUSH PRIVILEGES');

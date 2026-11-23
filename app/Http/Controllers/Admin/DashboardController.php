@@ -28,7 +28,7 @@ class DashboardController extends AdminController
             'Pemilihan berlangsung' => DB::table('pemilihan')->where('status', 'berlangsung')->count(),
         ];
 
-        // Hal yang perlu ditindaklanjuti admin: data yang belum lengkap.
+
         $peringatan = array_filter([
             $tahunAktif ? null : 'Belum ada tahun ajaran yang ditandai aktif.',
             $this->hitungAkunTanpaProfil() ?: null,
@@ -41,7 +41,7 @@ class DashboardController extends AdminController
         return view('admin.dashboard', compact('tahunAktif', 'akun', 'statistik', 'peringatan', 'izinMenunggu'));
     }
 
-    /** Akun siswa/guru/orang tua yang belum dibuatkan profil (tidak bisa dipakai penuh). */
+
     private function hitungAkunTanpaProfil(): ?string
     {
         $jumlah = DB::table('users as u')

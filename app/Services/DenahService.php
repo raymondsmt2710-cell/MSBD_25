@@ -36,17 +36,7 @@ class DenahService
         return $denah;
     }
 
-    /**
-     * Daftar meja beserta maksimal 2 murid yang duduk di sana.
-     * Bentuk tiap entri:
-     *   ['baris' => int, 'kolom' => int, 'murid' => ['kiri' => ?array, 'kanan' => ?array]]
-     *
-     * $idSiswaTerlihat membatasi murid yang dikembalikan. Null berarti seluruh
-     * anggota kelas; orang tua hanya boleh melihat anaknya sendiri.
-     *
-     * @param  Collection<int, int>|null  $idSiswaTerlihat
-     * @return array<int, array<string, mixed>>
-     */
+
     public function kursi(DenahKelas $denah, Kelas $kelas, ?Collection $idSiswaTerlihat = null): array
     {
         $jabatan = PengurusKelas::query()
@@ -95,7 +85,7 @@ class DenahService
             ->all();
     }
 
-    /** @return array<int, array<string, mixed>> */
+
     public function siswa(Kelas $kelas, ?Collection $idSiswaTerlihat = null): array
     {
         return $kelas->anggotaKelas()
@@ -113,7 +103,7 @@ class DenahService
             ->all();
     }
 
-    /** @return array<int, array<string, mixed>> */
+
     public function ruangan(): array
     {
         $hari = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'][now()->dayOfWeek] ?? 'senin';

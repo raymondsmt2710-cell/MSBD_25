@@ -15,7 +15,7 @@ class VerifikasiIuranRequest extends FormRequest
         return $iuran ? Gate::allows('kas.kelola', $iuran->kelas) : false;
     }
 
-    /** @return array<string, mixed> */
+
     public function rules(): array
     {
         return [

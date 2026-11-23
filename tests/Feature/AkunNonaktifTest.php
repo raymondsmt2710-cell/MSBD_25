@@ -9,18 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-// Akun yang dinonaktifkan (users.is_active = 0) harus langsung kehilangan akses,
-// termasuk lewat session yang sudah terbuka.
-//
-// Login memang memeriksa is_active, tetapi session lama tidak pernah diperiksa ulang.
-// Akibatnya admin yang menonaktifkan akun tidak benar-benar mencabut akses sampai
-// user tersebut logout sendiri.
-//
-// PENTING: tes ini masuk lewat POST /login yang sesungguhnya, bukan actingAs().
-// actingAs() menanam instance model yang sudah dimuat ke memori, sehingga perubahan
-// is_active di database tidak terlihat oleh tes — padahal di produksi session guard
-// selalu mengambil ulang user dari database pada setiap request. Memakai login asli
-// membuat tes mengukur perilaku yang sama dengan produksi.
 class AkunNonaktifTest extends TestCase
 {
     use RefreshDatabase;
@@ -44,7 +32,7 @@ class AkunNonaktifTest extends TestCase
         return User::find($id);
     }
 
-    /** Login sungguhan lewat POST /login, sehingga session menyimpan id user (bukan objek model). */
+
     private function loginSebagai(string $username): void
     {
         $this->post('/login', [
@@ -59,12 +47,12 @@ class AkunNonaktifTest extends TestCase
     {
         DB::table('users')->where('id_user', $user->id_user)->update(['is_active' => false]);
 
-        // Laravel menguji banyak request dalam SATU instance aplikasi, sehingga guard
-        // menyimpan objek user yang sudah dimuat di memori. Di produksi setiap request
-        // di-boot ulang (dan di Octane dipanggil forgetGuards()), jadi user SELALU
-        // diambil ulang dari database. Baris ini menyamakan kedua kondisi itu —
-        // tanpa ini, middleware membaca is_active yang sudah basi dan tes memberi
-        // hasil palsu (lulus padahal produksi tidak).
+
+
+
+
+
+
         Auth::forgetGuards();
     }
 
@@ -72,15 +60,15 @@ class AkunNonaktifTest extends TestCase
     {
         $user = $this->pengguna('siswa');
 
-        // Session dibuka saat akun masih aktif.
+
         $this->loginSebagai($user->username);
 
-        // Admin menonaktifkan akun.
+
         $this->nonaktifkan($user);
 
         $this->get('/siswa/beranda/presensi')->assertRedirect(route('login'));
 
-        // Session benar-benar dicabut, bukan hanya dialihkan.
+
         $this->assertGuest('web');
     }
 
@@ -94,14 +82,14 @@ class AkunNonaktifTest extends TestCase
         $this->get('/ortu')->assertRedirect(route('login'));
     }
 
-    // Akun yang masih aktif tidak boleh ikut ter-logout.
+
     public function test_akun_aktif_tetap_bisa_akses(): void
     {
         $user = $this->pengguna('siswa');
 
         $this->loginSebagai($user->username);
 
-        // Akun uji tanpa profil siswa boleh saja ditolak halaman (403), yang penting tidak dilogout.
+
         $respons = $this->get('/siswa/beranda/presensi');
         $this->assertNotSame(route('login'), $respons->headers->get('Location'));
 

@@ -15,7 +15,7 @@ class SimpanDenahRequest extends FormRequest
         return $kelas ? Gate::allows('denah.kelola-kursi', $kelas) : false;
     }
 
-    /** @return array<string, mixed> */
+
     public function rules(): array
     {
         return [

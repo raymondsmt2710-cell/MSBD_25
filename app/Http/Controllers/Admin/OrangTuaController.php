@@ -8,16 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
-/**
- * Fitur 4 — Kelola data orang tua/wali dan relasinya ke siswa.
- *
- * Relasi orang_tua_siswa menentukan anak mana yang boleh dipantau akun orang tua
- * di portal (fitur 7), jadi setiap perubahan di sini langsung mengubah hak lihat.
- *
- * Aturan yang dijaga aplikasi (tidak ada constraint DB untuk ini):
- *  - satu siswa paling banyak punya satu "ayah" dan satu "ibu" (wali boleh lebih dari satu);
- *  - satu siswa paling banyak punya satu kontak utama.
- */
 class OrangTuaController extends AdminController
 {
     private const HUBUNGAN = ['ayah', 'ibu', 'wali'];
@@ -32,9 +22,9 @@ class OrangTuaController extends AdminController
             ->leftJoin('siswa as s', 's.id_siswa', '=', 'os.id_siswa')
             ->select('o.id_orang_tua', 'o.nama', 'o.no_hp', 'o.email', 'u.username', 'u.is_active')
             ->selectRaw("GROUP_CONCAT(CONCAT(s.nama_siswa, ' (', os.hubungan, ')') ORDER BY s.nama_siswa SEPARATOR ', ') AS anak")
-            // Peran ganda = akun ini tercatat sebagai ayah DAN ibu sekaligus.
-            // Dihitung sebagai agregat pada query yang sama, supaya tidak ada
-            // query tambahan per baris (N+1).
+
+
+
             ->selectRaw("(SUM(os.hubungan = 'ayah') > 0 AND SUM(os.hubungan = 'ibu') > 0) AS peran_ganda")
             ->when($cari, fn ($q) => $q->where(fn ($w) => $w->where('o.nama', 'like', "%{$cari}%")
                 ->orWhere('s.nama_siswa', 'like', "%{$cari}%")
@@ -62,7 +52,7 @@ class OrangTuaController extends AdminController
 
         $orangTua = OrangTua::create($data);
 
-        // Setelah profil dibuat, langkah berikutnya hampir selalu menghubungkan anak.
+
         return redirect()->route('admin.orang-tua.show', $orangTua->id_orang_tua)
             ->with('success', 'Profil dibuat. Sekarang hubungkan ke siswa.');
     }
@@ -83,9 +73,9 @@ class OrangTuaController extends AdminController
 
         $username = DB::table('users')->where('id_user', $orangTua->id_user)->value('username');
 
-        // Akun berperan ganda: tercatat sebagai ayah DAN ibu sekaligus. Data
-        // seperti ini tidak bisa dibuat lagi, tetapi data lama tetap ada dan
-        // perlu ditandai agar admin tahu mana yang harus dirapikan.
+
+
+
         $peran = $anak->pluck('hubungan')->unique();
         $peranGanda = $peran->contains('ayah') && $peran->contains('ibu');
 
@@ -123,7 +113,7 @@ class OrangTuaController extends AdminController
 
         DB::transaction(function () use ($orangTua, $data, $request) {
             $utama = $request->boolean('is_kontak_utama')
-                // Siswa yang belum punya kontak utama otomatis memakai orang tua pertama.
+
                 || ! DB::table('orang_tua_siswa')->where('id_siswa', $data['id_siswa'])->where('is_kontak_utama', true)->exists();
 
             if ($utama) {
@@ -189,27 +179,15 @@ class OrangTuaController extends AdminController
         DB::table('orang_tua_siswa')->where('id_siswa', $idSiswa)->update(['is_kontak_utama' => false]);
     }
 
-    /** Pesan galat bila siswa sudah punya ayah/ibu lain; null bila aman. */
-    /**
-     * Periksa apakah hubungan yang diminta bertentangan dengan data yang ada.
-     *
-     * Dua aturan:
-     *   1. Per SISWA: satu siswa hanya boleh punya satu ayah dan satu ibu.
-     *   2. Per AKUN ORANG TUA: satu akun hanya boleh punya satu peran untuk
-     *      SEMUA anaknya. Orang yang sama tidak mungkin ayah bagi satu anak dan
-     *      ibu bagi anak lain — aturan 1 saja tidak menangkap kasus itu karena
-     *      ia hanya melihat satu siswa.
-     *
-     * 'wali' tidak menyatakan jenis kelamin, jadi selalu boleh dan tidak pernah
-     * dianggap bertentangan.
-     */
+
+
     private function bentrokHubungan(int $idSiswa, string $hubungan, int $abaikanIdOrangTua): ?string
     {
         if ($hubungan === 'wali') {
             return null;
         }
 
-        // Aturan 1: siswa ini sudah punya ayah/ibu lain.
+
         $sudahAda = DB::table('orang_tua_siswa')
             ->where('id_siswa', $idSiswa)
             ->where('hubungan', $hubungan)
@@ -220,8 +198,8 @@ class OrangTuaController extends AdminController
             return "Siswa ini sudah memiliki {$hubungan} yang terdaftar. Gunakan hubungan \"wali\" atau ubah data yang ada.";
         }
 
-        // Aturan 2: akun orang tua ini sudah berperan sebagai peran LAIN di anak
-        // mana pun (ayah/ibu). Peran yang sama di anak lain tetap boleh.
+
+
         $peranLain = DB::table('orang_tua_siswa')
             ->where('id_orang_tua', $abaikanIdOrangTua)
             ->where('hubungan', '!=', $hubungan)

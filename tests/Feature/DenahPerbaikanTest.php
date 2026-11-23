@@ -11,16 +11,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\MembuatSekolah;
 use Tests\TestCase;
 
-/**
- * Regresi dua bug denah:
- *  #16 Orang tua melihat kursi seluruh kelas, padahal seharusnya hanya anaknya.
- *  #9  Memperkecil grid denah dulu menghapus permanen kursi murid di luar grid.
- */
 class DenahPerbaikanTest extends TestCase
 {
     use MembuatSekolah, RefreshDatabase;
 
-    /** @var array<string, mixed> */
+
     private array $sekolah;
 
     protected function setUp(): void
@@ -30,7 +25,7 @@ class DenahPerbaikanTest extends TestCase
         $this->sekolah = $this->buatSekolah();
     }
 
-    // ---- #16: orang tua hanya melihat kursi anaknya ----
+
 
     public function test_orang_tua_hanya_menerima_kursi_anaknya(): void
     {
@@ -47,7 +42,7 @@ class DenahPerbaikanTest extends TestCase
 
         $this->assertSame([$anak->id_siswa], $idSiswaTerlihat);
 
-        // Daftar siswa untuk panel "belum duduk" juga harus terbatas.
+
         $idsPanel = array_column($payload['siswa'], 'id_siswa');
         $this->assertSame([$anak->id_siswa], $idsPanel);
 
@@ -84,7 +79,7 @@ class DenahPerbaikanTest extends TestCase
         $this->assertCount(4, $payload['siswa']);
     }
 
-    // ---- #9: memperkecil grid tidak boleh menghapus kursi ----
+
 
     public function test_memperkecil_grid_ditolak_bila_ada_kursi_di_luar_grid(): void
     {
@@ -100,7 +95,7 @@ class DenahPerbaikanTest extends TestCase
             ->assertStatus(422)
             ->assertJsonPath('message', fn (string $pesan) => str_contains($pesan, 'murid berada di luar ukuran baru'));
 
-        // Tidak satu pun kursi hilang.
+
         $this->assertSame(4, PosisiDuduk::where('id_denah', $denah->id_denah)->count());
         $this->assertSame(2, $denah->fresh()->jumlah_baris);
     }
@@ -109,7 +104,7 @@ class DenahPerbaikanTest extends TestCase
     {
         $denah = $this->buatDenahDenganEmpatMurid();
 
-        // 4 murid menempati baris 1-2, kolom 1-2; grid 4x2 masih menampung semuanya.
+
         $this->actingAs($this->sekolah['admin'])
             ->putJson('/denah/kelas/'.$this->sekolah['kelas']->id_kelas, [
                 'jumlah_baris' => 2,
@@ -122,7 +117,7 @@ class DenahPerbaikanTest extends TestCase
         $this->assertSame(4, PosisiDuduk::where('id_denah', $denah->id_denah)->count());
     }
 
-    // ---- helper ----
+
 
     private function buatDenahDenganEmpatMurid(): DenahKelas
     {
@@ -173,10 +168,7 @@ class DenahPerbaikanTest extends TestCase
         return $user->fresh();
     }
 
-    /**
-     * @param  array<int, array<string, mixed>>  $kursi
-     * @return array<int, int>
-     */
+
     private function kumpulkanIdSiswa(array $kursi): array
     {
         $ids = [];

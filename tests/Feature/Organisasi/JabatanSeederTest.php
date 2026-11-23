@@ -6,9 +6,6 @@ use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Seeder jabatan standar: idempoten dan mencakup kedua lingkup.
- */
 class JabatanSeederTest extends TestCase
 {
     use DatabaseTruncation;

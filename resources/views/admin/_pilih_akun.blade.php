@@ -1,7 +1,3 @@
-{{--
-    Pemilih akun untuk profil baru. Variabel: $akun (koleksi akun tanpa profil),
-    $terpilih (id_user dari query string), $role (teks peran), $rutePeran (filter daftar akun).
---}}
 <div class="bidang">
     <label for="id_user">Akun {{ $role }}</label>
     @if ($akun->isEmpty())

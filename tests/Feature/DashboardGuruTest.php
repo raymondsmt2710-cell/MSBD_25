@@ -12,7 +12,7 @@ class DashboardGuruTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** Penghitung unik untuk kolom-kolom UNIQUE (tahun_ajaran.nama, organisasi.nama_organisasi). */
+
     private static int $urut = 0;
 
     protected function setUp(): void
@@ -21,7 +21,7 @@ class DashboardGuruTest extends TestCase
         $this->withoutMiddleware(DBDynamicConnection::class);
     }
 
-    /** Membuat satu guru lengkap dengan akun login. Mengembalikan objek User. */
+
     private function buatGuru(string $nama = 'Guru Uji', string $nip = '1987001'): User
     {
         $idUser = DB::table('users')->insertGetId([
@@ -72,7 +72,7 @@ class DashboardGuruTest extends TestCase
 
     public function test_guru_tanpa_baris_guru_ditolak_403(): void
     {
-        // Review Focus #2: akun berperan guru tetapi tanpa data guru.
+
         $idUser = DB::table('users')->insertGetId([
             'username' => 'guru_kosong',
             'password_hash' => bcrypt('password'),
@@ -111,14 +111,14 @@ class DashboardGuruTest extends TestCase
             ->assertSee('Sesi Terbuka')
             ->assertSee('Sesi Pekan Ini')
             ->assertSee('Kehadiran Siswa')
-            // Guru tidak punya akses voting, jadi kartu Pemilihan tidak boleh ada.
+
             ->assertDontSee('Pemilihan');
     }
 
     public function test_dashboard_guru_tidak_lagi_memuat_data_diri(): void
     {
-        // Data Diri pindah ke /akun. Nama guru tetap muncul di hero, tetapi bagian
-        // "Profil Guru" beserta NIP tidak lagi dirender di dashboard.
+
+
         $user = $this->buatGuru('Ibu Uji', '1987002');
 
         $this->actingAs($user)
@@ -143,7 +143,7 @@ class DashboardGuruTest extends TestCase
 
     public function test_guru_tanpa_jadwal_tetap_tampil_dengan_keadaan_kosong(): void
     {
-        // Review Focus #3: guru tanpa jadwal sama sekali.
+
         $user = $this->buatGuru();
 
         $this->actingAs($user)
@@ -154,8 +154,8 @@ class DashboardGuruTest extends TestCase
 
     public function test_dashboard_guru_hanya_menampilkan_ikon_yang_benar_benar_ada(): void
     {
-        // Guru tidak punya akses voting sama sekali, bahkan bila ia panitia:
-        // dashboard tidak boleh menawarkan tautan Pemilihan.
+
+
         $user = $this->buatGuru();
         $this->jadikanPanitia($user);
 
@@ -165,14 +165,11 @@ class DashboardGuruTest extends TestCase
             ->assertSee(route('guru.presensi.index'), false)
             ->assertDontSee(route('kelola.pemilihan.index'), false)
             ->assertDontSee('Pemilihan')
-            // Tidak boleh ada tautan ke fitur guru yang tidak ada.
+
             ->assertDontSee(route('siswa.beranda'), false);
     }
 
-    /**
-     * Nama tahun ajaran unik, maksimal 9 karakter (kolomnya varchar(9)).
-     * Satu penghitung untuk semua helper agar tidak bentrok antar-pemanggilan.
-     */
+
     private function namaTahunAjaranUnik(): string
     {
         self::$urut++;
@@ -180,7 +177,7 @@ class DashboardGuruTest extends TestCase
         return sprintf('2026/%03d', self::$urut);
     }
 
-    /** Hari yang pasti ada di ENUM jadwal_pelajaran.hari; 'senin' bila hari ini Minggu. */
+
     private function hariUntukJadwal(): string
     {
         $hariIni = $this->hariIniEnum();
@@ -190,7 +187,7 @@ class DashboardGuruTest extends TestCase
             : 'senin';
     }
 
-    /** Membuat satu siswa beserta akun loginnya. Mengembalikan id_siswa. */
+
     private function buatSiswa(string $username, string $nis): int
     {
         $idUser = DB::table('users')->insertGetId([
@@ -210,10 +207,7 @@ class DashboardGuruTest extends TestCase
         ]);
     }
 
-    /**
-     * Membuat pemilihan lalu menunjuk guru ini sebagai panitianya,
-     * seperti syarat PemilihanPolicy::kelola().
-     */
+
     private function jadikanPanitia(
         User $user,
         string $judul = 'Pemilihan Uji Panitia',
@@ -251,7 +245,7 @@ class DashboardGuruTest extends TestCase
 
     public function test_guru_bukan_panitia_tidak_ditawari_tautan_pemilihan(): void
     {
-        // Guru tidak punya akses voting; tautan Pemilihan tidak boleh dirender.
+
         $user = $this->buatGuru();
 
         $this->actingAs($user)
@@ -263,8 +257,8 @@ class DashboardGuruTest extends TestCase
 
     public function test_guru_panitia_pun_tidak_ditawari_tautan_pemilihan(): void
     {
-        // Keputusan pengguna: dashboard guru tidak memuat Pemilihan sama sekali,
-        // walaupun guru ini tercatat sebagai panitia di database.
+
+
         $user = $this->buatGuru();
         $this->jadikanPanitia($user, 'Pemilihan Milik Saya');
 
@@ -278,8 +272,8 @@ class DashboardGuruTest extends TestCase
 
     public function test_footer_guru_tidak_menyebut_pemilihan(): void
     {
-        // Footer bersama masih mendaftar "Pemilihan Elektronik" untuk peran lain;
-        // halaman guru harus menimpanya agar tidak menawarkan fitur yang tidak ada.
+
+
         $user = $this->buatGuru();
 
         $html = $this->actingAs($user)
@@ -289,14 +283,14 @@ class DashboardGuruTest extends TestCase
 
         $this->assertStringContainsString('Akses Cepat', $html);
         $this->assertStringNotContainsString('Pemilihan', $html);
-        // Penimpaan harus merender <br> sebagai tag, bukan teks ter-escape.
+
         $this->assertStringNotContainsString('&lt;br&gt;', $html);
     }
 
     public function test_guru_punya_hamburger_dengan_kartu_presensi(): void
     {
-        // Guru harus mendapat perlakuan yang sama persis dengan siswa di ponsel:
-        // hamburger di kiri, logo tengah, tombol profil di kanan.
+
+
         $user = $this->buatGuru();
 
         $html = $this->actingAs($user)
@@ -314,9 +308,9 @@ class DashboardGuruTest extends TestCase
 
     public function test_drawer_guru_memuat_seluruh_tujuan_nav_desktop(): void
     {
-        // Nav desktop guru punya empat tujuan selain Beranda. Semuanya harus ikut
-        // masuk hamburger; dulu hanya "Presensi" yang pindah ke panel sehingga
-        // Perangkat, Kas Kelas, dan Denah hilang di ponsel.
+
+
+
         $user = $this->buatGuru();
 
         $html = $this->actingAs($user)
@@ -370,8 +364,8 @@ class DashboardGuruTest extends TestCase
             ->assertSee(route('akun.profil'), false)
             ->getContent();
 
-        // Sama seperti siswa: varian ponsel disembunyikan di desktop, jadi harus
-        // ada varian di dalam .nav-aksi agar /akun tetap terjangkau di layar lebar.
+
+
         $this->assertMatchesRegularExpression(
             '/<div class="nav-aksi">[\s\S]{0,600}?class="nav-profil-dalam"/',
             $html,
@@ -381,7 +375,7 @@ class DashboardGuruTest extends TestCase
 
     public function test_drawer_guru_tetap_tidak_menawarkan_pemilihan(): void
     {
-        // Drawer baru tidak boleh menjadi celah masuknya "Pemilihan" ke halaman guru.
+
         $user = $this->buatGuru();
 
         $html = $this->actingAs($user)
@@ -394,7 +388,7 @@ class DashboardGuruTest extends TestCase
         $this->assertStringNotContainsString('Pemilihan', $panel);
     }
 
-    /** Isi elemen .drawer-panel, dipakai untuk memeriksa isi hamburger. */
+
     private function panelDrawer(string $html): string
     {
         $mulai = strpos($html, '<div class="drawer-panel">');
@@ -408,7 +402,7 @@ class DashboardGuruTest extends TestCase
         return $akhir === false ? '' : substr($html, $mulai, $akhir - $mulai);
     }
 
-    /** Membuat jadwal untuk guru pada hari tertentu. Mengembalikan id_jadwal. */
+
     private function buatJadwal(int $idGuru, string $hari, string $jamMulai = '07:30:00'): int
     {
         $idTa = DB::table('tahun_ajaran')->insertGetId([
@@ -441,10 +435,7 @@ class DashboardGuruTest extends TestCase
         ]);
     }
 
-    /**
-     * Hari ini dalam huruf kecil, dipetakan ke nilai ENUM jadwal_pelajaran.hari.
-     * ENUM hanya memuat senin..sabtu; hari Minggu tidak punya jadwal.
-     */
+
     private function hariIniEnum(): string
     {
         return strtolower(\Illuminate\Support\Carbon::now()->locale('id')->isoFormat('dddd'));
@@ -477,15 +468,15 @@ class DashboardGuruTest extends TestCase
 
     public function test_tombol_buka_sesi_tidak_muncul_di_hari_yang_bukan_jadwal(): void
     {
-        // Review Focus #5: sp_buka_sesi menolak hari lain; tombolnya tidak boleh ditawarkan.
+
         $user = $this->buatGuru();
         $hariIni = $this->hariIniEnum();
         $hariLain = $hariIni === 'senin' ? 'selasa' : 'senin';
 
         $idJadwal = $this->buatJadwal($this->idGuruDari($user), $hariLain);
 
-        // Diperiksa lewat URL form, bukan teks tombol: teks "buka sesi" juga muncul
-        // di deskripsi menu cepat, sehingga assertion teks bisa lulus secara palsu.
+
+
         $this->actingAs($user)
             ->get(route('guru.beranda'))
             ->assertOk()
@@ -495,7 +486,7 @@ class DashboardGuruTest extends TestCase
 
     public function test_sesi_hari_ini_menampilkan_tombol_qr_dan_tutup_bukan_buka(): void
     {
-        // Review Focus #6
+
         $user = $this->buatGuru();
         $idGuru = $this->idGuruDari($user);
         $hariIni = $this->hariIniEnum();
@@ -524,7 +515,7 @@ class DashboardGuruTest extends TestCase
 
     public function test_jadwal_guru_lain_tidak_tampil(): void
     {
-        // Review Focus #1
+
         $userA = $this->buatGuru('Guru A', '1987003');
         $userB = $this->buatGuru('Guru B', '1987004');
         $hariIni = $this->hariIniEnum();
@@ -591,7 +582,7 @@ class DashboardGuruTest extends TestCase
 
     public function test_tanpa_sesi_menampilkan_keadaan_kosong(): void
     {
-        // Review Focus #3 dan #4
+
         $user = $this->buatGuru();
 
         $html = $this->actingAs($user)
@@ -615,9 +606,9 @@ class DashboardGuruTest extends TestCase
 
     public function test_guru_yang_sudah_login_diarahkan_dari_beranda_ke_dashboard(): void
     {
-        // '/' punya cabang redirect sendiri (BerandaController), terpisah dari
-        // AuthController. Tanpa cabang 'guru', guru jatuh ke default = kelola
-        // pemilihan dan kena 403 bila bukan panitia.
+
+
+
         $user = $this->buatGuru();
 
         $this->actingAs($user)
@@ -627,8 +618,8 @@ class DashboardGuruTest extends TestCase
 
     public function test_kehadiran_pekan_ini_mengabaikan_sesi_yang_masih_dibuka(): void
     {
-        // Sesi yang masih dibuka punya total_tercatat sebagian. Kalau ikut dihitung,
-        // persentase kehadiran pekan ini turun di tengah pelajaran tanpa alasan.
+
+
         $user = $this->buatGuru();
         $idGuru = $this->idGuruDari($user);
         $idJadwal = $this->buatJadwal($idGuru, $this->hariUntukJadwal());
@@ -643,7 +634,7 @@ class DashboardGuruTest extends TestCase
 
         $idSiswa = $this->buatSiswa('siswa_buka', '20260101');
 
-        // Satu siswa alpa pada sesi yang masih dibuka: kalau dihitung, 0%.
+
         DB::table('presensi')->insert([
             'id_sesi' => $idSesiDibuka,
             'id_siswa' => $idSiswa,
@@ -659,12 +650,12 @@ class DashboardGuruTest extends TestCase
 
     public function test_jadwal_dari_tahun_ajaran_lama_tidak_tampil(): void
     {
-        // Jadwal menempel pada kelas, kelas menempel pada tahun ajaran. Tanpa filter
-        // tahun ajaran aktif, jadwal tahun lalu ikut muncul sebagai baris ganda.
+
+
         $user = $this->buatGuru();
         $idGuru = $this->idGuruDari($user);
 
-        // Tahun ajaran lama (tidak aktif) dengan jadwal di hari yang sama.
+
         $idTaLama = DB::table('tahun_ajaran')->insertGetId([
             'nama' => $this->namaTahunAjaranUnik(),
             'tanggal_mulai' => '2025-07-01',
@@ -694,10 +685,10 @@ class DashboardGuruTest extends TestCase
             'jam_selesai' => '11:30:00',
         ]);
 
-        // Tahun ajaran aktif: buatJadwal() membuatnya beserta kelas & mapel-nya.
+
         $this->buatJadwal($idGuru, $this->hariUntukJadwal());
 
-        // Filter harus menyisakan jadwal tahun aktif saja, bukan mengosongkan halaman.
+
         $this->actingAs($user)
             ->get(route('guru.beranda'))
             ->assertOk()
@@ -708,10 +699,10 @@ class DashboardGuruTest extends TestCase
 
     public function test_kehadiran_yang_dihitung_adalah_kehadiran_siswa_bukan_guru(): void
     {
-        // Presensi di aplikasi ini = guru mencatat kehadiran SISWA. Tabel `presensi`
-        // hanya punya id_sesi + id_siswa (tidak ada id_guru), dan view rekap
-        // mengagregasi baris per siswa. Tes ini mengunci makna itu: angka kartu
-        // berubah mengikuti status SISWA, dan tidak ada presensi untuk guru.
+
+
+
+
         $user = $this->buatGuru();
         $idGuru = $this->idGuruDari($user);
         $idJadwal = $this->buatJadwal($idGuru, $this->hariUntukJadwal());
@@ -724,7 +715,7 @@ class DashboardGuruTest extends TestCase
             'status' => 'ditutup',
         ]);
 
-        // Dua siswa: satu hadir, satu alpa => 50%.
+
         $idSiswaHadir = $this->buatSiswa('siswa_hadir', '20260201');
         $idSiswaAlpa = $this->buatSiswa('siswa_alpa', '20260202');
 
@@ -740,7 +731,7 @@ class DashboardGuruTest extends TestCase
 
         $this->assertStringContainsString('50.00%', $html);
 
-        // Angka itu berasal dari baris presensi SISWA, bukan dari kehadiran guru.
+
         $this->assertSame(2, DB::table('presensi')->where('id_sesi', $idSesi)->count());
         $this->assertSame(
             0,
@@ -751,8 +742,8 @@ class DashboardGuruTest extends TestCase
 
     public function test_sesi_terbuka_yang_tertinggal_tampil_dan_bisa_ditutup(): void
     {
-        // Sesi yang dibuka kemarin tidak muncul di bagian "Jadwal Hari Ini", sehingga
-        // tanpa bagian ini angka kartu "Sesi Terbuka" tidak bisa ditindaklanjuti.
+
+
         $user = $this->buatGuru();
         $idGuru = $this->idGuruDari($user);
         $idJadwal = $this->buatJadwal($idGuru, $this->hariUntukJadwal());
@@ -775,8 +766,8 @@ class DashboardGuruTest extends TestCase
 
     public function test_sesi_terbuka_hari_ini_tidak_dirender_dua_kali(): void
     {
-        // Sesi hari ini sudah punya tombol QR/Tutup di baris jadwal. Bila juga masuk
-        // daftar "Sesi Masih Terbuka", tautan tutupnya muncul dua kali di halaman.
+
+
         $user = $this->buatGuru();
         $idGuru = $this->idGuruDari($user);
         $hariIni = $this->hariIniEnum();
@@ -802,7 +793,7 @@ class DashboardGuruTest extends TestCase
 
         $this->assertStringNotContainsString('Sesi Masih Terbuka', $html);
 
-        // Tetap ada tepat satu tombol Tutup, yaitu di baris jadwal hari ini.
+
         $this->assertSame(
             1,
             substr_count($html, route('guru.presensi.tutup', $idSesi))
@@ -811,8 +802,8 @@ class DashboardGuruTest extends TestCase
 
     public function test_tanpa_tahun_ajaran_aktif_jadwal_tetap_tampil(): void
     {
-        // Fallback yang disengaja: bila belum ada baris bertanda aktif, jangan
-        // memfilter apa pun — dashboard tidak boleh kosong karena data master kosong.
+
+
         $user = $this->buatGuru();
         $idGuru = $this->idGuruDari($user);
 

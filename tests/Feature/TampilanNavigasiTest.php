@@ -10,17 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-// Regresi tampilan yang ditemukan saat memakai aplikasi:
-//
-//  1. Tombol "Kembali" hilang setelah menyimpan form. Penyebabnya bukan
-//     tombolnya yang dilepas, melainkan back() yang mengembalikan pengguna ke
-//     halaman yang SAMA. Browser lalu mengirim referer = URL halaman itu
-//     sendiri, dan aturan "referer sama dengan halaman ini" membuat tujuan
-//     kembali menjadi null.
-//  2. Panel admin hanya punya bar tipis berisi breadcrumb, tanpa header seperti
-//     halaman lain.
-//  3. Halaman /kelola/pemilihan menampilkan tautan "Dashboard" di tengah bar
-//     padahal admin sudah punya sidebar; tautan itu dobel dan membingungkan.
 class TampilanNavigasiTest extends TestCase
 {
     use DatabaseTruncation;
@@ -37,12 +26,12 @@ class TampilanNavigasiTest extends TestCase
         return User::find($idUser);
     }
 
-    // ---------------------------------------------------------------- 1. Kembali
+
 
     public function test_setelah_simpan_form_tombol_kembali_tetap_ada(): void
     {
-        // Referer yang dikirim browser setelah back() sama dengan halaman yang
-        // sedang dibuka. Dulu ini menghasilkan null sehingga tombol hilang.
+
+
         $admin = $this->buatAkun('admin', 'nav_admin_kembali');
         $halaman = route('admin.denah.index');
 
@@ -72,8 +61,8 @@ class TampilanNavigasiTest extends TestCase
 
     public function test_halaman_beranda_tetap_tanpa_tombol_kembali(): void
     {
-        // Perbaikan di atas tidak boleh memunculkan tombol di beranda: beranda
-        // adalah puncak navigasi.
+
+
         $siswa = $this->buatAkun('siswa', 'nav_siswa_beranda');
         DB::table('siswa')->insert([
             'id_user' => $siswa->id_user,
@@ -90,7 +79,7 @@ class TampilanNavigasiTest extends TestCase
             ->assertDontSee('class="tombol-kembali"', false);
     }
 
-    // ----------------------------------------------------------------- 2. Header
+
 
     public function test_panel_admin_punya_topbar_seperti_halaman_lain(): void
     {
@@ -106,8 +95,8 @@ class TampilanNavigasiTest extends TestCase
 
     public function test_semua_halaman_admin_punya_topbar(): void
     {
-        // Satu partial dipasang di layout admin, jadi semua halaman di bawahnya
-        // ikut mendapat header. Kalau layout admin diganti, tes ini menangkapnya.
+
+
         $admin = $this->buatAkun('admin', 'nav_admin_semua');
 
         foreach ([
@@ -124,12 +113,12 @@ class TampilanNavigasiTest extends TestCase
         }
     }
 
-    // ------------------------------------------------------- 3. Nav tengah dobel
+
 
     public function test_admin_tidak_melihat_tautan_dashboard_di_tengah_halaman_pemilihan(): void
     {
-        // Admin sudah punya sidebar berisi "Dasbor". Tautan di tengah bar hanya
-        // mengulang tujuan yang sama.
+
+
         $admin = $this->buatAkun('admin', 'nav_admin_pemilihan');
 
         $html = $this->actingAs($admin)
@@ -146,7 +135,7 @@ class TampilanNavigasiTest extends TestCase
 
     public function test_admin_tetap_punya_sidebar_di_halaman_pemilihan(): void
     {
-        // Menghapus tautan tengah tidak boleh ikut menghapus navigasi admin.
+
         $admin = $this->buatAkun('admin', 'nav_admin_sidebar');
 
         $this->actingAs($admin)
@@ -165,8 +154,8 @@ class TampilanNavigasiTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        // Tombol hamburger: <button>, bukan <div>, supaya bisa difokus & diaktifkan
-        // dengan keyboard. aria-controls menunjuk nav yang dikendalikannya.
+
+
         $this->assertMatchesRegularExpression(
             '/<button[^>]*class="sidebar-toggle"[^>]*aria-expanded="false"[^>]*aria-controls="menu-admin"/',
             $html,
@@ -175,22 +164,22 @@ class TampilanNavigasiTest extends TestCase
 
         $this->assertStringContainsString('id="menu-admin"', $html);
 
-        // Setiap item menu harus punya ikon SVG dan label terbungkus <span>.
+
         $this->assertMatchesRegularExpression(
             '/<a class="menu[^"]*"[^>]*>\s*<svg[^>]*>.*?<\/svg>\s*<span>[^<]+<\/span>/s',
             $html,
             'Item menu sidebar harus memuat ikon SVG diikuti label.'
         );
 
-        // Enam belas item menu => minimal enam belas ikon di dalam nav.
+
         $this->assertGreaterThanOrEqual(
             16,
             substr_count($html, '<svg'),
             'Setiap item menu admin seharusnya punya ikon.'
         );
 
-        // Menambah ikon tidak boleh menghilangkan tujuan lama: 16 rute menu harus
-        // tetap ada, dan item yang sedang dibuka tetap ditandai .aktif.
+
+
         $rute = [
             'admin.dashboard', 'admin.akun.index', 'admin.siswa.index', 'admin.guru.index',
             'admin.orang-tua.index', 'admin.tahun-ajaran.index', 'admin.mapel.index',
@@ -207,7 +196,7 @@ class TampilanNavigasiTest extends TestCase
             );
         }
 
-        // Halaman yang sedang dibuka adalah admin.kelas.index.
+
         $this->assertMatchesRegularExpression(
             '/<a class="menu\s+aktif"[^>]*href="'.preg_quote(route('admin.kelas.index'), '/').'"/',
             $html,
@@ -217,10 +206,10 @@ class TampilanNavigasiTest extends TestCase
 
     public function test_css_sidebar_admin_punya_aturan_hamburger(): void
     {
-        // Sidebar admin dipakai empat layout, jadi aturannya harus ada di partial
-        // bersama. Tes ini menjaga agar aturan responsif tidak hilang saat partial
-        // dirapikan: tanpa .sidebar-terbuka, tombol hamburger tidak mengendalikan
-        // apa pun; tanpa max-width, halaman melebar horizontal di ponsel.
+
+
+
+
         $admin = $this->buatAkun('admin', 'nav_admin_css');
 
         $html = $this->actingAs($admin)
@@ -228,8 +217,8 @@ class TampilanNavigasiTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        // Layout admin WAJIB memakai kelas yang sama dengan partial CSS, kalau tidak
-        // aturan responsif di bawah tidak akan pernah berlaku di /admin/*.
+
+
         $this->assertMatchesRegularExpression(
             '/<div class="kerangka kerangka-admin">/',
             $html,
@@ -254,19 +243,19 @@ class TampilanNavigasiTest extends TestCase
             'Perilaku ponsel harus dibatasi media query 860px.'
         );
 
-        // 1fr = minmax(auto,1fr): kolom TIDAK bisa menyusut di bawah min-content
-        // isi halaman (mis. tabel lebar), sehingga seluruh grid melebar melewati
-        // viewport dan sidebar ikut membengkak. minmax(0,1fr) mengizinkannya
-        // menyusut sehingga tidak ada scroll horizontal.
+
+
+
+
         $this->assertMatchesRegularExpression(
             '/@media\s*\(max-width:\s*860px\)[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/',
             $html,
             'Kolom grid di layar sempit harus minmax(0,1fr) agar bisa menyusut.'
         );
 
-        // Panel menu harus MENGAMBANG di atas konten (absolute), bukan mendorong
-        // konten ke bawah. Dengan posisi statis, membuka 16 menu menggeser
-        // konten sejauh ~665px sehingga pengguna kehilangan tempatnya.
+
+
+
         $this->assertMatchesRegularExpression(
             '/\.kerangka-admin\s*>\s*aside\s*\{[^}]*position\s*:\s*relative/',
             $html,
@@ -279,9 +268,9 @@ class TampilanNavigasiTest extends TestCase
             'Panel menu harus position:absolute supaya tidak menggeser konten.'
         );
 
-        // Panel absolute akan TERPOTONG oleh overflow-y:auto milik aside (aturan
-        // desktop), sehingga menu tidak terlihat sama sekali saat dibuka.
-        // Di layar sempit aside harus overflow:visible.
+
+
+
         $this->assertMatchesRegularExpression(
             '/\.kerangka-admin\s*>\s*aside\s*\{[^}]*overflow\s*:\s*visible/',
             $html,
@@ -291,8 +280,8 @@ class TampilanNavigasiTest extends TestCase
 
     public function test_skrip_sidebar_admin_mengatur_buka_tutup_panel(): void
     {
-        // Skrip ini yang membuat tombol hamburger berfungsi. Tanpa toggle kelas
-        // .sidebar-terbuka dan pembaruan aria-expanded, tombolnya hanya hiasan.
+
+
         $admin = $this->buatAkun('admin', 'nav_admin_skrip');
 
         $html = $this->actingAs($admin)
@@ -305,18 +294,18 @@ class TampilanNavigasiTest extends TestCase
         $this->assertStringContainsString("'Escape'", $html);
         $this->assertStringContainsString('toggle.focus()', $html);
 
-        // Panel tidak boleh mengingat state terbuka antar halaman: tidak ada
-        // sessionStorage/localStorage untuk state panel (yang disimpan hanya posisi
-        // gulir sidebar). Tanpa ini, menu bisa "menempel" terbuka setelah navigasi.
+
+
+
         $this->assertStringNotContainsString('sidebar-terbuka-terakhir', $html);
         $this->assertStringNotContainsString("setItem('sidebar-panel", $html);
     }
 
     public function test_kartu_bisa_digeser_di_layout_ber_tabel(): void
     {
-        // Tabel admin/pemilihan lebih lebar dari kartunya (mis. /kelola/pemilihan
-        // 601px dalam kartu 358px). Tanpa wadah geser, tabel menembus keluar kartu
-        // dan seluruh halaman ikut melebar sehingga bisa digeser ke samping.
+
+
+
         $admin = $this->buatAkun('admin', 'nav_admin_tabel');
 
         $htmlAdmin = $this->actingAs($admin)
@@ -341,17 +330,17 @@ class TampilanNavigasiTest extends TestCase
             'Kartu di layout pemilihan harus menjadi wadah geser horizontal.'
         );
 
-        // Jangan tambahkan min-width:max-content / nowrap: keduanya memaksa teks
-        // satu baris sehingga tabel justru lebih lebar dari perlu.
+
+
         $this->assertStringNotContainsString('min-width:max-content', $htmlAdmin);
         $this->assertStringNotContainsString('min-width:max-content', $htmlPemilihan);
     }
 
     public function test_layout_admin_punya_kelas_grid_dua_yang_responsif(): void
     {
-        // Grid dua kolom dulu ditulis inline di setiap view, dan style inline
-        // mengalahkan media query sehingga kolom tidak pernah menjadi satu di
-        // layar sempit. Aturannya sekarang harus ada di layout.
+
+
+
         $admin = $this->buatAkun('admin', 'nav_admin_grid');
 
         $html = $this->actingAs($admin)
@@ -365,14 +354,14 @@ class TampilanNavigasiTest extends TestCase
             'Kelas .grid-dua harus mendefinisikan dua kolom di desktop.'
         );
 
-        // Di layar sempit grid menjadi SATU kolom yang boleh menyusut.
+
         $this->assertMatchesRegularExpression(
             '/@media\s*\(max-width:\s*860px\)[\s\S]*?\.grid-dua\{[^}]*grid-template-columns:minmax\(0,1fr\)/',
             $html,
             '.grid-dua harus menjadi satu kolom di <=860px.'
         );
 
-        // Filter: tiga dropdown tidak boleh memaksa scroll horizontal di ponsel.
+
         $this->assertMatchesRegularExpression(
             '/@media\s*\(max-width:\s*860px\)[\s\S]*?\.filter\s*>\s*\*\s*\{[^}]*width\s*:\s*100%/',
             $html,
@@ -382,12 +371,12 @@ class TampilanNavigasiTest extends TestCase
 
     public function test_tujuh_halaman_admin_tidak_lagi_memakai_grid_inline(): void
     {
-        // style inline mengalahkan media query. Selama masih ada di view, perbaikan
-        // CSS di layout tidak akan berpengaruh apa pun pada halaman itu.
-        //
-        // Sengaja membaca berkas view langsung (bukan HTTP), karena rute detail
-        // seperti admin.kelas.show butuh baris kelas di database yang tidak ada
-        // pada tes ber-DatabaseTruncation. Yang diuji adalah markah view-nya.
+
+
+
+
+
+
         $admin = $this->buatAkun('admin', 'nav_admin_grid7');
         $this->actingAs($admin);
 
@@ -413,7 +402,7 @@ class TampilanNavigasiTest extends TestCase
                 "View {$nama} masih memakai grid inline; media query tidak akan berlaku."
             );
 
-            // Ketujuh view harus benar-benar memakai kelas bersama itu.
+
             $this->assertStringContainsString(
                 'class="grid grid-dua"',
                 $isi,

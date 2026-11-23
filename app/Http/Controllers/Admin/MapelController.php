@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
-/** Fitur 6 — Kelola mata pelajaran (dipakai jadwal pelajaran). */
 class MapelController extends AdminController
 {
     public function index()
@@ -15,7 +14,7 @@ class MapelController extends AdminController
         return $this->halaman();
     }
 
-    /** Daftar dan form berbagi satu halaman: form berisi baris yang sedang diubah, atau kosong. */
+
     private function halaman(?MataPelajaran $edit = null)
     {
         $mapel = DB::table('mata_pelajaran as m')
@@ -53,7 +52,7 @@ class MapelController extends AdminController
 
     private function validasi(Request $request, ?MataPelajaran $m = null): array
     {
-        // Kode disimpan huruf besar agar "mtk" dan "MTK" tidak dianggap berbeda.
+
         $request->merge(['kode_mapel' => strtoupper(trim((string) $request->input('kode_mapel')))]);
 
         return $request->validate([

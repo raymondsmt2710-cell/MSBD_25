@@ -4,9 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// Tabel audit untuk Trigger pemilihan (materi: Penerapan MSBD pada Laravel, bagian 4).
-// Sengaja tanpa FOREIGN KEY agar log tetap ada walau data asal dihapus, mengikuti log_presensi.
-// Tidak ada kolom id_kandidat: log tidak boleh bisa dipakai menghubungkan siswa dengan pilihannya.
 return new class extends Migration
 {
     public function up(): void

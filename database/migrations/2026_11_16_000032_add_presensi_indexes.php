@@ -4,14 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// Indexing (materi Optimasi Query & Indexing): hanya kolom yang sering dipakai WHERE / JOIN.
-// Verifikasi dengan EXPLAIN (lihat docs/PRESENSI_PANDUAN.md).
 return new class extends Migration
 {
     public function up(): void
     {
         Schema::table('sesi_presensi', function (Blueprint $table) {
-            // Satu jadwal hanya boleh punya satu sesi per tanggal (sekaligus index untuk sp_buka_sesi)
+
             $table->unique(['id_jadwal', 'tanggal'], 'uq_sesi_jadwal_tanggal');
             $table->index(['tanggal', 'status'], 'idx_sesi_tanggal_status');
         });
@@ -21,12 +19,12 @@ return new class extends Migration
         });
 
         Schema::table('presensi', function (Blueprint $table) {
-            // Dipakai fn_persentase_kehadiran() & fn_jumlah_presensi()
+
             $table->index(['id_siswa', 'status'], 'idx_presensi_siswa_status');
         });
 
         Schema::table('pengajuan_izin', function (Blueprint $table) {
-            // Dipakai subquery di sp_tutup_sesi
+
             $table->index(['id_siswa', 'status', 'tanggal_mulai', 'tanggal_selesai'], 'idx_izin_siswa_status_tanggal');
         });
     }

@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-// Tabel `pemilihan` tidak punya created_at/updated_at.
 class Pemilihan extends Model
 {
     protected $table = 'pemilihan';
@@ -56,7 +55,7 @@ class Pemilihan extends Model
         return $query->where('status', 'draf');
     }
 
-    /** Dipanggil lewat Stored Function fn_sudah_memilih. */
+
     public static function sudahMemilih(int $idPemilihan, int $idSiswa): bool
     {
         $hasil = DB::selectOne('SELECT fn_sudah_memilih(?, ?) AS hasil', [$idPemilihan, $idSiswa]);
@@ -64,7 +63,7 @@ class Pemilihan extends Model
         return $hasil && (int) $hasil->hasil === 1;
     }
 
-    /** Dipanggil lewat Stored Function fn_boleh_memilih. */
+
     public static function bolehMemilih(int $idPemilihan, int $idSiswa): bool
     {
         $hasil = DB::selectOne('SELECT fn_boleh_memilih(?, ?) AS hasil', [$idPemilihan, $idSiswa]);
@@ -72,7 +71,7 @@ class Pemilihan extends Model
         return $hasil && (int) $hasil->hasil === 1;
     }
 
-    /** Dipanggil lewat Stored Function fn_total_suara. */
+
     public static function totalSuara(int $idPemilihan): int
     {
         $hasil = DB::selectOne('SELECT fn_total_suara(?) AS hasil', [$idPemilihan]);
@@ -80,7 +79,7 @@ class Pemilihan extends Model
         return $hasil ? (int) $hasil->hasil : 0;
     }
 
-    /** Dipanggil lewat Stored Function fn_partisipasi. */
+
     public static function partisipasi(int $idPemilihan): float
     {
         $hasil = DB::selectOne('SELECT fn_partisipasi(?) AS hasil', [$idPemilihan]);

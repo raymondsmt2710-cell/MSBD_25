@@ -23,20 +23,17 @@ use App\Http\Controllers\SiswaPemilihanController;
 use App\Support\PolaRute;
 use Illuminate\Support\Facades\Route;
 
-// Halaman awal untuk tamu. Pengguna yang sudah login langsung diarahkan sesuai peran.
 Route::get('/', [BerandaController::class, 'index'])->name('beranda');
 
 Route::get('/login', [AuthController::class, 'form'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->name('login.proses')->middleware('throttle:10,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-// ---- Akun sendiri: ganti sandi & keluar (semua peran yang login) ----
 Route::middleware('auth')->prefix('akun')->name('akun.')->group(function () {
     Route::get('/', [AkunController::class, 'profil'])->name('profil');
     Route::put('/sandi', [AkunController::class, 'ubahSandi'])->name('sandi.simpan');
 });
 
-// ---- Dashboard siswa & guru (hanya-baca) ----
 Route::middleware(['auth', 'role:siswa,bendahara_kas'])->prefix('siswa')->name('siswa.')->group(function () {
     Route::get('/beranda', [DashboardSiswaController::class, 'index'])->name('beranda');
     Route::get('/perangkat', [DashboardSiswaController::class, 'perangkat'])->name('perangkat');
@@ -45,19 +42,12 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
     Route::get('/beranda', [DashboardGuruController::class, 'index'])->name('beranda');
 });
 
-// ---- Fitur 1: Presensi QR ----
-// Presensi berada di bawah beranda masing-masing peran:
-//   guru  -> /guru/beranda/presensi
-//   siswa -> /siswa/beranda/presensi
-// Pemisahan ini membuat URL konsisten dengan menu "Beranda" di dashboard,
-// dan setiap peran punya halaman masuk sendiri (guru: roster, siswa: dua pilihan).
-
 Route::middleware(['auth', 'role:guru'])->prefix('guru/beranda/presensi')->name('guru.presensi.')->group(function () {
     Route::get('/', [PresensiGuruController::class, 'index'])->name('index');
 
-    // Batas parameter: PolaRute::ID menolak huruf dan angka di luar rentang
-    // PHP_INT_MAX, sehingga masukan ngawur berhenti sebagai 404 - bukan TypeError
-    // yang tampil sebagai 500. Pola yang sama dipakai fitur lain di proyek ini.
+    
+    
+    
     Route::post('/jadwal/{idJadwal}/buka', [PresensiGuruController::class, 'buka'])
         ->where('idJadwal', PolaRute::ID)->name('buka');
     Route::get('/sesi/{idSesi}', [PresensiGuruController::class, 'tampil'])
@@ -75,26 +65,24 @@ Route::middleware(['auth', 'role:siswa,bendahara_kas'])->prefix('siswa/beranda/p
     Route::get('/riwayat', [PresensiSiswaController::class, 'riwayat'])->name('riwayat');
     Route::get('/pindai', [PresensiSiswaController::class, 'pindai'])->name('pindai');
 
-    // Kode token presensi selalu 64 karakter hex (lihat pastikanToken di
-    // PresensiGuruController). Membatasi bentuknya membuat kode asal-asalan
-    // berhenti sebagai 404, sekaligus mencegah error 1406 "Data too long for
-    // column p_kode" ketika kode lebih panjang dari VARCHAR(64) di database.
+    
+    
+    
+    
     Route::get('/scan/{kode}', [PresensiSiswaController::class, 'konfirmasi'])
         ->where('kode', '[A-Fa-f0-9]{64}')->name('konfirmasi');
     Route::post('/scan/{kode}', [PresensiSiswaController::class, 'scan'])
         ->where('kode', '[A-Fa-f0-9]{64}')->name('scan')->middleware('throttle:10,1');
 });
 
-// ---- Fitur 7: Pemantauan orang tua/wali (hanya-baca, tidak ada rute tulis) ----
 Route::middleware(['auth', 'role:orang_tua'])->prefix('ortu')->name('ortu.')->group(function () {
     Route::get('/', [PortalOrangTuaController::class, 'index'])->name('index');
-    // PolaRute::ID mencegah id di luar rentang PHP_INT_MAX menjadi TypeError (500);
-    // dengan batas ini masukan ngawur berhenti sebagai 404.
+    
+    
     Route::get('/anak/{idSiswa}', [PortalOrangTuaController::class, 'anak'])
         ->where('idSiswa', PolaRute::ID)->name('anak');
 });
 
-// ---- Fitur 3: Pemilihan suara elektronik (e-voting) ----
 Route::middleware(['auth', 'role:siswa,bendahara_kas'])->prefix('siswa/pemilihan')->name('siswa.pemilihan.')->group(function () {
     Route::get('/', [SiswaPemilihanController::class, 'index'])->name('index');
     Route::get('/{id}/pilih', [SiswaPemilihanController::class, 'pilih'])->name('pilih');
@@ -130,16 +118,12 @@ Route::middleware(['auth', 'role:admin,guru'])->prefix('kelola/pemilihan')->name
     Route::get('/{id}/log', [KelolaPemilihanController::class, 'log'])->name('log');
 });
 
-// ---- Fitur 5: Perangkat organisasi & kelas ----
-// Lihat: siswa, guru, admin. Orang tua sengaja tidak diberi akses.
-// 'bendahara_kas' adalah siswa dengan hak tambahan di kas, jadi ikut di sini.
 Route::middleware(['auth', 'role:siswa,bendahara_kas,guru,admin'])->prefix('perangkat')->name('perangkat.')->group(function () {
     Route::get('/', [PerangkatController::class, 'index'])->name('index');
     Route::get('/kelas/{id}', [PerangkatController::class, 'kelas'])->whereNumber('id')->name('kelas');
     Route::get('/organisasi/{id}', [PerangkatController::class, 'organisasi'])->whereNumber('id')->name('organisasi');
 });
 
-// Kelola: admin (semua) dan guru (kelas yang dibimbing / organisasi yang dibina).
 Route::middleware(['auth', 'role:guru,admin'])->prefix('kelola/perangkat')->name('perangkat.kelola.')->group(function () {
     Route::get('/', [KelolaPerangkatController::class, 'index'])->name('index');
     Route::get('/kelas/{id}', [KelolaPerangkatController::class, 'kelas'])->whereNumber('id')->name('kelas');
@@ -148,7 +132,6 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('kelola/perangkat')->name
     Route::post('/organisasi/{id}', [KelolaPerangkatController::class, 'simpanOrganisasi'])->whereNumber('id')->name('organisasi.simpan');
 });
 
-// ---- Fitur 4: Pencatatan kas kelas ----
 Route::middleware('auth')->prefix('kas')->name('kas.')->group(function () {
     Route::get('/', [KasController::class, 'index'])->name('index');
     Route::get('/data', [KasController::class, 'data'])->name('data');
@@ -159,15 +142,14 @@ Route::middleware('auth')->prefix('kas')->name('kas.')->group(function () {
     Route::post('/iuran/generate', [IuranKasController::class, 'generate'])->name('iuran.generate');
     Route::patch('/iuran/{iuran}/verifikasi', [IuranKasController::class, 'verifikasi'])->name('iuran.verifikasi');
     Route::patch('/iuran/{iuran}/batal', [IuranKasController::class, 'batal'])->name('iuran.batal');
-    // Orang tua melaporkan pembayaran anaknya (unggah bukti). Otorisasi ada di
-    // Gate iuran.lapor, bukan kas.kelola.
+    
+    
     Route::post('/iuran/{iuran}/lapor', [IuranKasController::class, 'lapor'])->name('iuran.lapor');
 
     Route::get('/export', [ExportKasController::class, 'csv'])->name('export');
     Route::get('/cetak', [ExportKasController::class, 'cetak'])->name('cetak');
 });
 
-// ---- Fitur 6: Denah kelas dan area sekolah ----
 Route::middleware('auth')->prefix('denah')->name('denah.')->group(function () {
     Route::get('/', [DenahController::class, 'index'])->name('index');
     Route::get('/kelas/{kelas}/data', [DenahKelasController::class, 'data'])->name('kelas.data');
@@ -184,5 +166,4 @@ Route::middleware('auth')->prefix('denah')->name('denah.')->group(function () {
     Route::patch('/ruangan/{ruangan}/status', [RuanganSekolahController::class, 'status'])->name('ruangan.status');
 });
 
-// ---- Fitur khusus administrator (lihat routes/admin.php) ----
 require __DIR__.'/admin.php';

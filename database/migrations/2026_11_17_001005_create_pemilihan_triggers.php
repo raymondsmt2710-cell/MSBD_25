@@ -3,15 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Trigger pemilihan (materi Trigger):
-//  - penjaga keabsahan: suara immutable, kandidat/pemilih bersuara tidak bisa dihapus,
-//    data pemilihan terkunci setelah status bukan 'draf';
-//  - audit: perubahan status dan keikutsertaan pemilih dicatat ke log_pemilihan.
-//
-// Catatan "oleh siapa": trigger tidak bisa melihat user aplikasi. Procedure kelola
-// menyetel SET @id_user_app = p_id_user sebelum UPDATE pemilihan, dan trigger membaca
-// variabel sesi itu. Perubahan di luar jalur procedure tercatat NULL — itu sendiri
-// informasi berguna.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -40,8 +31,8 @@ return new class extends Migration
             DB::unprepared("DROP TRIGGER IF EXISTS {$t}");
         }
 
-        // 1. Penjaga terakhir: suara hanya boleh masuk pada pemilihan yang sedang
-        //    berlangsung, dan kandidatnya harus milik pemilihan itu.
+
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_before_suara_insert
 BEFORE INSERT ON suara
@@ -73,7 +64,7 @@ BEGIN
 END
 SQL);
 
-        // 2. Suara bersifat immutable.
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_before_suara_update
 BEFORE UPDATE ON suara
@@ -84,7 +75,7 @@ BEGIN
 END
 SQL);
 
-        // 3. Suara tidak boleh dihapus.
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_before_suara_delete
 BEFORE DELETE ON suara
@@ -95,9 +86,9 @@ BEGIN
 END
 SQL);
 
-        // 4. Kandidat yang sudah punya suara tidak boleh dihapus. Tanpa ini,
-        //    cascadeOnDelete pada suara.id_kandidat akan menghapus suara diam-diam
-        //    dan mengubah hasil pemilihan.
+
+
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_before_kandidat_delete
 BEFORE DELETE ON kandidat
@@ -116,8 +107,8 @@ BEGIN
 END
 SQL);
 
-        // 5. Pemilih yang sudah memilih tidak boleh dihapus, agar jumlah suara
-        //    tidak pernah melebihi jumlah "sudah_memilih".
+
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_before_daftar_pemilih_delete
 BEFORE DELETE ON daftar_pemilih
@@ -130,9 +121,9 @@ BEGIN
 END
 SQL);
 
-        // 6. Kunci total setelah pemilihan dibuka: data pemilihan tidak boleh
-        //    berubah saat status bukan 'draf'. Perubahan `status` sendiri tetap
-        //    diizinkan, karena itulah tombol Buka/Tutup.
+
+
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_before_pemilihan_update
 BEFORE UPDATE ON pemilihan
@@ -152,7 +143,7 @@ BEGIN
 END
 SQL);
 
-        // 7. Audit perubahan status.
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_after_pemilihan_update
 AFTER UPDATE ON pemilihan
@@ -175,8 +166,8 @@ BEGIN
 END
 SQL);
 
-        // 8. Audit keikutsertaan pemilih. TIDAK menyebut kandidat: log ini hanya
-        //    membuktikan "siswa X sudah memilih", bukan "memilih siapa".
+
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_after_daftar_pemilih_update
 AFTER UPDATE ON daftar_pemilih

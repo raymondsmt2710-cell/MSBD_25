@@ -3,8 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Stored Function pemilihan (materi Stored Function): hanya MEMBACA data,
-// dipanggil lewat SELECT dari Model.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -29,7 +27,7 @@ return new class extends Migration
             DB::unprepared("DROP FUNCTION IF EXISTS {$f}");
         }
 
-        // 1. Siswa terdaftar sebagai pemilih DAN sudah memberikan suara?
+
         DB::unprepared(<<<'SQL'
 CREATE FUNCTION fn_sudah_memilih(p_id_pemilihan INT, p_id_siswa INT)
 RETURNS TINYINT(1)
@@ -48,8 +46,8 @@ BEGIN
 END
 SQL);
 
-        // 2. Boleh memilih sekarang? Status berlangsung + dalam rentang waktu
-        //    + terdaftar + belum memilih.
+
+
         DB::unprepared(<<<'SQL'
 CREATE FUNCTION fn_boleh_memilih(p_id_pemilihan INT, p_id_siswa INT)
 RETURNS TINYINT(1)
@@ -72,7 +70,7 @@ BEGIN
 END
 SQL);
 
-        // 3. Jumlah suara sah pada satu pemilihan.
+
         DB::unprepared(<<<'SQL'
 CREATE FUNCTION fn_total_suara(p_id_pemilihan INT)
 RETURNS INT
@@ -89,8 +87,8 @@ BEGIN
 END
 SQL);
 
-        // 4. Persentase pemilih yang sudah memilih. 0.00 bila belum ada pemilih
-        //    (menghindari pembagian dengan nol).
+
+
         DB::unprepared(<<<'SQL'
 CREATE FUNCTION fn_partisipasi(p_id_pemilihan INT)
 RETURNS DECIMAL(5,2)

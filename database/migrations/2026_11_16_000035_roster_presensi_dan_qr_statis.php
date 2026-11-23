@@ -6,11 +6,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-// Perubahan alur presensi: satu QR statis per sesi (berlaku sampai jam tutup) dan
-// view roster untuk guru & siswa.
-//
-// Token tidak lagi "dikonsumsi" per siswa. Satu token dipakai semua anggota kelas selama
-// sesi dibuka. Keunikan presensi tetap dijaga oleh unique (id_sesi, id_siswa).
 return new class extends Migration
 {
     private function mysql(): bool
@@ -29,9 +24,9 @@ return new class extends Migration
             return;
         }
 
-        // 1. id_token tidak lagi unik: satu token dipakai banyak baris presensi.
-        //    Urutan penting: index biasa dibuat DULU, karena foreign key presensi_id_token_foreign
-        //    membutuhkan index pada kolom id_token. Setelah itu unique-nya baru boleh dihapus.
+
+
+
         Schema::table('presensi', function (Blueprint $table) {
             $table->index('id_token', 'idx_presensi_id_token');
         });
@@ -47,7 +42,7 @@ return new class extends Migration
         $this->beriHak();
     }
 
-    /** Token tidak lagi dikonsumsi: cukup cek masa berlaku, lalu catat presensi. */
+
     private function buatUlangProcedureScan(): void
     {
         DB::unprepared('DROP PROCEDURE IF EXISTS sp_scan_presensi');
@@ -99,14 +94,14 @@ END
 SQL);
     }
 
-    /** Token valid selama belum kedaluwarsa dan sesi masih dibuka. */
+
     private function buatUlangFungsiTokenValid(): void
     {
         DB::unprepared('DROP FUNCTION IF EXISTS fn_token_valid');
 
-        // COLLATE wajib: parameter function memakai collation default server
-        // (utf8mb4_0900_ai_ci) sedangkan kolom kode_token memakai utf8mb4_unicode_ci.
-        // Tanpa COLLATE, MySQL menolak dengan error 1267.
+
+
+
         DB::unprepared(<<<'SQL'
 CREATE FUNCTION fn_token_valid(p_kode VARCHAR(64))
 RETURNS TINYINT(1)
@@ -127,11 +122,7 @@ END
 SQL);
     }
 
-    /**
-     * fn_jumlah_presensi juga perlu dibuat ulang: parameter p_status bertipe
-     * VARCHAR dengan collation default server, dibandingkan dengan kolom ENUM
-     * presensi.status. Tanpa COLLATE, MySQL menolak dengan error 1267.
-     */
+
     private function buatUlangFungsiJumlah(): void
     {
         DB::unprepared('DROP FUNCTION IF EXISTS fn_jumlah_presensi');
@@ -156,7 +147,7 @@ SQL);
 
     private function buatView(): void
     {
-        // Roster siswa: seluruh jadwal kelas tempat siswa terdaftar, lengkap dengan nama guru.
+
         DB::unprepared(<<<'SQL'
 CREATE OR REPLACE VIEW v_roster_presensi_siswa AS
 SELECT
@@ -178,8 +169,8 @@ INNER JOIN mata_pelajaran m ON m.id_mapel = jp.id_mapel
 INNER JOIN guru g ON g.id_guru = jp.id_guru
 SQL);
 
-        // Sesi milik siswa pada rentang tanggal tertentu, beserta status presensinya.
-        // Dipakai roster siswa untuk menentukan kolom Status.
+
+
         DB::unprepared(<<<'SQL'
 CREATE OR REPLACE VIEW v_sesi_presensi_siswa AS
 SELECT
@@ -207,16 +198,16 @@ SQL);
         $guru = env('DB_USERNAME_GURU', 'guru_app');
 
         try {
-            // View baru untuk siswa
+
             DB::unprepared("GRANT SELECT ON `{$db}`.`v_roster_presensi_siswa` TO '{$siswa}'@'{$host}'");
             DB::unprepared("GRANT SELECT ON `{$db}`.`v_sesi_presensi_siswa` TO '{$siswa}'@'{$host}'");
 
-            // DROP PROCEDURE / DROP FUNCTION menghapus hak EXECUTE, jadi diberikan lagi
+
             DB::unprepared("GRANT EXECUTE ON PROCEDURE `{$db}`.`sp_scan_presensi` TO '{$siswa}'@'{$host}'");
             DB::unprepared("GRANT EXECUTE ON FUNCTION `{$db}`.`fn_token_valid` TO '{$siswa}'@'{$host}'");
             DB::unprepared("GRANT EXECUTE ON FUNCTION `{$db}`.`fn_jumlah_presensi` TO '{$siswa}'@'{$host}'");
 
-            // Guru perlu membaca view sesi untuk roster
+
             DB::unprepared("GRANT SELECT ON `{$db}`.`v_sesi_presensi_siswa` TO '{$guru}'@'{$host}'");
 
             DB::unprepared('FLUSH PRIVILEGES');
@@ -234,7 +225,7 @@ SQL);
         DB::unprepared('DROP VIEW IF EXISTS v_sesi_presensi_siswa');
         DB::unprepared('DROP VIEW IF EXISTS v_roster_presensi_siswa');
 
-        // Kembalikan unique pada id_token (hanya bisa jika tidak ada duplikat)
+
         Schema::table('presensi', function (Blueprint $table) {
             $table->unique('id_token');
         });

@@ -27,7 +27,7 @@ class PengurusKelas extends Model
         return $this->belongsTo(Jabatan::class, 'id_jabatan', 'id_jabatan');
     }
 
-    /** Dipanggil lewat Stored Function fn_jumlah_pengurus_kelas. */
+
     public static function jumlahUntukKelas(int $idKelas): int
     {
         $hasil = DB::selectOne('SELECT fn_jumlah_pengurus_kelas(?) AS hasil', [$idKelas]);

@@ -6,10 +6,6 @@ use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Halaman KELOLA: wali kelas hanya kelasnya, pembina hanya organisasinya,
- * admin semua, siswa & orang tua tidak boleh.
- */
 class KelolaPerangkatTest extends TestCase
 {
     use DatabaseTruncation;
@@ -54,7 +50,7 @@ class KelolaPerangkatTest extends TestCase
             ])
             ->assertForbidden();
 
-        // Data tidak boleh berubah.
+
         $this->assertSame(2, DB::connection('mysql')->table('pengurus_kelas')
             ->where('id_kelas', $d['id_kelas'])->count());
     }
@@ -111,7 +107,7 @@ class KelolaPerangkatTest extends TestCase
             ->assertRedirect(route('perangkat.kelola.kelas', $d['id_kelas']))
             ->assertSessionHas('success');
 
-        // Hanya 2 baris: yang lama dihapus, yang baru dimasukkan.
+
         $this->assertSame(2, DB::connection('mysql')->table('pengurus_kelas')
             ->where('id_kelas', $d['id_kelas'])->count());
 
@@ -142,7 +138,7 @@ class KelolaPerangkatTest extends TestCase
             ->post(route('perangkat.kelola.kelas.simpan', $d['id_kelas']), [
                 'pengurus' => [
                     $d['id_jabatan_kelas'][0] => $d['id_siswa'][0],
-                    $d['id_jabatan_kelas'][1] => $d['id_siswa'][0],   // siswa yang sama
+                    $d['id_jabatan_kelas'][1] => $d['id_siswa'][0],
                 ],
             ])
             ->assertSessionHas('error');
@@ -163,7 +159,7 @@ class KelolaPerangkatTest extends TestCase
             'nama_siswa' => 'Siswa Luar Uji', 'jenis_kelamin' => 'L', 'status' => 'aktif',
         ]);
 
-        // Siswa di luar kelas: lolos validasi `exists`, tetapi ditolak trigger database.
+
         $this->actingAs($this->userDari($d['id_wali_user']))
             ->post(route('perangkat.kelola.kelas.simpan', $d['id_kelas']), [
                 'pengurus' => [$d['id_jabatan_kelas'][0] => $idSiswaLuar],
@@ -224,7 +220,7 @@ class KelolaPerangkatTest extends TestCase
             ])
             ->assertRedirect();
 
-        // Pengurus tahun lama harus tetap ada.
+
         $this->assertSame(1, DB::connection('mysql')->table('pengurus_organisasi')
             ->where('id_organisasi', $d['id_organisasi'])
             ->where('id_tahun_ajaran', $idTahunLama)->count());

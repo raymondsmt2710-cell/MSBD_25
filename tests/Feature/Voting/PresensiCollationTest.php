@@ -6,14 +6,6 @@ use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Regresi bug collation: parameter Stored Function mewarisi collation default
- * database (utf8mb4_0900_ai_ci) sedangkan presensi.status adalah ENUM dengan
- * collation utf8mb4_unicode_ci, sehingga fn_jumlah_presensi() selalu error 1267.
- *
- * Bug ini memblokir login siswa karena halaman riwayat presensi menjadi tujuan
- * redirect setelah login.
- */
 class PresensiCollationTest extends TestCase
 {
     use DatabaseTruncation;
@@ -41,7 +33,7 @@ class PresensiCollationTest extends TestCase
     {
         $d = $this->seedPemilihanBerlangsung();
 
-        // Siapkan satu sesi presensi dan satu baris presensi 'hadir'.
+
         $idJadwal = DB::connection('mysql')->table('jadwal_pelajaran')->insertGetId([
             'id_kelas' => $d['id_kelas'],
             'id_mapel' => DB::connection('mysql')->table('mata_pelajaran')->insertGetId([

@@ -6,15 +6,9 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-// Fitur 9: dashboard guru — HANYA BACA (tombol aksi memakai rute presensi yang sudah ada).
-//
-// Pembatasan berlapis, sama seperti DashboardSiswaController:
-//   1. middleware role:guru      -> hanya akun berperan guru
-//   2. koneksi MySQL guru_app    -> hak tulis terbatas pada tabel presensi
-//   3. idGuru()                  -> id diambil dari akun yang login, BUKAN dari URL
 class DashboardGuruController extends Controller
 {
-    /** Id guru milik akun yang sedang login. Tidak pernah dibaca dari URL/request. */
+
     private function idGuru(): int
     {
         $guru = Auth::user()->guru;
@@ -28,13 +22,13 @@ class DashboardGuruController extends Controller
         return (int) $guru->id_guru;
     }
 
-    /** Nama hari ini dalam huruf kecil, cocok dengan kolom jadwal_pelajaran.hari. */
+
     private function hariIni(): string
     {
         return strtolower(Carbon::now()->locale('id')->isoFormat('dddd'));
     }
 
-    /** Rentang Senin–Sabtu pekan berjalan. Tidak memakai WEEK() agar tidak bergantung mode SQL. */
+
     private function pekanIni(): array
     {
         $senin = Carbon::now()->startOfWeek(Carbon::MONDAY);
@@ -42,17 +36,11 @@ class DashboardGuruController extends Controller
         return [$senin->toDateString(), $senin->copy()->addDays(5)->toDateString()];
     }
 
-    /**
-     * Id tahun ajaran aktif, atau null bila tidak ada yang ditandai aktif.
-     *
-     * Jadwal menempel pada kelas, kelas menempel pada tahun ajaran. Tanpa filter ini
-     * jadwal tahun-tahun lalu ikut tampil sebagai baris ganda. Null berarti "jangan
-     * difilter", supaya dashboard tidak kosong total bila data tahun ajaran belum diisi.
-     */
+
     private function idTahunAjaranAktif(): ?int
     {
-        // Beberapa baris bisa bertanda aktif sekaligus (data lama). Pilih yang paling
-        // baru supaya hasilnya deterministik, bukan baris acak.
+
+
         $id = DB::table('tahun_ajaran')
             ->where('is_aktif', true)
             ->orderByDesc('tanggal_mulai')
@@ -62,16 +50,13 @@ class DashboardGuruController extends Controller
         return $id === null ? null : (int) $id;
     }
 
-    /** Membatasi query jadwal ke tahun ajaran aktif, bila ada yang aktif. */
+
     private function batasiTahunAjaranAktif($q, ?int $idTahunAjaran)
     {
         return $idTahunAjaran === null ? $q : $q->where('k.id_tahun_ajaran', $idTahunAjaran);
     }
 
-    /**
-     * Jadwal guru pada hari ini, lengkap dengan sesi hari ini bila sudah dibuat.
-     * Left join ke sesi_presensi dibatasi CURDATE() agar tidak mengambil sesi hari lain.
-     */
+
     private function jadwalHariIni(int $idGuru): \Illuminate\Support\Collection
     {
         return $this->batasiTahunAjaranAktif(
@@ -97,7 +82,7 @@ class DashboardGuruController extends Controller
         )->get();
     }
 
-    /** Mata pelajaran & kelas yang diampu, untuk hero dan data diri. */
+
     private function kelasDiampu(int $idGuru): \Illuminate\Support\Collection
     {
         return $this->batasiTahunAjaranAktif(
@@ -112,7 +97,7 @@ class DashboardGuruController extends Controller
         )->get();
     }
 
-    /** Jumlah sesi milik guru, dengan filter tambahan opsional. */
+
     private function jumlahSesi(int $idGuru, ?array $rentang = null, ?string $status = null): int
     {
         $q = DB::table('sesi_presensi as sp')
@@ -130,15 +115,7 @@ class DashboardGuruController extends Controller
         return $q->count();
     }
 
-    /**
-     * Sesi yang masih dibuka TETAPI belum tampil di bagian "Jadwal Hari Ini".
-     *
-     * Kartu "Sesi Terbuka" menghitung seluruh sesi berstatus dibuka, jadi setiap sesi
-     * harus bisa ditindaklanjuti dari halaman ini. Sesi hari ini sudah punya tombol
-     * QR/Tutup di baris jadwal, sehingga $kecuali (id sesi yang sudah dirender di sana)
-     * dikeluarkan agar tidak muncul dua kali. sp_tutup_sesi tidak membatasi tanggal,
-     * jadi sesi yang tertinggal dari hari sebelumnya tetap bisa ditutup dari sini.
-     */
+
     private function sesiTerbuka(int $idGuru, array $kecuali = []): \Illuminate\Support\Collection
     {
         $q = DB::table('sesi_presensi as sp')
@@ -165,14 +142,7 @@ class DashboardGuruController extends Controller
             ->get();
     }
 
-    /**
-     * Rata-rata kehadiran pekan ini dari view rekap.
-     *
-     * Hanya sesi yang sudah DITUTUP yang dihitung: sesi yang masih dibuka punya
-     * total_tercatat sebagian, sehingga memasukkannya menurunkan persentase di
-     * tengah pelajaran tanpa alasan.
-     * total_tercatat = 0 berarti belum ada presensi; kembalikan 0.0, bukan pembagian nol.
-     */
+
     private function kehadiranPekanIni(int $idGuru, array $rentang): float
     {
         $baris = DB::table('v_rekap_sesi_presensi')
@@ -209,9 +179,9 @@ class DashboardGuruController extends Controller
             'kehadiran_pekan_ini' => $this->kehadiranPekanIni($idGuru, $rentang),
         ];
 
-        // Hanya sesi yang sudah ditutup: rekap berarti angka yang sudah final.
-        // Sesi yang masih dibuka punya total_tercatat sebagian, dan sudah punya
-        // bagiannya sendiri ("Sesi Masih Terbuka") di halaman ini.
+
+
+
         $rekapSesi = DB::table('v_rekap_sesi_presensi')
             ->where('id_guru', $idGuru)
             ->where('status_sesi', 'ditutup')

@@ -190,10 +190,6 @@ export default function kasPage(initial) {
             const alasan = window.prompt(`Batalkan transaksi "${transaksi.keterangan}"? Tulis alasan pembatalan:`);
             if (!alasan) return;
 
-            // Kirim JSON, bukan FormData: headers(false) tidak menyertakan
-            // Content-Type sehingga PHP tidak mengurai body FormData dan
-            // `_method=DELETE` tidak pernah terbaca -> request jatuh ke route
-            // POST /kas/transaksi (store) dan gagal validasi.
             try {
                 const res = await fetch(`/kas/transaksi/${transaksi.id_transaksi}`, {
                     method: 'DELETE',
@@ -212,8 +208,6 @@ export default function kasPage(initial) {
         async toggleIuran(siswa, bulan) {
             const cell = siswa.iuran[bulan];
 
-            // Orang tua: klik sel = laporkan pembayaran anaknya (unggah bukti).
-            // Dilakukan sebelum cek bisaKelola karena orang tua bukan pengelola.
             if (!this.bisaKelola) {
                 if (this.bisaLapor(siswa, bulan)) {
                     this.laporIuran(siswa, bulan);
@@ -286,11 +280,6 @@ export default function kasPage(initial) {
             }
         },
 
-        /**
-         * Apakah pengguna boleh melaporkan pembayaran sel ini.
-         * Hanya orang tua, hanya untuk anaknya sendiri, dan hanya bila iuran
-         * belum terverifikasi. Batas sebenarnya dijaga Gate iuran.lapor di server.
-         */
         bisaLapor(row, bulan) {
             if (this.bisaKelola) return false;
             const cell = row?.iuran?.[bulan];
@@ -298,7 +287,6 @@ export default function kasPage(initial) {
             return Boolean(this.bisaLaporAnak?.[row.id_siswa]);
         },
 
-        /** Orang tua mengunggah bukti bayar untuk anaknya. */
         laporIuran(row, bulan) {
             const input = document.createElement('input');
             input.type = 'file';
@@ -345,7 +333,6 @@ export default function kasPage(initial) {
             input.click();
         },
 
-        /** Bendahara / orang tua membuka bukti pembayaran. */
         lihatBukti(cell) {
             if (!cell?.bukti_tampil) return;
             window.open(cell.bukti_tampil, '_blank', 'noopener');

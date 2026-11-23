@@ -4,7 +4,6 @@
 
 @section('isi')
 
-{{-- ---------- Hero ---------- --}}
 <div class="hero">
     <div class="hero-inner">
         <div class="lencana">
@@ -20,7 +19,6 @@
     </div>
 </div>
 
-{{-- ---------- Statistik kehadiran ---------- --}}
 <div class="statistik">
     <div class="statistik-grid">
         <div class="stat-kartu">
@@ -51,10 +49,6 @@
     </div>
 </div>
 
-{{-- ---------- Jadwal hari ini ----------
-     Bagian ini dan dua bagian di bawahnya mengisi ruang kosong setelah kartu
-     statistik. Semuanya tetap ditampilkan walau datanya kosong: pesan "belum
-     ada" lebih jelas daripada ruang kosong yang menganggur. --}}
 <section>
     <div class="wrap">
         <div class="judul-bagian">
@@ -81,7 +75,6 @@
     </div>
 </section>
 
-{{-- ---------- Presensi terakhir ---------- --}}
 <section>
     <div class="wrap">
         <div class="judul-bagian">
@@ -124,9 +117,6 @@
     </div>
 </section>
 
-{{-- ---------- Pemilihan ----------
-     Hanya muncul bila ada pemilihan berlangsung/draf yang diikuti siswa.
-     Kalau tidak ada, bagian ini dilewati agar tidak menambah ruang kosong. --}}
 @if ($pemilihanAktif)
     <section>
         <div class="wrap">

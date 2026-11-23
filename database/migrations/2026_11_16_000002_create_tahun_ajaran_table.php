@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('tahun_ajaran', function (Blueprint $table) {
             $table->increments('id_tahun_ajaran');
-            $table->string('nama', 9)->unique(); // contoh: 2026/2027
+            $table->string('nama', 9)->unique();
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');
             $table->boolean('is_aktif')->default(false);

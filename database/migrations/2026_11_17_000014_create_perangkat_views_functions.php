@@ -3,11 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Database View + Stored Function untuk fitur perangkat organisasi & kelas
-// (materi View & Query Kompleks + Stored Function).
-//
-// View menyederhanakan JOIN panjang: pengurus + siswa + jabatan + kelas/organisasi,
-// sehingga controller dan halaman tidak perlu menulis JOIN berulang.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -32,9 +27,9 @@ return new class extends Migration
             return;
         }
 
-        // ---------- VIEW ----------
 
-        // 1. Susunan pengurus kelas lengkap, sudah urut sesuai jabatan.urutan.
+
+
         DB::unprepared(<<<'SQL'
 CREATE OR REPLACE VIEW v_pengurus_lengkap AS
 SELECT
@@ -58,7 +53,7 @@ INNER JOIN siswa s ON s.id_siswa = pk.id_siswa
 INNER JOIN jabatan j ON j.id_jabatan = pk.id_jabatan
 SQL);
 
-        // 2. Susunan pengurus organisasi lengkap per tahun ajaran.
+
         DB::unprepared(<<<'SQL'
 CREATE OR REPLACE VIEW v_pengurus_organisasi_lengkap AS
 SELECT
@@ -84,8 +79,8 @@ INNER JOIN siswa s ON s.id_siswa = po.id_siswa
 INNER JOIN jabatan j ON j.id_jabatan = po.id_jabatan
 SQL);
 
-        // 3. Ringkasan untuk kartu: jumlah pengurus per kelas dan per organisasi.
-        //    Menggabungkan dua sumber dengan UNION agar satu query cukup.
+
+
         DB::unprepared(<<<'SQL'
 CREATE OR REPLACE VIEW v_ringkasan_perangkat AS
 SELECT
@@ -107,7 +102,7 @@ SELECT
 FROM organisasi o
 SQL);
 
-        // ---------- STORED FUNCTION ----------
+
 
         foreach ($this->functions as $f) {
             DB::unprepared("DROP FUNCTION IF EXISTS {$f}");

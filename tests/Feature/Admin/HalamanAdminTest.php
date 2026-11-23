@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\File;
 
 class HalamanAdminTest extends AdminTestCase
 {
-    /** Setiap halaman GET di panel admin terbuka (200) dengan data nyata. */
+
     public function test_semua_halaman_admin_dapat_dibuka(): void
     {
         $d = $this->d;
@@ -56,14 +56,14 @@ class HalamanAdminTest extends AdminTestCase
 
     public function test_nama_berapostrof_tidak_merusak_konfirmasi(): void
     {
-        // Konfirmasi memakai data-konfirmasi (di-escape Blade), bukan onclick="confirm('...')".
+
         $this->sebagaiAdmin()->get(route('admin.kelas.show', $this->d['id_kelas']))
             ->assertOk()
             ->assertSee('data-konfirmasi="Keluarkan Ani Ma&#039;ruf', false)
             ->assertDontSee('onclick="return confirm', false);
     }
 
-    /** Batas keras no. 17: tidak ada kode admin yang menyentuh tabel suara (anonimitas pemilihan). */
+
     public function test_kode_admin_tidak_menyentuh_tabel_suara(): void
     {
         foreach (File::allFiles(app_path('Http/Controllers/Admin')) as $file) {

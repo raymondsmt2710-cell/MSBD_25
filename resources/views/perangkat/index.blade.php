@@ -4,7 +4,6 @@
 <h1>Perangkat Organisasi &amp; Kelas</h1>
 <p class="subjudul">Pilih kelas atau organisasi untuk melihat susunan pengurusnya.</p>
 
-{{-- ---------- KELAS ---------- --}}
 <div class="kartu">
     <h2>Kelas</h2>
 
@@ -33,7 +32,6 @@
     @endif
 </div>
 
-{{-- ---------- ORGANISASI ---------- --}}
 <div class="kartu">
     <h2>Organisasi</h2>
 

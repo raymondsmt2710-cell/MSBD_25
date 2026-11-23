@@ -8,13 +8,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Fitur 5 — Kelola tahun ajaran.
- *
- * Kelas, pemilihan, dan pengurus organisasi terikat ke tahun ajaran, sehingga
- * tepat satu tahun ajaran boleh aktif. Penandaan aktif dilakukan dalam satu
- * transaksi agar tidak pernah ada dua baris is_aktif = 1 sekaligus.
- */
 class TahunAjaranController extends AdminController
 {
     public function index()
@@ -22,7 +15,7 @@ class TahunAjaranController extends AdminController
         return $this->halaman();
     }
 
-    /** Daftar dan form berbagi satu halaman: form berisi baris yang sedang diubah, atau kosong. */
+
     private function halaman(?TahunAjaran $edit = null)
     {
         $tahunAjaran = DB::table('tahun_ajaran as t')
@@ -48,7 +41,7 @@ class TahunAjaranController extends AdminController
         $data = $this->validasi($request);
         $ta = TahunAjaran::create($data + ['is_aktif' => false]);
 
-        // Tahun ajaran pertama otomatis aktif agar fitur lain langsung bisa dipakai.
+
         if (! TahunAjaran::where('is_aktif', true)->exists()) {
             $this->tandaiAktif($ta);
         }
@@ -105,7 +98,7 @@ class TahunAjaranController extends AdminController
             'tanggal_selesai' => ['required', 'date', 'after:tanggal_mulai'],
         ], ['nama.regex' => 'Format nama tahun ajaran: YYYY/YYYY, misalnya 2026/2027.']);
 
-        // Periode tidak boleh tumpang-tindih dengan tahun ajaran lain.
+
         $bentrok = TahunAjaran::query()
             ->when($ta, fn ($q) => $q->where('id_tahun_ajaran', '!=', $ta->id_tahun_ajaran))
             ->where('tanggal_mulai', '<=', $data['tanggal_selesai'])

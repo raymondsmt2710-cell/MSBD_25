@@ -6,9 +6,6 @@ use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Halaman LIHAT: siswa, guru, admin boleh; orang tua tidak.
- */
 class PerangkatHalamanTest extends TestCase
 {
     use DatabaseTruncation;
@@ -50,7 +47,7 @@ class PerangkatHalamanTest extends TestCase
     {
         $d = $this->seedPerangkat();
 
-        // Jabatan kelas ke-3 dan ke-4 belum diisi pada data uji.
+
         $this->actingAs($this->userDari($d['id_siswa_user'][0]))
             ->get(route('perangkat.kelas', $d['id_kelas']))
             ->assertOk()
@@ -61,13 +58,13 @@ class PerangkatHalamanTest extends TestCase
     {
         $d = $this->seedPerangkat();
 
-        // Kosongkan seluruh pengurus kelas.
+
         DB::connection('mysql')->table('pengurus_kelas')->where('id_kelas', $d['id_kelas'])->delete();
 
         $this->actingAs($this->userDari($d['id_siswa_user'][0]))
             ->get(route('perangkat.kelas', $d['id_kelas']))
             ->assertOk()
-            // Daftar jabatan tetap tampil, bukan hanya pesan kosong.
+
             ->assertSee('Ketua Kelas')
             ->assertSee('Bendahara')
             ->assertSee('belum diisi');
@@ -162,7 +159,7 @@ class PerangkatHalamanTest extends TestCase
     {
         $d = $this->seedPerangkat();
 
-        // Buat tahun ajaran kedua dengan pengurus berbeda.
+
         $idTahunLama = DB::connection('mysql')->table('tahun_ajaran')->insertGetId([
             'nama' => '2025/2026', 'tanggal_mulai' => '2025-07-14',
             'tanggal_selesai' => '2026-06-27', 'is_aktif' => false,
@@ -176,7 +173,7 @@ class PerangkatHalamanTest extends TestCase
             'bidang' => null,
         ]);
 
-        // Lihat tahun lama: harus menampilkan pengurus tahun lama, bukan tahun aktif.
+
         $this->actingAs($this->userDari($d['id_siswa_user'][0]))
             ->get(route('perangkat.organisasi', ['id' => $d['id_organisasi'], 'tahun' => $idTahunLama]))
             ->assertOk()

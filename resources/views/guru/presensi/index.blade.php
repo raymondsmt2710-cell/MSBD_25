@@ -28,10 +28,16 @@
                     <td data-label="Aksi">
                         @if ($r->id_sesi)
                             <a class="btn" href="{{ route('guru.presensi.sesi', $r->id_sesi) }}">Lihat Sesi</a>
-                        @elseif ($r->hari === $hariIni)
+                        @elseif ($r->bisa_dibuka)
                             <form method="POST" action="{{ route('guru.presensi.buka', $r->id_jadwal) }}">@csrf
                                 <button class="btn" type="submit">Buat Presensi</button>
                             </form>
+                        @elseif ($r->hari === $hariIni)
+                            {{-- Hari jadwal, tetapi di luar jendela buka: 15 menit
+                                 sebelum jam_mulai s/d jam_selesai. Tombol sengaja
+                                 tidak ditampilkan supaya guru tidak menekan aksi
+                                 yang pasti ditolak database. --}}
+                            <span class="kecil">Di luar jam buka</span>
                         @else
                             <span class="kecil">Bukan hari jadwal</span>
                         @endif

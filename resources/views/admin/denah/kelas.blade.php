@@ -70,6 +70,14 @@
                 </select>
             </div>
             <div class="bidang">
+                <label for="posisi_pintu">Pintu</label>
+                <select id="posisi_pintu" name="posisi_pintu">
+                    @foreach (['kiri', 'kanan', 'belakang'] as $p)
+                        <option value="{{ $p }}" @selected(old('posisi_pintu', 'kanan') === $p)>{{ ucfirst($p) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="bidang">
                 <label for="berlaku_mulai">Berlaku mulai</label>
                 <input id="berlaku_mulai" type="date" name="berlaku_mulai" value="{{ old('berlaku_mulai', today()->format('Y-m-d')) }}" required>
             </div>

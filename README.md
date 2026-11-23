@@ -65,7 +65,12 @@ php artisan key:generate
 # 4. Atur koneksi database pada file .env (DB_DATABASE, DB_USERNAME, DB_PASSWORD)
 
 # 5. Jalankan migrasi dan seeder
+#    Perintah ini sudah membuat seluruh akun demo, termasuk `bendahara`
+#    (peran Siswa Bendahara Kas). Semua sandi: `password`.
 php artisan migrate --seed
+
+# 5b. Wajib sekali per mesin: agar foto bukti pembayaran dapat dibuka
+php artisan storage:link
 
 # 6. Jalankan aplikasi
 npm run dev

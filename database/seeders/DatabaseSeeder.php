@@ -144,5 +144,11 @@ class DatabaseSeeder extends Seeder
         // Akun orang tua untuk fitur 7 (pemantauan wali murid). Idempoten, dan
         // dilewati otomatis bila belum ada data siswa.
         $this->call(OrangTuaSeeder::class);
+
+        // Data demo kas/denah, termasuk akun peran 'bendahara' (Siswa Bendahara
+        // Kas). Idempoten (firstOrCreate), jadi aman dipanggil berulang.
+        // Tanpa ini, `php artisan migrate --seed` tidak pernah membuat akun
+        // bendahara sehingga pengguna gagal login dengan username tersebut.
+        $this->call(DemoSekolahSeeder::class);
     }
 }

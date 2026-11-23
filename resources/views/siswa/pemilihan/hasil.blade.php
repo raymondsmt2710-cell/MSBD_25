@@ -50,9 +50,6 @@
     </p>
 </div>
 
-<div class="kartu">
-    <a class="btn garis" href="{{ $dariKelola ? route('kelola.pemilihan.monitor', $id) : route('siswa.pemilihan.index') }}">
-        {{ $dariKelola ? 'Kembali ke Monitor' : 'Kembali ke Daftar Pemilihan' }}
-    </a>
-</div>
+{{-- Tombol kembali ke dashboard sudah disediakan komponen <x-tombol-kembali>
+     di layout, jadi tidak perlu tautan manual di sini. --}}
 @endsection

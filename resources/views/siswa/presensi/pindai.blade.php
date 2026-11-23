@@ -70,7 +70,6 @@
     let pemindai = null;
     let sedangJalan = false;
 
-    // Browser memblokir kamera pada http:// (kecuali localhost).
     const konteksAman = window.isSecureContext ||
         location.hostname === 'localhost' ||
         location.hostname === '127.0.0.1';
@@ -88,7 +87,7 @@
         pesan.style.color = jenis === 'error' ? '#991b1b' : (jenis === 'ok' ? '#166534' : '#9ca3af');
     }
 
-    /** Hasil pemindaian berupa URL. Ambil kode QR di segmen terakhir. */
+
     function bukaHasil(teks) {
         if (!teks) {
             tulisPesan('QR tidak terbaca. Coba lagi dengan gambar yang lebih jelas.', 'error');
@@ -101,10 +100,9 @@
             const bagian = u.pathname.split('/').filter(Boolean);
             kode = bagian[bagian.length - 1] || '';
         } catch (e) {
-            // Bukan URL: mungkin hanya kode mentah. Pakai apa adanya.
+
         }
 
-        // Kode token presensi selalu 64 karakter hex.
         if (!/^[a-f0-9]{64}$/i.test(kode)) {
             tulisPesan('QR ini bukan QR presensi. Pastikan memindai QR di layar guru.', 'error');
             return;
@@ -137,7 +135,7 @@
                     if (sedangJalan) { hentikanKamera(); }
                     bukaHasil(teks);
                 },
-                function () { /* gagal membaca satu frame: abaikan */ }
+                function () {  }
             );
             sedangJalan = true;
             btnStop.disabled = false;
@@ -153,7 +151,7 @@
 
     async function hentikanKamera() {
         if (!pemindai || !sedangJalan) { return; }
-        try { await pemindai.stop(); } catch (e) { /* sudah berhenti */ }
+        try { await pemindai.stop(); } catch (e) {  }
         sedangJalan = false;
         btnKamera.disabled = false;
         btnStop.disabled = true;
@@ -165,7 +163,6 @@
     btnKamera.addEventListener('click', mulaiKamera);
     btnStop.addEventListener('click', hentikanKamera);
 
-    // Pindai dari foto galeri (untuk kamera rusak).
     inputBerkas.addEventListener('change', async function () {
         const berkas = inputBerkas.files && inputBerkas.files[0];
         if (!berkas) { return; }
@@ -179,7 +176,6 @@
 
         tulisPesan('Membaca foto...');
 
-        // Pemindai sementara yang tidak memakai kamera.
         const pembacaBerkas = new Html5Qrcode('pembaca', { verbose: false });
 
         try {
@@ -188,7 +184,7 @@
         } catch (e) {
             tulisPesan('QR tidak dikenali pada foto itu. Coba foto yang lebih jelas dan tidak terpotong.', 'error');
         } finally {
-            try { pembacaBerkas.clear(); } catch (e) { /* abaikan */ }
+            try { pembacaBerkas.clear(); } catch (e) {  }
             elemenKosong.style.display = '';
             elemenKosong.innerHTML = 'Kamera belum dinyalakan.';
         }

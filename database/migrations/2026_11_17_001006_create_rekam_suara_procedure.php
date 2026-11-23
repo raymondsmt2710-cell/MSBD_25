@@ -3,15 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Stored Procedure inti fitur pemilihan (materi Stored Procedure + Transaksi).
-//
-// Ini SATU-SATUNYA pintu masuk suara. Siswa tidak diberi hak INSERT ke tabel `suara`
-// sama sekali (lihat migration GRANT), hanya EXECUTE procedure ini. Jadi suara ganda
-// tetap mustahil walaupun ada bug di aplikasi.
-//
-// Procedure TIDAK membuka transaksi sendiri: transaksi dikelola Controller
-// (DB::beginTransaction / commit / rollBack), sama seperti sp_scan_presensi. Kalau
-// procedure ini membuka START TRANSACTION, ia akan meng-COMMIT transaksi controller.
 return new class extends Migration
 {
     private function mysql(): bool

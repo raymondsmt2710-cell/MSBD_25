@@ -18,7 +18,7 @@ class PresensiGuruController extends Controller
         return Auth::user()->guru?->id_guru ?? abort(403, 'Akun ini belum terhubung ke data guru.');
     }
 
-    /** Sesi harus milik guru yang sedang login. */
+
     private function sesiMilik(int $idSesi): object
     {
         return DB::table('sesi_presensi as sp')
@@ -31,15 +31,7 @@ class PresensiGuruController extends Controller
             ->first() ?? abort(404);
     }
 
-    /**
-     * Roster presensi: seluruh jadwal guru (berulang tiap pekan), dengan penanda
-     * apakah sesi untuk hari ini sudah dibuat.
-     *
-     * Dibatasi ke tahun ajaran aktif. Tanpa filter ini, jadwal tahun-tahun lalu
-     * ikut tampil sebagai baris ganda dan tombol "Buat Presensi" muncul untuk
-     * kelas yang sudah tidak berjalan. Logikanya sama dengan
-     * DashboardGuruController::idTahunAjaranAktif().
-     */
+
     public function index()
     {
         $roster = DB::table('jadwal_pelajaran as jp')
@@ -60,11 +52,11 @@ class PresensiGuruController extends Controller
 
         $hariIni = $this->hariIni();
 
-        // Apakah jadwal ini sedang berada di jendela buka sesi?
-        //
-        // Jendelanya: 15 menit sebelum jam_mulai s/d jam_selesai. Aturan yang sama
-        // dipakai sp_buka_sesi; dihitung juga di sini supaya tombol yang tampil
-        // tidak menawarkan aksi yang pasti ditolak database.
+
+
+
+
+
         $roster->each(function ($baris) use ($hariIni) {
             $baris->bisa_dibuka = $baris->hari === $hariIni
                 && $this->dalamJendelaBuka($baris->jam_mulai, $baris->jam_selesai);
@@ -73,15 +65,10 @@ class PresensiGuruController extends Controller
         return view('guru.presensi.index', compact('roster', 'hariIni'));
     }
 
-    /** Kelonggaran membuka sesi sebelum jam pelajaran, dalam menit. */
+
     private const MENIT_SEBELUM = 15;
 
-    /**
-     * Apakah jam sekarang berada dalam jendela buka sesi untuk jadwal ini?
-     *
-     * Rentangnya jam_mulai - 15 menit s/d jam_selesai. Jadwal yang melewati
-     * tengah malam tidak didukung (jadwal sekolah tidak melewati tengah malam).
-     */
+
     private function dalamJendelaBuka(string $jamMulai, string $jamSelesai): bool
     {
         $sekarang = now()->format('H:i:s');
@@ -92,13 +79,7 @@ class PresensiGuruController extends Controller
         return $sekarang >= $buka && $sekarang <= $jamSelesai;
     }
 
-    /**
-     * Id tahun ajaran aktif, atau null bila tidak ada yang ditandai aktif.
-     *
-     * Null berarti "jangan difilter": roster tidak boleh kosong total hanya karena
-     * data tahun ajaran belum diisi. Beberapa baris bisa bertanda aktif sekaligus
-     * (data lama), jadi yang paling baru dipilih agar hasilnya deterministik.
-     */
+
     private function idTahunAjaranAktif(): ?int
     {
         $id = DB::table('tahun_ajaran')
@@ -110,10 +91,7 @@ class PresensiGuruController extends Controller
         return $id === null ? null : (int) $id;
     }
 
-    /**
-     * Membuat sesi presensi untuk jadwal pada baris roster yang diklik.
-     * Tanggal memakai CURDATE(); jam buka/tutup mengikuti jam jadwal.
-     */
+
     public function buka(int $idJadwal)
     {
         try {
@@ -135,9 +113,9 @@ class PresensiGuruController extends Controller
                 return back()->with('error', $pesan);
             }
 
-            // Id sesi bisa kosong walau status BERHASIL/SESI_SUDAH_ADA (mis. variabel
-            // OUT tidak terbaca pada koneksi role). Ambil ulang dari tabel sebagai cadangan
-            // agar tidak berujung "Undefined property: stdClass::$jam_mulai".
+
+
+
             $idSesi = $hasil->id_sesi;
 
             if (! $idSesi) {
@@ -154,7 +132,7 @@ class PresensiGuruController extends Controller
                 return back()->with('error', 'Sesi gagal dibuat. Coba lagi.');
             }
 
-            // QR statis: token dibuat sekali, berlaku sampai jam selesai jadwal.
+
             $this->pastikanToken((int) $idSesi);
 
             DB::commit();
@@ -168,10 +146,7 @@ class PresensiGuruController extends Controller
         return redirect()->route('guru.presensi.sesi', $idSesi);
     }
 
-    /**
-     * Memastikan sesi memiliki tepat satu token aktif yang berlaku sampai jam selesai.
-     * Kode dibuat acak 64 hex sehingga tidak pernah sama antar sesi.
-     */
+
     private function pastikanToken(int $idSesi): void
     {
         $ada = DB::table('token_presensi')->where('id_sesi', $idSesi)->exists();
@@ -192,7 +167,7 @@ class PresensiGuruController extends Controller
             return;
         }
 
-        // Cadangan: kolom jam bisa tidak terbaca pada sebagian koneksi role.
+
         if (! isset($sesi->jam_mulai) || ! isset($sesi->jam_selesai)) {
             $jadwal = DB::table('sesi_presensi as sp')
                 ->join('jadwal_pelajaran as jp', 'jp.id_jadwal', '=', 'sp.id_jadwal')
@@ -209,24 +184,24 @@ class PresensiGuruController extends Controller
             $sesi->jam_selesai = $jadwal->jam_selesai;
         }
 
-        $kode = bin2hex(random_bytes(32)); // 64 karakter hex
+        $kode = bin2hex(random_bytes(32));
 
-        // Batas berlaku token dihitung dari TANGGAL SESI, bukan dari jam sekarang.
-        //
-        // Dua batas yang berbeda, dan perbedaannya disengaja:
-        //   - berlaku_mulai = jam_mulai pelajaran. Guru boleh membuka 15 menit
-        //     lebih awal untuk menyiapkan layar, tetapi siswa belum bisa memindai
-        //     sampai jam pelajaran benar-benar dimulai.
-        //   - kedaluwarsa_pada = jam_selesai pelajaran.
-        //
-        // Memakai tanggal sesi (bukan Carbon::now()) membuat hasilnya sama
-        // berapa pun lama sesi dibuka sebelum jam mulai.
+
+
+
+
+
+
+
+
+
+
         $tanggal = \Carbon\Carbon::parse($sesi->tanggal)->toDateString();
         $berlakuMulai = \Carbon\Carbon::parse($tanggal.' '.$sesi->jam_mulai);
         $kedaluwarsa = \Carbon\Carbon::parse($tanggal.' '.$sesi->jam_selesai);
 
-        // Jadwal yang melewati tengah malam (jam_selesai <= jam_mulai): berakhir
-        // pada hari berikutnya.
+
+
         if ($kedaluwarsa->lessThanOrEqualTo($berlakuMulai)) {
             $kedaluwarsa->addDay();
         }
@@ -279,7 +254,7 @@ class PresensiGuruController extends Controller
         return trim(preg_replace('/<\?xml.*?\?>/s', '', $svg));
     }
 
-    /** Dipakai halaman guru untuk memperbarui jumlah hadir tanpa memuat ulang halaman. */
+
     public function qr(int $idSesi)
     {
         $sesi = $this->sesiMilik($idSesi);
@@ -297,15 +272,15 @@ class PresensiGuruController extends Controller
             return response()->json(['status' => 'TANPA_TOKEN'], 409);
         }
 
-        // Angka dihitung dari sumber yang SAMA dengan tampilan awal halaman
-        // (PresensiGuruController::tampil): satu baris per anggota kelas, dengan
-        // status presensi bila sudah ada.
-        //
-        // Versi sebelumnya menghitung `semua anggota kelas - hadir`, sehingga
-        // siswa berstatus izin/sakit/alpa ikut terhitung "belum". Akibatnya angka
-        // "Belum" bertambah sendiri 4 detik setelah halaman dimuat, padahal tidak
-        // ada siswa baru. Query itu juga tidak memfilter tanggal, jadi sesi lain
-        // pada jadwal yang sama membuat angkanya membengkak.
+
+
+
+
+
+
+
+
+
         $baris = DB::table('anggota_kelas as ak')
             ->leftJoin('presensi as p', function ($j) use ($idSesi) {
                 $j->on('p.id_siswa', '=', 'ak.id_siswa')->where('p.id_sesi', '=', $idSesi);
@@ -322,7 +297,7 @@ class PresensiGuruController extends Controller
         ]);
     }
 
-    /** Menutup sesi memakai transaksi + Stored Procedure sp_tutup_sesi */
+
     public function tutup(int $idSesi)
     {
         $this->sesiMilik($idSesi);
@@ -344,7 +319,7 @@ class PresensiGuruController extends Controller
             : back()->with('error', 'Sesi sudah ditutup atau tidak valid.');
     }
 
-    /** Koreksi manual oleh guru (metode = manual, diubah_oleh = id_guru) */
+
     public function manual(Request $request, int $idSesi)
     {
         $sesi = $this->sesiMilik($idSesi);

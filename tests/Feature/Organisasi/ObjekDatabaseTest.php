@@ -7,10 +7,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * Objek database untuk fitur perangkat organisasi & kelas:
- * view, function, trigger, dan index.
- */
 class ObjekDatabaseTest extends TestCase
 {
     use DatabaseTruncation;
@@ -26,7 +22,7 @@ class ObjekDatabaseTest extends TestCase
 
         $this->assertNotEmpty($baris);
 
-        // View harus menyertakan nama siswa, nama jabatan, dan urutan jabatan.
+
         $kolom = array_keys((array) $baris->first());
         $this->assertContains('nama_siswa', $kolom);
         $this->assertContains('nama_jabatan', $kolom);
@@ -86,7 +82,7 @@ class ObjekDatabaseTest extends TestCase
     {
         $d = $this->seedPerangkat();
 
-        // Siswa dari kelas lain (tidak terdaftar di anggota_kelas kelas ini).
+
         $idSiswaLain = DB::connection('mysql')->table('siswa')->insertGetId([
             'id_user' => DB::connection('mysql')->table('users')->insertGetId([
                 'username' => 'org_siswa_luar',
@@ -113,7 +109,7 @@ class ObjekDatabaseTest extends TestCase
 
         $this->expectException(\Throwable::class);
 
-        // Jabatan lingkup 'organisasi' dipakai di pengurus_kelas.
+
         DB::connection('mysql')->table('pengurus_kelas')->insert([
             'id_kelas' => $d['id_kelas'],
             'id_siswa' => $d['id_siswa'][0],

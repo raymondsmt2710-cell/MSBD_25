@@ -3,15 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Menutup bug: satu siswa bisa terdaftar sebagai ketua/wakil pada lebih dari satu
-// kandidat dalam pemilihan yang sama (mis. No. 01 dan No. 02 orangnya sama).
-//
-// Validasi di controller sudah menolaknya, tetapi aturan ini juga dijaga di database
-// agar tetap berlaku walaupun ada jalur lain yang menulis (procedure, seeder, atau
-// kode baru di masa depan).
-//
-// Caranya: trigger BEFORE INSERT/UPDATE pada `kandidat` memeriksa apakah id_siswa_ketua
-// atau id_siswa_wakil sudah dipakai kandidat lain pada pemilihan yang sama.
 return new class extends Migration
 {
     private function mysql(): bool

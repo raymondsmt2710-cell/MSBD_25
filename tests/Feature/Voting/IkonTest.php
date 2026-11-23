@@ -5,10 +5,6 @@ namespace Tests\Feature\Voting;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Tests\TestCase;
 
-/**
- * Ikon memakai Bootstrap Icons (SVG inline), bukan emoji.
- * Emoji tampil berbeda-beda di tiap perangkat dan tidak bisa diwarnai CSS.
- */
 class IkonTest extends TestCase
 {
     use DatabaseTruncation;
@@ -20,7 +16,7 @@ class IkonTest extends TestCase
         $this->setUpVotingDatabase();
     }
 
-    /** Emoji yang dulu dipakai; tidak boleh muncul lagi. */
+
     private array $emojiLama = ['👥', '🎓', '🏫', '🗳', '📷', '📅', '💰', '🏛', '🪑', '👨‍👩‍👧', '👤', '🔒', '👁', '🙈', '⚠'];
 
     public function test_beranda_memakai_svg_bukan_emoji(): void
@@ -33,7 +29,7 @@ class IkonTest extends TestCase
             $this->assertStringNotContainsString($emoji, $html, "Emoji {$emoji} masih ada di beranda");
         }
 
-        // Ikon statistik + 7 ikon fitur.
+
         $this->assertGreaterThanOrEqual(11, substr_count($html, '<svg'));
     }
 
@@ -67,7 +63,7 @@ class IkonTest extends TestCase
 
     public function test_komponen_ikon_aman_untuk_nama_tidak_dikenal(): void
     {
-        // Nama salah tidak boleh membuat halaman error.
+
         $html = $this->blade('<x-ikon nama="tidak-ada" />');
 
         $this->assertStringContainsString('<svg', $html);
@@ -88,8 +84,8 @@ class IkonTest extends TestCase
 
     public function test_ikon_menu_admin_tersedia(): void
     {
-        // Enam ikon ini dipakai sidebar admin. Tanpa path, <x-ikon> tetap
-        // merender <svg> kosong sehingga ikonnya hilang tanpa error apa pun.
+
+
         $dipakai = ['person-badge', 'calendar-check', 'book', 'award', 'clipboard-check', 'map'];
 
         foreach ($dipakai as $nama) {

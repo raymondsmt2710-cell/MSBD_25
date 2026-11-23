@@ -16,21 +16,11 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Support\MembuatSekolah;
 use Tests\TestCase;
 
-/**
- * Orang tua melaporkan pembayaran iuran ANAKNYA SENDIRI dengan mengunggah
- * bukti, dan hanya melihat kas anaknya.
- *
- * Prinsip yang dijaga:
- *  - Orang tua tidak pernah mendapat hak kelola (kas.kelola tetap false).
- *  - Laporan hanya memindahkan status ke "menunggu"; uang baru dihitung
- *    setelah bendahara memverifikasi.
- *  - Orang tua tidak bisa melaporkan untuk anak orang lain.
- */
 class IuranOrangTuaTest extends TestCase
 {
     use MembuatSekolah, RefreshDatabase;
 
-    /** @var array<string, mixed> */
+
     private array $sekolah;
 
     private User $orangTua;
@@ -44,12 +34,12 @@ class IuranOrangTuaTest extends TestCase
         Storage::fake('public');
         $this->sekolah = $this->buatSekolah();
 
-        // Anak pertama: Ahmad Fauzi. Anak ketiga: Budi Santoso.
+
         $this->orangTua = $this->buatOrangTua('ortu_ahmad', $this->sekolah['siswa'][0]->id_siswa);
         $this->orangTuaLain = $this->buatOrangTua('ortu_budi', $this->sekolah['siswa'][2]->id_siswa);
     }
 
-    // ---- Kebocoran yang diperbaiki: panel anggota ----
+
 
     public function test_orang_tua_hanya_menerima_data_anaknya_di_panel_anggota(): void
     {
@@ -73,7 +63,7 @@ class IuranOrangTuaTest extends TestCase
         $this->assertFalse($payload['bisaKelola']);
     }
 
-    // ---- Lapor pembayaran ----
+
 
     public function test_orang_tua_dapat_melaporkan_pembayaran_anaknya(): void
     {
@@ -93,7 +83,7 @@ class IuranOrangTuaTest extends TestCase
         $this->assertNotNull($iuran->bukti_url);
         Storage::disk('public')->assertExists($iuran->bukti_url);
 
-        // Uang belum masuk: belum ada transaksi kas baru.
+
         $this->assertSame(0, TransaksiKas::count());
     }
 
@@ -172,7 +162,7 @@ class IuranOrangTuaTest extends TestCase
             ->assertForbidden();
     }
 
-    // ---- Bendahara memverifikasi laporan ----
+
 
     public function test_bendahara_dapat_memverifikasi_laporan_orang_tua(): void
     {
@@ -192,7 +182,7 @@ class IuranOrangTuaTest extends TestCase
 
         $this->assertSame(StatusIuran::Terverifikasi, $iuran->status);
         $this->assertNotNull($iuran->id_transaksi);
-        // Baru sekarang uang dihitung sebagai pemasukan.
+
         $this->assertSame(1, TransaksiKas::count());
     }
 
@@ -217,7 +207,7 @@ class IuranOrangTuaTest extends TestCase
         $this->assertStringContainsString('/storage/', $sel['bukti_tampil']);
     }
 
-    // ---- helper ----
+
 
     private function iuran(int $idSiswa, StatusIuran $status): IuranKas
     {

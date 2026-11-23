@@ -62,7 +62,7 @@
 @endsection
 @push('skrip')
 <script>
-    // Tandai kursi kosong/terisi dan siswa yang dipilih di lebih dari satu kursi sebelum dikirim.
+
     (function () {
         var form = document.getElementById('form-denah');
         function periksa() {

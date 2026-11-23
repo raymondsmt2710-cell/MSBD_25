@@ -12,7 +12,7 @@ return new class extends Migration
             $table->increments('id_iuran');
             $table->unsignedInteger('id_kelas');
             $table->unsignedInteger('id_siswa');
-            $table->char('periode', 7); // YYYY-MM
+            $table->char('periode', 7);
             $table->decimal('nominal', 12, 2);
             $table->enum('status', ['belum_bayar', 'menunggu', 'terverifikasi', 'ditolak'])
                 ->default('belum_bayar');

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->increments('id_kelas');
             $table->unsignedInteger('id_tahun_ajaran');
             $table->string('nama_kelas', 20);
-            $table->unsignedTinyInteger('tingkat'); // 10, 11, 12
+            $table->unsignedTinyInteger('tingkat');
             $table->string('jurusan', 30)->nullable();
             $table->unsignedInteger('id_wali_kelas')->nullable();
             $table->string('ruangan', 20)->nullable();

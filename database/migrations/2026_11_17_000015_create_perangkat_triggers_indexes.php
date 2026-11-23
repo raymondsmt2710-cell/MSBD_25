@@ -5,15 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-// Trigger + index untuk fitur perangkat organisasi & kelas.
-//
-// Trigger menjaga integritas data pengurus di level database, sehingga aturan
-// tetap berlaku walaupun ada jalur tulis lain (procedure, seeder, kode baru):
-//   1. Siswa pada pengurus_kelas WAJIB anggota kelas tersebut.
-//   2. Jabatan pada pengurus_kelas WAJIB berlingkup 'kelas'.
-//   3. Jabatan pada pengurus_organisasi WAJIB berlingkup 'organisasi'.
-//   4. Satu siswa tidak boleh memegang dua jabatan pada kelas yang sama
-//      (dan pada organisasi+tahun ajaran yang sama).
 return new class extends Migration
 {
     private function mysql(): bool
@@ -38,7 +29,7 @@ return new class extends Migration
             DB::unprepared("DROP TRIGGER IF EXISTS {$t}");
         }
 
-        // ---------- pengurus_kelas ----------
+
 
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_pengurus_kelas_insert
@@ -114,7 +105,7 @@ BEGIN
 END
 SQL);
 
-        // ---------- pengurus_organisasi ----------
+
 
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_pengurus_organisasi_insert
@@ -173,7 +164,7 @@ BEGIN
 END
 SQL);
 
-        // ---------- INDEX (materi Optimasi Query & Indexing) ----------
+
         Schema::table('pengurus_kelas', function (Blueprint $table) {
             $table->index(['id_kelas', 'id_jabatan'], 'idx_pengurus_kelas');
         });

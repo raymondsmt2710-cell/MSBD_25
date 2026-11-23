@@ -70,8 +70,6 @@
     <form method="GET" action="{{ route('ortu.anak', $anak->id_siswa) }}"
           style="margin-bottom:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <label for="bulan" style="margin:0;font-size:12px">Bulan</label>
-        {{-- input[type=month] di layout lebarnya 100%; di sini dibatasi agar tidak
-             memenuhi baris saat berdampingan dengan tombol. --}}
         <input type="month" id="bulan" name="bulan" value="{{ $bulan }}" style="width:auto">
         <button class="btn" type="submit">Saring</button>
         @if ($bulan)

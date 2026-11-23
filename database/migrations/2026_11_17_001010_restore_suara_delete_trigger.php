@@ -3,11 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Memulihkan trg_before_suara_delete yang dibutuhkan agar suara tidak dapat dihapus.
-//
-// Latar: saat menyiapkan data demo, trigger ini sempat di-drop manual untuk
-// mengosongkan tabel `suara`. Migration ini mengembalikannya secara idempoten,
-// sehingga kondisi database selalu kembali ke aturan yang benar.
 return new class extends Migration
 {
     private function mysql(): bool

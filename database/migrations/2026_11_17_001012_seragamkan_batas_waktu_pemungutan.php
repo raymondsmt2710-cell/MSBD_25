@@ -3,17 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Menyatukan batas waktu pemungutan suara.
-//
-// Sebelumnya tiga tempat memakai batas berbeda:
-//   - fn_boleh_memilih : NOW() BETWEEN mulai AND selesai  (inklusif di kedua ujung)
-//   - sp_rekam_suara   : NOW() > selesai                  (tepat di selesai = masih boleh)
-//   - sp_buka_pemilihan: waktu_selesai <= NOW()           (tepat di selesai = sudah tutup)
-//
-// Akibatnya: siswa yang mengirim suara tepat pada detik `waktu_selesai` berhasil,
-// padahal panitia yang menekan Buka pada detik yang sama ditolak. Konvensi yang dipilih
-// adalah rentang setengah terbuka [mulai, selesai): pemungutan berakhir TEPAT pada
-// waktu_selesai, dan semua tempat memakai aturan yang sama.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -27,7 +16,7 @@ return new class extends Migration
             return;
         }
 
-        // 1. fn_boleh_memilih: [mulai, selesai)
+
         DB::unprepared('DROP FUNCTION IF EXISTS fn_boleh_memilih');
 
         DB::unprepared(<<<'SQL'
@@ -53,7 +42,7 @@ BEGIN
 END
 SQL);
 
-        // 2. sp_rekam_suara: tolak tepat pada waktu_selesai.
+
         DB::unprepared('DROP PROCEDURE IF EXISTS sp_rekam_suara');
 
         DB::unprepared(<<<'SQL'
@@ -126,7 +115,7 @@ BEGIN
 END
 SQL);
 
-        // 3. GRANT ulang: DROP menghapus hak EXECUTE yang melekat pada objek.
+
         $db = config('database.connections.mysql.database');
         $akun = [
             env('DB_USERNAME_ADMIN', 'admin_app'),
@@ -148,7 +137,7 @@ SQL);
             return;
         }
 
-        // Kembalikan ke definisi semula (batas inklusif).
+
         DB::unprepared('DROP FUNCTION IF EXISTS fn_boleh_memilih');
 
         DB::unprepared(<<<'SQL'

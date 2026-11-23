@@ -5,10 +5,6 @@ namespace Tests\Feature\Voting;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Tests\TestCase;
 
-/**
- * Halaman login baru bergaya sama dengan fitur voting.
- * Yang diuji bukan hanya tampilan, tetapi juga bahwa login benar-benar berfungsi.
- */
 class LoginTampilanTest extends TestCase
 {
     use DatabaseTruncation;
@@ -43,7 +39,7 @@ class LoginTampilanTest extends TestCase
     {
         $html = $this->get(route('login'))->assertOk()->getContent();
 
-        // Halaman publik tidak boleh membocorkan akun atau password contoh.
+
         $this->assertStringNotContainsString('Akun contoh', $html);
         $this->assertStringNotContainsString('Password semuanya', $html);
         $this->assertStringNotContainsString('<code>admin</code>', $html);

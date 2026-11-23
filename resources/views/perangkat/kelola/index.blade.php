@@ -2,7 +2,7 @@
 @section('judul', 'Kelola Perangkat')
 @section('isi')
 @php
-    // User::$role di-cast ke App\Enums\Role, jadi bandingkan lewat ->value.
+
     $peranSaya = auth()->user()->role instanceof \App\Enums\Role
         ? auth()->user()->role->value
         : (string) auth()->user()->role;

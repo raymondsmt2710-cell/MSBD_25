@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Suara anonim: tanpa id_siswa, hanya UUID + pemilihan + kandidat
+
         Schema::create('suara', function (Blueprint $table) {
             $table->char('id_suara', 36)->primary();
             $table->unsignedInteger('id_pemilihan');

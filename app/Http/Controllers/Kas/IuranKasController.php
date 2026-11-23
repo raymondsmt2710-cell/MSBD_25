@@ -110,12 +110,7 @@ class IuranKasController extends Controller
         ]);
     }
 
-    /**
-     * Orang tua melaporkan pembayaran iuran anaknya.
-     *
-     * Sengaja TIDAK memakai kas.kelola: uang belum masuk. Status hanya menjadi
-     * "menunggu" dan transaksi kas baru dibuat saat bendahara memverifikasi.
-     */
+
     public function lapor(LaporIuranRequest $request, IuranKas $iuran): JsonResponse
     {
         abort_if(
@@ -128,7 +123,7 @@ class IuranKasController extends Controller
 
         $bukti = $request->file('bukti')->store('kas/bukti', 'public');
 
-        // Ganti bukti lama bila ada, agar tidak menumpuk file yatim.
+
         if ($iuran->bukti_url && ! str_starts_with($iuran->bukti_url, 'http')) {
             Storage::disk('public')->delete($iuran->bukti_url);
         }
@@ -137,8 +132,8 @@ class IuranKasController extends Controller
             'status' => StatusIuran::Menunggu,
             'bukti_url' => $bukti,
             'catatan' => $data['catatan'] ?? null,
-            // Nominal hanya boleh diusulkan lebih kecil/sama; nilai tagihan
-            // tetap ditetapkan bendahara lewat generate().
+
+
             'nominal' => $data['nominal'] ?? $iuran->nominal,
         ]);
 
@@ -159,8 +154,8 @@ class IuranKasController extends Controller
         );
 
         DB::transaction(function () use ($request, $iuran) {
-            // Lewati bila transaksinya sudah dibatalkan (mis. oleh admin) agar
-            // siapa/kapan/alasan pembatalan pertama tidak tertimpa.
+
+
             if ($iuran->transaksi && ! $iuran->transaksi->is_batal) {
                 $iuran->transaksi->update([
                     'is_batal' => true,

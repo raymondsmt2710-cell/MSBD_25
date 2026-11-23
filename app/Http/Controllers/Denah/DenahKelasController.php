@@ -48,9 +48,9 @@ class DenahKelasController extends Controller
                 ->latest('id_denah')
                 ->first();
 
-            // Jangan hapus kursi di luar grid baru secara diam-diam: data kursi
-            // tidak punya jalur pemulihan dan tidak tampil di UI. Tolak dengan
-            // pesan yang menyebut jumlah murid yang akan kehilangan tempat.
+
+
+
             if ($denah) {
                 $terdampak = PosisiDuduk::query()
                     ->where('id_denah', $denah->id_denah)
@@ -107,7 +107,7 @@ class DenahKelasController extends Controller
             'Posisi berada di luar batas denah.',
         );
 
-        // Meja hanya punya 2 tempat (kiri & kanan); yang sudah ditempati murid lain dianggap bentrok.
+
         $bentrok = PosisiDuduk::query()
             ->where('id_denah', $denah->id_denah)
             ->where('baris', $baris)
@@ -154,8 +154,8 @@ class DenahKelasController extends Controller
         $bSisi = $b->sisi ?: 'kiri';
 
         DB::transaction(function () use ($a, $b, $aBaris, $aKolom, $aSisi, $bBaris, $bKolom, $bSisi) {
-            // Parkir sementara di baris 0 (di luar grid) agar tidak menabrak
-            // unique (id_denah, baris, kolom, sisi).
+
+
             $a->update(['baris' => 0, 'kolom' => 0]);
             $b->update(['baris' => $aBaris, 'kolom' => $aKolom, 'sisi' => $aSisi]);
             $a->update(['baris' => $bBaris, 'kolom' => $bKolom, 'sisi' => $bSisi]);
@@ -199,7 +199,7 @@ class DenahKelasController extends Controller
             'Siswa sudah memiliki kursi.',
         );
 
-        // Satu meja hanya bisa menampung 2 murid: satu di kiri, satu di kanan.
+
         abort_if(
             PosisiDuduk::where('id_denah', $denah->id_denah)
                 ->where('baris', $baris)
@@ -233,7 +233,7 @@ class DenahKelasController extends Controller
 
         $idSiswa = $kelas->anggotaKelas()->pluck('id_siswa')->shuffle()->values();
 
-        // Satu meja = 2 murid, jadi kapasitas = baris × kolom × 2.
+
         $kapasitas = $denah->jumlah_baris * $denah->jumlah_kolom * count(PosisiDuduk::SISI);
 
         abort_if(
@@ -248,7 +248,7 @@ class DenahKelasController extends Controller
             $index = 0;
             for ($baris = 1; $baris <= $denah->jumlah_baris; $baris++) {
                 for ($kolom = 1; $kolom <= $denah->jumlah_kolom; $kolom++) {
-                    // Isi sisi kiri dulu, lalu sisi kanan meja yang sama.
+
                     foreach (PosisiDuduk::SISI as $sisi) {
                         if (! isset($idSiswa[$index])) {
                             return;

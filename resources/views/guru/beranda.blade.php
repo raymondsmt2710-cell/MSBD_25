@@ -4,7 +4,6 @@
 
 @section('isi')
 
-{{-- ---------- Hero ---------- --}}
 <div class="hero">
     <div class="hero-inner">
         <div class="lencana">
@@ -24,7 +23,6 @@
     </div>
 </div>
 
-{{-- ---------- Statistik ---------- --}}
 <div class="statistik">
     <div class="statistik-grid">
         <div class="stat-kartu">
@@ -50,7 +48,6 @@
     </div>
 </div>
 
-{{-- ---------- Jadwal hari ini ---------- --}}
 <section>
     <div class="wrap">
         <div class="judul-bagian">
@@ -98,7 +95,6 @@
     </div>
 </section>
 
-{{-- ---------- Sesi yang masih terbuka (termasuk yang tertinggal) ---------- --}}
 @if ($sesiTerbuka->isNotEmpty())
     <section>
         <div class="wrap">
@@ -134,7 +130,6 @@
     </section>
 @endif
 
-{{-- ---------- Rekap sesi terakhir ---------- --}}
 <section>
     <div class="wrap">
         <div class="judul-bagian">

@@ -1,10 +1,3 @@
-{{--
-    Tombol "kembali ke dashboard".
-    Dipasang sekali di tiap layout, jadi halaman baru otomatis mendapatkannya.
-    Tujuan dihitung TujuanKembali dan selalu dashboard peran pengguna; null
-    berarti tombolnya tidak dirender sama sekali (tamu atau dashboard itu
-    sendiri).
---}}
 @props(['tujuan' => null])
 
 @php

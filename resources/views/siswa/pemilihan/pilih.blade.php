@@ -42,7 +42,6 @@
     @endforeach
 </div>
 
-{{-- Modal konfirmasi: satu-satunya jalan mengirim suara. --}}
 <div class="modal-latar" id="modal-konfirmasi">
     <div class="modal">
         <h3>Konfirmasi pilihan</h3>
@@ -73,7 +72,6 @@
         document.getElementById('modal-konfirmasi').classList.remove('buka');
     }
 
-    // Cegah dobel klik: server tetap menjadi penjaga terakhir lewat sp_rekam_suara.
     document.getElementById('form-pilih').addEventListener('submit', function () {
         document.getElementById('tombol-kirim').disabled = true;
         document.getElementById('tombol-kirim').textContent = 'Mengirim…';

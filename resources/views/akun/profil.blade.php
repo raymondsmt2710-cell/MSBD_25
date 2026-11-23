@@ -4,7 +4,6 @@
 
 @section('isi')
 
-{{-- ---------- Hero ---------- --}}
 <div class="hero">
     <div class="hero-inner">
         <div class="lencana">
@@ -16,7 +15,6 @@
     </div>
 </div>
 
-{{-- ---------- Informasi akun ---------- --}}
 <section style="padding-top:34px">
     <div class="wrap">
         <div class="judul-bagian">
@@ -45,9 +43,6 @@
     </div>
 </section>
 
-{{-- ---------- Data diri ----------
-     Dipindah dari dashboard agar halaman itu tidak lagi mengulang isi yang sama.
-     Hanya tampil; tidak ada form edit (lihat AkunController::dataDiri()). --}}
 @if (! empty($dataDiri))
     <section>
         <div class="wrap">
@@ -77,7 +72,6 @@
     </section>
 @endif
 
-{{-- ---------- Ganti sandi ---------- --}}
 <section>
     <div class="wrap">
         <div class="judul-bagian">
@@ -134,9 +128,6 @@
     </div>
 </section>
 
-{{-- ---------- Keluar ----------
-     Satu-satunya jalan keluar: bar atas tidak lagi memuat tombol Keluar.
-     Karena itu bagian ini tampil di semua lebar, bukan hanya ponsel. --}}
 <section class="bagian-keluar">
     <div class="wrap">
         <div class="kartu">

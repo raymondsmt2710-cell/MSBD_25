@@ -192,7 +192,7 @@ class KelolaProcedureTest extends TestCase
     {
         $d = $this->seedPemilihanDraf();
 
-        // Siswa baru, karena siswa yang sudah dipakai kandidat lain kini ditolak.
+
         $idSiswaBaru = DB::connection('mysql')->table('siswa')->insertGetId([
             'id_user' => DB::connection('mysql')->table('users')->insertGetId([
                 'username' => 'uji_proc_kandidat',
@@ -253,12 +253,12 @@ class KelolaProcedureTest extends TestCase
         $d = $this->seedPemilihanDraf();
         DB::table('panitia_pemilihan')->insert(['id_pemilihan' => $d['id_pemilihan'], 'id_user' => $d['id_panitia_user']]);
 
-        // Panitia tidak boleh menambah panitia lain.
+
         DB::statement('CALL sp_tunjuk_panitia(?,?,?,@s)', [$d['id_pemilihan'], $d['id_panitia_user'], $d['id_guru_lain']]);
         $this->assertSame('TIDAK_BERHAK', DB::selectOne('SELECT @s AS s')->s);
         $this->assertSame(1, DB::table('panitia_pemilihan')->where('id_pemilihan', $d['id_pemilihan'])->count());
 
-        // Admin boleh.
+
         DB::statement('CALL sp_tunjuk_panitia(?,?,?,@s)', [$d['id_pemilihan'], $d['id_admin'], $d['id_guru_lain']]);
         $this->assertSame('BERHASIL', DB::selectOne('SELECT @s AS s')->s);
         $this->assertSame(2, DB::table('panitia_pemilihan')->where('id_pemilihan', $d['id_pemilihan'])->count());

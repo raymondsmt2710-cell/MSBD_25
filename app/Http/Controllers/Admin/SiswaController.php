@@ -9,14 +9,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
-/**
- * Fitur 2 — Kelola data siswa.
- *
- * Profil siswa selalu menempel pada akun ber-role siswa (siswa.id_user wajib & unik),
- * jadi akun dibuat lebih dulu lewat Kelola Akun. Siswa tidak dihapus; perubahan
- * keadaan dicatat lewat kolom status (aktif/lulus/pindah/keluar) agar riwayat
- * presensi, kas, dan pemilihan tetap utuh.
- */
 class SiswaController extends AdminController
 {
     public const STATUS = ['aktif', 'lulus', 'pindah', 'keluar'];
@@ -32,7 +24,7 @@ class SiswaController extends AdminController
         $tahun = TahunAjaran::aktif();
         $idTahun = $tahun?->id_tahun_ajaran;
 
-        // Kelas pada tahun ajaran aktif saja; siswa bisa punya riwayat kelas di tahun lain.
+
         $siswa = DB::table('siswa as s')
             ->join('users as u', 'u.id_user', '=', 's.id_user')
             ->leftJoin('anggota_kelas as ak', function ($j) use ($idTahun) {
@@ -98,7 +90,7 @@ class SiswaController extends AdminController
         return redirect()->route('admin.siswa.index')->with('success', "Data {$siswa->nama_siswa} diperbarui.");
     }
 
-    /** Ubah status siswa; opsional sekaligus menonaktifkan akunnya (lulus/pindah/keluar). */
+
     public function ubahStatus(Request $request, Siswa $siswa)
     {
         $data = $request->validate([
@@ -110,7 +102,7 @@ class SiswaController extends AdminController
             $statusLama = $siswa->status;
             $siswa->update(['status' => $data['status']]);
 
-            // Kembali aktif (mis. salah input "keluar") → akun ikut dipulihkan.
+
             if ($data['status'] === 'aktif' && $statusLama !== 'aktif') {
                 DB::table('users')->where('id_user', $siswa->id_user)->update(['is_active' => true]);
             } elseif ($request->boolean('nonaktifkan_akun')) {
@@ -151,13 +143,7 @@ class SiswaController extends AdminController
         return $request->hasFile('foto') ? $request->file('foto')->store('siswa', 'public') : null;
     }
 
-    /**
-     * Akun tanpa profil siswa yang boleh dihubungkan ke profil baru.
-     * Termasuk 'bendahara_kas': peran itu tetap memakai baris tabel `siswa`,
-     * hanya berbeda pada hak kelola kasnya.
-     *
-     * @return \Illuminate\Support\Collection<int, object>
-     */
+
     private function akunTanpaProfilSiswa()
     {
         return DB::table('users as u')
@@ -167,7 +153,7 @@ class SiswaController extends AdminController
             ->get(['u.id_user', 'u.username', 'u.is_active', 'u.role']);
     }
 
-    /** Aturan id_user untuk profil siswa baru: akun ada, peran siswa/bendahara_kas, belum dipakai profil lain. */
+
     private function aturanIdUserSiswa(): array
     {
         return [

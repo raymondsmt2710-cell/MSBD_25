@@ -9,15 +9,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Halaman /akun: ganti sandi mandiri.
- *
- * Tes ini berjalan di SQLite (lihat phpunit.xml). Di MySQL, penulisan sandi
- * lewat procedure sp_ubah_sandi; di SQLite procedure tidak ada sehingga
- * controller memakai jalur Eloquent. Yang diuji di sini adalah aturan bisnisnya:
- * verifikasi sandi lama, panjang minimal, konfirmasi, dan sesi tetap hidup.
- * Keberadaan procedure + GRANT diuji terpisah di HakEksekusiRoutineTest.
- */
 class AkunUbahSandiTest extends TestCase
 {
     use RefreshDatabase;
@@ -40,7 +31,7 @@ class AkunUbahSandiTest extends TestCase
         return User::find($idUser);
     }
 
-    /** Melengkapi akun dengan baris siswa agar data diri punya isi. */
+
     private function lengkapiSiswa(User $user, array $ubah = []): void
     {
         DB::table('siswa')->insert(array_merge([
@@ -53,7 +44,7 @@ class AkunUbahSandiTest extends TestCase
         ], $ubah));
     }
 
-    /** Melengkapi akun dengan baris guru agar data diri punya isi. */
+
     private function lengkapiGuru(User $user, array $ubah = []): void
     {
         DB::table('guru')->insert(array_merge([
@@ -66,8 +57,8 @@ class AkunUbahSandiTest extends TestCase
 
     public function test_siswa_melihat_data_diri_di_halaman_akun(): void
     {
-        // Data diri dulu ada di dashboard. Setelah dashboard dirampingkan, tempatnya
-        // di sini — jadi halaman ini yang harus membuktikannya masih terbaca.
+
+
         $user = $this->buatAkun('siswa', 'siswa_diri');
         $this->lengkapiSiswa($user);
 
@@ -91,14 +82,14 @@ class AkunUbahSandiTest extends TestCase
             ->assertSee('Data Diri')
             ->assertSee('Guru Data Diri')
             ->assertSee('1988045')
-            // Guru tidak boleh melihat data siswa.
+
             ->assertDontSee('NISN');
     }
 
     public function test_siswa_tanpa_kelas_menampilkan_strip_bukan_error(): void
     {
-        // Siswa baru belum punya baris anggota_kelas. Kolom Kelas harus "—",
-        // bukan halaman 500 atau teks membingungkan.
+
+
         $user = $this->buatAkun('siswa', 'siswa_tanpa_kelas');
         $this->lengkapiSiswa($user, ['nama_siswa' => 'Siswa Tanpa Kelas']);
 
@@ -111,8 +102,8 @@ class AkunUbahSandiTest extends TestCase
 
     public function test_admin_dan_orang_tua_tidak_melihat_bagian_data_diri(): void
     {
-        // Peran ini tidak punya baris siswa/guru, jadi bagian Data Diri tidak dirender
-        // sama sekali (bukan dirender kosong).
+
+
         foreach (['admin', 'orang_tua'] as $role) {
             $user = $this->buatAkun($role, 'diri_'.$role);
 
@@ -142,7 +133,7 @@ class AkunUbahSandiTest extends TestCase
 
     public function test_guru_juga_bisa_membuka_halaman_akun(): void
     {
-        // Halaman akun bukan fitur siswa saja: guru butuh jalan yang sama.
+
         $user = $this->buatAkun('guru', 'guru_akun');
 
         $this->actingAs($user)
@@ -238,8 +229,8 @@ class AkunUbahSandiTest extends TestCase
                 'sandi_confirmation' => 'sandi-baru-123',
             ]);
 
-        // Sesi tidak diputus: mengganti sandi sendiri bukan alasan mengeluarkan
-        // pengguna. Kalau ini pecah, pengguna terlempar ke login setelah simpan.
+
+
         $this->assertAuthenticatedAs($user->fresh());
         $this->get(route('akun.profil'))->assertOk();
     }
@@ -257,8 +248,8 @@ class AkunUbahSandiTest extends TestCase
 
     public function test_tombol_keluar_hanya_ada_di_halaman_akun(): void
     {
-        // Bar atas tidak lagi memuat tombol Keluar; satu-satunya jalan keluar
-        // adalah halaman profil. Kalau ini pecah, pengguna terkunci.
+
+
         $siswa = $this->buatAkun('siswa', 'keluar_siswa');
         $this->lengkapiSiswa($siswa);
 
@@ -284,9 +275,9 @@ class AkunUbahSandiTest extends TestCase
 
     public function test_admin_dan_orang_tua_bisa_membuka_halaman_akun_tanpa_tautan_mati(): void
     {
-        // Rute /akun hanya memakai middleware `auth`, jadi keempat peran bisa masuk.
-        // Drawer Menu Cepat milik siswa berisi rute ber-role:siswa (perangkat,
-        // pemilihan); kalau ikut dirender untuk admin/orang tua, tautannya 403.
+
+
+
         foreach (['admin' => 'Administrator', 'orang_tua' => 'Orang Tua'] as $role => $label) {
             $user = $this->buatAkun($role, 'akun_'.$role);
 
@@ -297,10 +288,10 @@ class AkunUbahSandiTest extends TestCase
                 ->assertSee($label)
                 ->getContent();
 
-            // Tidak ada tautan ke fitur khusus siswa.
+
             $this->assertStringNotContainsString(route('siswa.pemilihan.index'), $html);
             $this->assertStringNotContainsString(route('siswa.perangkat'), $html);
-            // Logo harus menuju beranda peran sendiri, bukan beranda siswa.
+
             $this->assertStringNotContainsString('href="'.route('siswa.beranda').'" class="brand"', $html);
         }
     }

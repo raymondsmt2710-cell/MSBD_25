@@ -3,17 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Stored Procedure pengelolaan pemilihan (materi Stored Procedure).
-//
-// Semua operasi tulis data pemilihan lewat procedure, sehingga dua aturan hidup di
-// satu tempat dan tidak bergantung pada kerapian kode PHP:
-//   1. hanya admin, atau guru yang tercatat di panitia_pemilihan untuk pemilihan itu;
-//   2. data hanya boleh diubah selama status masih 'draf'.
-// Trigger trg_before_pemilihan_update menjadi lapis kedua untuk aturan (2), sehingga
-// tetap berlaku walau ada kode PHP yang lupa memeriksa.
-//
-// Setiap procedure yang mengubah status menyetel @id_user_app agar trigger audit
-// mencatat siapa pelakunya.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -43,7 +32,7 @@ return new class extends Migration
             DB::unprepared("DROP PROCEDURE IF EXISTS {$p}");
         }
 
-        // ---------- 1. Simpan (buat/ubah) pemilihan ----------
+
         DB::unprepared(<<<'SQL'
 CREATE PROCEDURE sp_simpan_pemilihan(
     IN p_id_pemilihan INT,
@@ -113,7 +102,7 @@ BEGIN
 END
 SQL);
 
-        // ---------- 2. Simpan (buat/ubah) kandidat ----------
+
         DB::unprepared(<<<'SQL'
 CREATE PROCEDURE sp_simpan_kandidat(
     IN p_id_kandidat INT,
@@ -183,7 +172,7 @@ BEGIN
 END
 SQL);
 
-        // ---------- 3. Hapus kandidat ----------
+
         DB::unprepared(<<<'SQL'
 CREATE PROCEDURE sp_hapus_kandidat(
     IN p_id_kandidat INT,
@@ -231,7 +220,7 @@ BEGIN
 END
 SQL);
 
-        // ---------- 4. Daftarkan seluruh siswa satu kelas ----------
+
         DB::unprepared(<<<'SQL'
 CREATE PROCEDURE sp_daftarkan_pemilih_kelas(
     IN p_id_pemilihan INT,
@@ -276,7 +265,7 @@ BEGIN
 END
 SQL);
 
-        // ---------- 5. Hapus satu pemilih ----------
+
         DB::unprepared(<<<'SQL'
 CREATE PROCEDURE sp_hapus_pemilih(
     IN p_id_pemilihan INT,
@@ -321,7 +310,7 @@ BEGIN
 END
 SQL);
 
-        // ---------- 6. Tunjuk / cabut panitia (ADMIN SAJA) ----------
+
         DB::unprepared(<<<'SQL'
 CREATE PROCEDURE sp_tunjuk_panitia(
     IN p_id_pemilihan INT,
@@ -368,7 +357,7 @@ BEGIN
 END
 SQL);
 
-        // ---------- 7. Buka pemilihan ----------
+
         DB::unprepared(<<<'SQL'
 CREATE PROCEDURE sp_buka_pemilihan(
     IN p_id_pemilihan INT,
@@ -419,7 +408,7 @@ BEGIN
 END
 SQL);
 
-        // ---------- 8. Tutup pemilihan ----------
+
         DB::unprepared(<<<'SQL'
 CREATE PROCEDURE sp_tutup_pemilihan(
     IN p_id_pemilihan INT,
@@ -460,7 +449,7 @@ BEGIN
 END
 SQL);
 
-        // ---------- 9. Kembalikan ke draf ----------
+
         DB::unprepared(<<<'SQL'
 CREATE PROCEDURE sp_kembalikan_ke_draf(
     IN p_id_pemilihan INT,

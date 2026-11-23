@@ -3,16 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// DCL (materi Manajemen User & Hak Akses): hak akses per role untuk fitur pemilihan,
-// dengan prinsip least privilege.
-//
-// Inti keamanan fitur ini ada di sini: siswa TIDAK diberi INSERT ke `suara` dan TIDAK
-// diberi UPDATE ke `daftar_pemilih`. Satu-satunya cara siswa menghasilkan suara adalah
-// EXECUTE sp_rekam_suara. Jadi suara ganda mustahil walaupun ada bug di aplikasi.
-//
-// Catatan: migration ini memberi admin_app hak PER OBJEK untuk tabel voting, bukan
-// GRANT ALL ON db.*. Hak admin_app atas tabel presensi tidak disentuh, agar fitur
-// presensi yang sudah berjalan tidak berubah perilakunya.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -61,7 +51,7 @@ return new class extends Migration
 
         $fungsiUmum = ['fn_sudah_memilih', 'fn_boleh_memilih', 'fn_partisipasi'];
 
-        // ---------- ADMIN ----------
+
         $map = [
             $t('pemilihan') => 'SELECT, INSERT, UPDATE, DELETE',
             $t('kandidat') => 'SELECT, INSERT, UPDATE, DELETE',
@@ -85,10 +75,10 @@ return new class extends Migration
         }
         $grant($a['admin'][0], $map);
 
-        // ---------- GURU (termasuk panitia) ----------
-        // Panitia perlu menulis data pemilihan saat status masih 'draf'. Yang menutup
-        // celah penyalahgunaan bukan GRANT, melainkan trigger trg_before_* yang menolak
-        // perubahan suara dan menolak perubahan data pemilihan saat status bukan 'draf'.
+
+
+
+
         $map = [
             $t('pemilihan') => 'SELECT, INSERT, UPDATE, DELETE',
             $t('kandidat') => 'SELECT, INSERT, UPDATE, DELETE',
@@ -119,9 +109,9 @@ return new class extends Migration
         }
         $grant($a['guru'][0], $map);
 
-        // ---------- SISWA ----------
-        // Tidak ada INSERT ke suara, tidak ada UPDATE ke daftar_pemilih,
-        // tidak ada akses ke view monitor.
+
+
+
         $map = [
             $t('pemilihan') => 'SELECT',
             $t('kandidat') => 'SELECT',
@@ -140,8 +130,8 @@ return new class extends Migration
         }
         $grant($a['siswa'][0], $map);
 
-        // ---------- ORANG TUA ----------
-        // Hanya-baca, dan tanpa view monitor.
+
+
         $map = [
             $t('pemilihan') => 'SELECT',
             $t('kandidat') => 'SELECT',

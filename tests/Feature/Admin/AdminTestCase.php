@@ -8,13 +8,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Dasar tes panel admin.
- *
- * DBDynamicConnection dimatikan agar seluruh request memakai koneksi `mysql` yang sama
- * dengan transaksi RefreshDatabase (pola yang sama dengan AkunNonaktifTest).
- * Hak akses MySQL admin_app sendiri sudah diuji di GrantTest.
- */
 abstract class AdminTestCase extends TestCase
 {
     use RefreshDatabase;
@@ -70,7 +63,7 @@ abstract class AdminTestCase extends TestCase
         ]);
     }
 
-    /** Satu sekolah mini: cukup untuk membuka setiap halaman admin dengan data. */
+
     private function seedSekolah(): array
     {
         $d['id_admin'] = $this->buatUser('admin_uji', 'admin');
@@ -87,7 +80,7 @@ abstract class AdminTestCase extends TestCase
         ]);
         $d['id_siswa1'] = $this->buatSiswa("Ani Ma'ruf", '1001', $d['id_kelas'], 1);
         $d['id_siswa2'] = $this->buatSiswa('Budi', '1002', $d['id_kelas'], 2);
-        $d['id_siswa3'] = $this->buatSiswa('Citra', '1003'); // belum berkelas
+        $d['id_siswa3'] = $this->buatSiswa('Citra', '1003');
 
         $d['id_ortu'] = DB::table('orang_tua')->insertGetId(['id_user' => $this->buatUser('ortu1', 'orang_tua'), 'nama' => 'Ayah Ani']);
         DB::table('orang_tua_siswa')->insert(['id_orang_tua' => $d['id_ortu'], 'id_siswa' => $d['id_siswa1'], 'hubungan' => 'ayah', 'is_kontak_utama' => true]);

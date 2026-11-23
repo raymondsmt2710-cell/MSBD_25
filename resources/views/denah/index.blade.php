@@ -29,7 +29,6 @@
                 </div>
             </div>
 
-            {{-- ================= TEMPAT DUDUK ================= --}}
             <section x-show="tab === 'kursi'" class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
                 <div class="flex flex-wrap items-center gap-2">
                     <div class="relative min-w-[14rem] flex-1 sm:max-w-xs">
@@ -73,13 +72,11 @@
                     </div>
                 </div>
 
-                {{-- Papan tulis --}}
                 <div class="mx-auto mt-6 max-w-4xl">
                     <div class="rounded-lg bg-slate-800 py-3 text-center text-xs font-semibold uppercase tracking-[0.3em] text-white sm:text-sm">
                         Papan Tulis
                     </div>
 
-                    {{-- Meja guru --}}
                     <div class="mt-4 flex"
                          :class="{
                             'justify-start': denah?.posisi_meja_guru === 'depan_kiri',
@@ -91,7 +88,6 @@
                         </div>
                     </div>
 
-                    {{-- Grid meja: setiap meja menampung 2 murid (kiri & kanan) --}}
                     <div class="mt-6 overflow-x-auto pb-2">
                         <div class="grid min-w-[38rem] gap-3"
                              :style="`grid-template-columns: repeat(${jumlahKolom()}, minmax(9rem, 1fr))`">
@@ -105,7 +101,6 @@
                                                   x-text="`${jumlahDiMeja(baris, kolom)}/2`"></span>
                                         </div>
 
-                                        {{-- Dua sisi meja: kiri dan kanan --}}
                                         <div class="flex gap-1.5">
                                             <template x-for="sisi in ['kiri', 'kanan']" :key="`${baris}-${kolom}-${sisi}`">
                                                 <button type="button"
@@ -142,7 +137,6 @@
                         </div>
                     </div>
 
-                    {{-- Pintu --}}
                     <div class="mt-2 flex"
                          :class="{
                             'justify-start': denah?.posisi_pintu === 'kiri',
@@ -158,7 +152,6 @@
                 </div>
             </section>
 
-            {{-- ================= AREA SEKOLAH ================= --}}
             <section x-show="tab === 'sekolah'" class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
                 <div class="flex flex-wrap items-center gap-2">
                     <select x-model="gedung" class="rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -228,7 +221,6 @@
         @include('denah._drawer-ruangan')
         @include('denah._modal-ruangan')
 
-        {{-- Modal pengaturan denah --}}
         <div x-show="pengaturanBuka" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @keydown.escape.window="pengaturanBuka = false">
             <div @click.outside="pengaturanBuka = false" class="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
                 <h3 class="text-lg font-semibold text-gray-800">Atur Denah Kelas</h3>
@@ -265,7 +257,6 @@
             </div>
         </div>
 
-        {{-- Toast --}}
         <div x-show="toast" x-transition x-cloak
              class="fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-xl px-4 py-3 text-sm font-medium text-white shadow-lg"
              :class="toast?.tipe === 'error' ? 'bg-rose-600' : 'bg-gray-900'">

@@ -32,7 +32,7 @@ class DenahController extends Controller
         $denah = $this->denah->denahAktif($kelas, $bisaKelolaKursi, $request->user()->id_user);
         $ruangan = $this->denah->ruangan();
 
-        // Orang tua hanya boleh melihat kursi anaknya; null = seluruh kelas.
+
         $idSiswaTerlihat = $this->akses->siswaTerlihat($request->user(), $kelas);
 
         return view('denah.index', [

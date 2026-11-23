@@ -2,9 +2,6 @@
 
 use Illuminate\Support\Str;
 
-// Pdo\Mysql baru ada di PHP 8.4, sedangkan composer.json mengizinkan PHP 8.3.
-// Konstanta ATTR_SSL_CA tersedia lewat PDO::MYSQL_ATTR_SSL_CA di semua versi,
-// jadi dipakai itu agar config aman dijalankan di PHP 8.3 maupun 8.4.
 $mysqlSslCa = defined('Pdo\Mysql::ATTR_SSL_CA')
     ? constant('Pdo\Mysql::ATTR_SSL_CA')
     : (defined('PDO::MYSQL_ATTR_SSL_CA') ? PDO::MYSQL_ATTR_SSL_CA : 1009);
@@ -23,7 +20,7 @@ $mysqlRole = fn(string $username, string $password) => [
     'prefix_indexes' => true,
     'strict' => true,
     'engine' => null,
-    'timezone' => '+07:00', // samakan dengan app timezone (NOW()/CURDATE() MySQL)
+    'timezone' => '+07:00',
     'options' => extension_loaded('pdo_mysql') ? array_filter([
         $mysqlSslCa => env('MYSQL_ATTR_SSL_CA'),
     ]) : [],
@@ -43,9 +40,9 @@ return [
     |
     */
 
-    // Default MySQL, bukan sqlite: fitur presensi, pemilihan, kas, dan denah bergantung
-    // pada procedure/function/view/trigger/GRANT yang hanya dibuat saat driver MySQL.
-    // Dengan default sqlite, objek-objek itu dilewati diam-diam bila .env lupa diisi.
+    
+    
+    
     'default' => env('DB_CONNECTION', 'mysql'),
 
     /*

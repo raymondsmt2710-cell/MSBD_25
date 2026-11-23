@@ -1,4 +1,3 @@
-{{-- Password sementara hanya ditampilkan sekali (flash), tidak pernah disimpan dalam bentuk asli. --}}
 @if (session('sandi_baru'))
     <div class="ok">
         Password sementara: <span class="sandi">{{ session('sandi_baru') }}</span>

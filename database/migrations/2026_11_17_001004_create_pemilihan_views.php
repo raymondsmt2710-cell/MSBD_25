@@ -3,15 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Database View pemilihan (materi View & Query Kompleks).
-//
-// PENTING soal kerahasiaan hasil:
-// v_hasil_pemilihan menyembunyikan jumlah_suara & persentase selama status belum
-// 'selesai'. View MySQL berjalan dengan hak pemiliknya (SQL SECURITY DEFINER), jadi
-// membatasi GRANT saja tidak cukup: siswa tetap bisa membaca view. Karena itu angkanya
-// sendiri yang dibuat NULL oleh view, bukan hanya disembunyikan oleh controller.
-// v_kandidat_pemilihan_hasil TIDAK menyembunyikan apa pun dan hanya diberikan ke
-// guru/admin untuk monitor hitungan sementara.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -33,7 +24,7 @@ return new class extends Migration
             return;
         }
 
-        // 1. Kandidat untuk halaman siswa: TANPA kolom jumlah suara.
+
         DB::unprepared(<<<'SQL'
 CREATE OR REPLACE VIEW v_kandidat_pemilihan AS
 SELECT
@@ -55,7 +46,7 @@ INNER JOIN siswa sk ON sk.id_siswa = k.id_siswa_ketua
 LEFT JOIN siswa sw ON sw.id_siswa = k.id_siswa_wakil
 SQL);
 
-        // 2. Kandidat + hitungan suara. Hanya untuk guru/admin (monitor).
+
         DB::unprepared(<<<'SQL'
 CREATE OR REPLACE VIEW v_kandidat_pemilihan_hasil AS
 SELECT
@@ -76,7 +67,7 @@ INNER JOIN siswa sk ON sk.id_siswa = k.id_siswa_ketua
 LEFT JOIN siswa sw ON sw.id_siswa = k.id_siswa_wakil
 SQL);
 
-        // 3. Rekap hasil resmi. Angka NULL bila status belum 'selesai'.
+
         DB::unprepared(<<<'SQL'
 CREATE OR REPLACE VIEW v_hasil_pemilihan AS
 SELECT
@@ -108,7 +99,7 @@ INNER JOIN siswa sk ON sk.id_siswa = k.id_siswa_ketua
 LEFT JOIN siswa sw ON sw.id_siswa = k.id_siswa_wakil
 SQL);
 
-        // 4. Partisipasi: tidak menyingkap pilihan siapa pun.
+
         DB::unprepared(<<<'SQL'
 CREATE OR REPLACE VIEW v_partisipasi_pemilihan AS
 SELECT
@@ -124,7 +115,7 @@ LEFT JOIN daftar_pemilih dp ON dp.id_pemilihan = p.id_pemilihan
 GROUP BY p.id_pemilihan
 SQL);
 
-        // 5. Daftar kelola: pemilihan + organisasi + tahun ajaran + pembuat.
+
         DB::unprepared(<<<'SQL'
 CREATE OR REPLACE VIEW v_pemilihan_pengelola AS
 SELECT

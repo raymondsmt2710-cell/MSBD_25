@@ -5,32 +5,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-// Ganti sandi mandiri lewat stored procedure.
-//
-// Kenapa tidak memberi hak UPDATE pada tabel `users` saja:
-// user MySQL per peran (siswa_app, guru_app, ortu_app) sengaja hanya punya SELECT
-// pada `users` (lihat rancangan 2026_11_16_000033). Memberi UPDATE akan
-// mengizinkan "UPDATE users SET password_hash = ... WHERE id_user = <orang lain>"
-// di tingkat database; pertahanannya tinggal kode aplikasi. Pola proyek ini untuk
-// kasus seperti ini adalah procedure + GRANT EXECUTE, sama seperti sp_scan_presensi
-// (siswa menulis ke presensi) dan sp_rekam_suara.
-//
-// Jujur soal batasnya: ini BUKAN penutup lubang yang rapat. siswa_app masih punya
-// SELECT pada users (termasuk password_hash), jadi penyerang yang sudah memegang
-// kredensial DB siswa_app bisa membaca hash korban lalu memanggil procedure ini
-// untuk korban. Yang benar-benar dijaga di sini adalah bentuk matriks hak yang
-// sudah ada: tidak ada UPDATE/INSERT/DELETE pada `users` untuk peran non-admin.
-//
-// PENTING: verifikasi sandi lama TIDAK dilakukan di sini. Hash bcrypt tidak bisa
-// dibandingkan lewat '=' karena kolom memakai collation *_ci (case-insensitive),
-// sedangkan bcrypt peka huruf besar-kecil. Aplikasi memverifikasi dengan
-// Hash::check, lalu mengirim hash lama dan hash baru. Perbandingan di bawah
-// memakai BINARY dan hanya berfungsi sebagai pengaman terakhir: menangkap kasus
-// hash berubah di antara dua langkah (mis. sandi direset admin di saat yang sama).
-//
-// DEFINER sengaja tidak ditulis, mengikuti seluruh routine lain di proyek ini:
-// definer mewarisi user yang menjalankan migrasi. Menulis `DEFINER=root@localhost`
-// akan gagal 1227 pada deployment yang migrasinya dijalankan sebagai admin_app.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -38,7 +12,7 @@ return new class extends Migration
         return in_array(DB::getDriverName(), ['mysql', 'mariadb'], true);
     }
 
-    /** @return array<string, string> */
+
     private function akun(): array
     {
         return [
@@ -115,7 +89,7 @@ SQL);
 
         $db = config('database.connections.mysql.database');
         $host = env('DB_USER_HOST', 'localhost');
-        // 1044/1142/1227 = tidak punya hak GRANT; 1133 = user tidak ada; 1410 = hak sudah ada.
+
         $aman = [1044, 1133, 1142, 1227, 1410];
 
         foreach ($this->akun() as $user) {
@@ -134,7 +108,7 @@ SQL);
             return;
         }
 
-        // DROP ikut mencabut GRANT EXECUTE yang menempel pada routine.
+
         DB::unprepared('DROP PROCEDURE IF EXISTS sp_ubah_sandi');
     }
 };

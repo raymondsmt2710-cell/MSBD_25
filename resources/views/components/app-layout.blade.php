@@ -1,22 +1,16 @@
-{{--
-    Layout untuk fitur Kas Kelas & Denah (port dari branch fitur ke desain main).
-    Gaya, palet, dan komponennya sama dengan resources/views/layouts/pemilihan.blade.php
-    yang kini menjadi layout utama aplikasi versi main.
-    Dipakai:  <x-app-layout judul="Kas Kelas"> ... </x-app-layout>
---}}
 @props(['judul' => null])
 
 @php
     $pengguna = auth()->user();
 
-    // app-layout dipakai halaman kas & denah. Navigasinya sengaja tetap memuat
-    // tautan fitur tersebut (termasuk untuk siswa) karena halaman ini memang
-    // halaman fitur itu; menunya berbeda dari nav dashboard biasa.
+
+
+
     $peran = $pengguna?->role?->value ?? (string) $pengguna?->role;
 
     $navigasi = match ($peran) {
-        // Admin sudah punya sidebar lengkap di halaman ini, jadi nav atas
-        // dibiarkan kosong agar tidak ada tombol dobel.
+
+
         'admin' => [],
         'guru' => [
             ['label' => 'Beranda', 'route' => 'guru.beranda', 'aktif' => 'guru.beranda'],
@@ -46,15 +40,12 @@
     <title>{{ $judul ? $judul.' - ' : '' }}SakuSaka - SMA Negeri 1 Kabanjahe</title>
     <link rel="icon" href="{{ asset('images/logo-sakusaka-mark.png') }}" type="image/png">
 
-    {{-- Alpine.js + modul halaman (kasPage, denahPage). Tanpa ini seluruh isi
-         yang memakai x-data/x-cloak tidak akan pernah tampil. --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet">
     <style>
-        /* Hanya kerangka layout. Styling isi halaman diserahkan ke Tailwind
-           (app.css) supaya view Kas & Denah tampil sesuai kelas utilitasnya. */
+
         body{margin:0;font-family:Figtree,system-ui,-apple-system,sans-serif;background:#f6f7f8;color:#1f2937}
         .topbar{background:#09656F;color:#fff;padding:10px 16px;font-size:12px}
         .topbar-inner{max-width:1120px;margin:0 auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -86,7 +77,7 @@
     @include('partials.css-nav-tengah')
 </head>
 @php
-    // Admin memakai sidebar di SEMUA halaman, termasuk halaman kas & denah.
+
     $peranAktif = auth()->user()?->role;
     $peranAktif = $peranAktif instanceof \App\Enums\Role ? $peranAktif->value : (string) $peranAktif;
     $pakaiSidebarAdmin = $peranAktif === 'admin';
@@ -110,9 +101,6 @@
 
 <header class="nav">
     <div class="nav-inner">
-        {{-- Logo mengarah ke BERANDA PERAN, sama seperti layout lain. Dulu
-             menunjuk url('/') sehingga pengguna yang login terlempar ke halaman
-             depan (tamu) alih-alih beranda perannya. --}}
         <a href="{{ auth()->check() ? route(auth()->user()->role->home()) : url('/') }}" class="brand">
             <x-logo mark tinggi="34" />
             <div>
@@ -146,8 +134,6 @@
 <main class="isi-layout">
     <x-tombol-kembali />
 
-    {{-- Slot header: judul halaman dari pemanggil (mis. "Kas Kelas" di kas/index).
-         Tanpa ini judul halaman tidak pernah tampil. --}}
     @if (isset($header))
         <div class="mb-4">
             {{ $header }}
@@ -167,8 +153,8 @@
     {{ $slot }}
 </main>
 @if ($pakaiSidebarAdmin)
-    </div>{{-- .isi-admin --}}
-</div>{{-- .kerangka-admin --}}
+    </div>
+</div>
 @endif
 @include('partials.script-sidebar-admin')
 </body>

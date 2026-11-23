@@ -3,8 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Memperbarui sp_buka_sesi: sesi hanya boleh dibuka pada hari jadwal (materi Stored Procedure: DROP lalu CREATE ulang).
-// DROP PROCEDURE ikut menghapus hak EXECUTE, jadi hak user guru diberikan lagi pada akhir proses.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -75,7 +73,7 @@ SQL);
         $this->beriHakGuru();
     }
 
-    // Mengembalikan ke versi sebelumnya (tanpa pengecekan hari)
+
     public function down(): void
     {
         if (! $this->mysql()) {

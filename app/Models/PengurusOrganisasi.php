@@ -32,7 +32,7 @@ class PengurusOrganisasi extends Model
         return $this->belongsTo(Jabatan::class, 'id_jabatan', 'id_jabatan');
     }
 
-    /** Dipanggil lewat Stored Function fn_jumlah_pengurus_organisasi. */
+
     public static function jumlahUntukOrganisasi(int $idOrganisasi, int $idTahunAjaran): int
     {
         $hasil = DB::selectOne(

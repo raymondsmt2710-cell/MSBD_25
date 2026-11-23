@@ -15,7 +15,7 @@ class UpdateRuanganRequest extends FormRequest
         return Gate::allows('denah.kelola-ruangan');
     }
 
-    /** @return array<string, mixed> */
+
     public function rules(): array
     {
         $ruangan = $this->route('ruangan');

@@ -21,13 +21,13 @@ class Jabatan extends Model
         return $this->hasMany(PengurusOrganisasi::class, 'id_jabatan', 'id_jabatan');
     }
 
-    /** Batasi ke jabatan satu lingkup: 'kelas' atau 'organisasi'. */
+
     public function scopeLingkup($query, string $lingkup)
     {
         return $query->where('lingkup', $lingkup);
     }
 
-    /** Urutkan sesuai urutan jabatan (Ketua dulu, dst). */
+
     public function scopeUrut($query)
     {
         return $query->orderBy('urutan')->orderBy('id_jabatan');

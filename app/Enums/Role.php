@@ -9,11 +9,7 @@ enum Role: string
     case Siswa = 'siswa';
     case OrangTua = 'orang_tua';
 
-    /**
-     * Siswa dengan hak tambahan untuk mengelola kas kelasnya sendiri,
-     * setara bendahara. Profilnya tetap baris di tabel `siswa`, sehingga
-     * semua fitur siswa lain (presensi, perangkat, pemilihan) tetap berlaku.
-     */
+
     case BendaharaKas = 'bendahara_kas';
 
     public function home(): string
@@ -37,13 +33,13 @@ enum Role: string
         };
     }
 
-    /** Apakah peran ini memakai profil siswa (baris tabel `siswa`). */
+
     public function punyaProfilSiswa(): bool
     {
         return $this === self::Siswa || $this === self::BendaharaKas;
     }
 
-    /** Apakah peran ini akun siswa/siswa-bendahara: bisa membaca fitur sisi siswa. */
+
     public function siswaSeperti(): bool
     {
         return $this->punyaProfilSiswa();

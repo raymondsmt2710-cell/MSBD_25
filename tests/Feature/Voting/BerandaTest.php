@@ -5,10 +5,6 @@ namespace Tests\Feature\Voting;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Tests\TestCase;
 
-/**
- * Halaman awal untuk tamu (landing page).
- * Tamu melihat beranda; pengguna yang sudah login diarahkan sesuai peran.
- */
 class BerandaTest extends TestCase
 {
     use DatabaseTruncation;
@@ -55,7 +51,7 @@ class BerandaTest extends TestCase
     {
         $d = $this->seedPemilihanDraf();
 
-        // seed membuat 2 siswa dan 1 kelas.
+
         $this->get('/')
             ->assertOk()
             ->assertSee('Siswa Aktif')
@@ -83,7 +79,7 @@ class BerandaTest extends TestCase
 
     public function test_beranda_tidak_error_walau_tabel_kosong(): void
     {
-        // Tidak seed apa pun — statistik harus 0, bukan error.
+
         $this->get('/')
             ->assertOk()
             ->assertSee('SakuSaka');

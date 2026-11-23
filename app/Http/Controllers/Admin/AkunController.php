@@ -9,23 +9,14 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
-/**
- * Fitur 1 — Kelola akun pengguna.
- *
- * Ini satu-satunya jalur pembuatan akun. Akun sengaja TIDAK bisa dihapus:
- * users dirujuk oleh transaksi_kas, denah_kelas, dan pemilihan dengan ON DELETE RESTRICT,
- * sedangkan profil siswa/guru ikut terhapus (CASCADE) beserta riwayat presensinya.
- * Mencabut akses cukup dengan menonaktifkan akun (is_active = 0); middleware
- * PastikanAkunAktif langsung memutus session yang masih terbuka.
- */
 class AkunController extends AdminController
 {
     public const ROLE = ['admin', 'guru', 'siswa', 'orang_tua', 'bendahara_kas'];
 
-    /** Role yang wajib punya baris profil, beserta rute pembuatan profilnya. */
+
     private const RUTE_PROFIL = [
         'siswa' => 'admin.siswa.create',
-        // Siswa dengan hak kelola kas tetap memakai profil siswa.
+
         'bendahara_kas' => 'admin.siswa.create',
         'guru' => 'admin.guru.create',
         'orang_tua' => 'admin.orang-tua.create',
@@ -80,7 +71,7 @@ class AkunController extends AdminController
             'username.regex' => 'Username hanya boleh huruf, angka, titik, garis bawah, dan tanda hubung.',
         ]);
 
-        // Password kosong → dibuatkan otomatis dan ditampilkan SEKALI kepada admin.
+
         $sandiDiisi = $data['password'] ?? null;
         $sandi = $sandiDiisi ?: $this->sandiAcak();
 
@@ -96,7 +87,7 @@ class AkunController extends AdminController
             session()->flash('sandi_baru', $sandi);
         }
 
-        // Akun siswa/guru/orang tua belum bisa dipakai penuh tanpa profil: langsung arahkan ke form profil.
+
         $peran = $user->role?->value ?? $user->role;
         if ($rute = self::RUTE_PROFIL[$peran] ?? null) {
             return redirect()->route($rute, ['id_user' => $user->id_user])
@@ -132,8 +123,8 @@ class AkunController extends AdminController
                 return back()->with('error', 'Anda tidak dapat mengubah peran akun Anda sendiri.');
             }
 
-            // Profil (siswa/guru/orang_tua) terikat ke role lama. Mengganti role akan
-            // membuat profil itu yatim dan akun tidak bisa dipakai di modul mana pun.
+
+
             if ($this->punyaProfil($user)) {
                 return back()->with('error', 'Peran tidak dapat diubah karena akun ini sudah memiliki profil '
                     .str_replace('_', ' ', $peranLama).'. Buat akun baru untuk peran lain.');
@@ -189,7 +180,7 @@ class AkunController extends AdminController
             ->where('id_user', '!=', $user->id_user)->count();
     }
 
-    /** Password sementara yang mudah dibacakan: tanpa karakter mirip (0/O, 1/l/I). */
+
     private function sandiAcak(): string
     {
         $abjad = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';

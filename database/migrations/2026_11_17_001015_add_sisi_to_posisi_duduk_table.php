@@ -4,11 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// Satu meja kini menampung 2 murid. Aturan keunikan berpindah dari
-// (id_denah, baris, kolom) -> (id_denah, baris, kolom, sisi):
-//   - 'kiri'  = murid di sisi kiri meja
-//   - 'kanan' = murid di sisi kanan meja
-// Murid tetap hanya boleh punya satu tempat duduk (unique id_denah + id_siswa).
 return new class extends Migration
 {
     public function up(): void

@@ -11,21 +11,12 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
-/**
- * Induk semua controller panel admin.
- *
- * Otorisasi role ditangani middleware `role:admin` di routes/admin.php;
- * kelas ini hanya menampung pembantu yang dipakai bersama.
- */
 abstract class AdminController extends Controller
 {
-    /** Kode MySQL untuk pelanggaran foreign key saat DELETE (baris masih dirujuk). */
+
     private const FK_DIRUJUK = [1451, 1217];
 
-    /**
-     * Hapus baris, tetapi ubah pelanggaran foreign key (ON DELETE RESTRICT) menjadi
-     * pesan yang bisa dibaca, bukan halaman 500.
-     */
+
     protected function hapusAman(Model $model, string $label, string $alasanDirujuk): RedirectResponse
     {
         try {
@@ -41,10 +32,7 @@ abstract class AdminController extends Controller
         return back()->with('success', "{$label} berhasil dihapus.");
     }
 
-    /**
-     * Akun ber-role tertentu yang belum punya baris profil, untuk dipilih di form profil.
-     * Termasuk akun $idUserTetap (dipakai saat mengedit profil yang sudah ada).
-     */
+
     protected function akunTanpaProfil(string $role, string $tabelProfil): Collection
     {
         return DB::table('users as u')
@@ -54,7 +42,7 @@ abstract class AdminController extends Controller
             ->get(['u.id_user', 'u.username', 'u.is_active']);
     }
 
-    /** Aturan validasi id_user untuk profil baru: akun ada, role cocok, belum dipakai profil lain. */
+
     protected function aturanIdUserProfil(string $role, string $tabelProfil): array
     {
         return [
@@ -64,7 +52,7 @@ abstract class AdminController extends Controller
         ];
     }
 
-    /** Id tahun ajaran dari query string, jatuh ke tahun ajaran aktif bila kosong. */
+
     protected function idTahunAjaranTerpilih(?string $dariRequest): ?int
     {
         if ($dariRequest !== null && ctype_digit($dariRequest)) {

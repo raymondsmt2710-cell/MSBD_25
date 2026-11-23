@@ -1,9 +1,4 @@
-﻿{{--
-    Isi panel hamburger untuk siswa.
-    Satu baris per tujuan: ikon + judul, tanpa keterangan, supaya kartunya
-    pendek dan panel tidak perlu digulir di layar kecil.
---}}
-<div class="drawer-menu">
+﻿<div class="drawer-menu">
     <a class="drawer-item" href="{{ route('siswa.presensi.index') }}">
         <span class="ikon"><x-ikon nama="qr-code-scan" ukuran="15" /></span>
         <span class="judul">Presensi</span>

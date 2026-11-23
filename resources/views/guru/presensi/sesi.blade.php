@@ -99,7 +99,7 @@
 @if ($sesi->status === 'dibuka')
 @push('skrip')
 <script>
-    // Hanya memperbarui angka hadir/belum. QR tidak diambil ulang karena statis.
+
     const url = @json(route('guru.presensi.qr', $sesi->id_sesi));
     const elHadir = document.getElementById('hadir');
     const elBelum = document.getElementById('belum');
@@ -114,7 +114,7 @@
             } else if (d.status === 'DITUTUP') {
                 location.reload();
             }
-        } catch (e) { /* abaikan, coba lagi pada putaran berikutnya */ }
+        } catch (e) {  }
     }
     setInterval(muat, 4000);
 </script>

@@ -50,6 +50,4 @@
     </p>
 </div>
 
-{{-- Tombol kembali ke dashboard sudah disediakan komponen <x-tombol-kembali>
-     di layout, jadi tidak perlu tautan manual di sini. --}}
 @endsection

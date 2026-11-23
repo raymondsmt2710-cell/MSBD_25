@@ -10,38 +10,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-// Portal orang tua/wali: HANYA BACA, dan hanya anak miliknya sendiri.
-//
-// Tes ini berjalan di DUA driver dan keduanya harus hijau:
-//
-//   MySQL (phpunit.xml -> msbd_25_test)
-//     View v_portal_anak_orang_tua dan stored function fn_* dibuat oleh migrasi,
-//     jadi tes memakai objek SUNGGUHAN. Fixture menulis ke tabel dasar (presensi,
-//     anggota_kelas) sehingga view, stored function, dan trigger ikut bekerja —
-//     persis jalur produksi.
-//
-//   sqlite (:memory:)
-//     Migrasi view sengaja dilewati (guard getDriverName), sehingga view diganti
-//     TABEL bernama sama dan stored function diganti fungsi PHP. Tujuannya agar
-//     lapisan otorisasi dan penanganan parameter tetap teruji tanpa MySQL.
-//
-// Yang diuji di sini adalah siapa boleh melihat anak siapa dan penanganan
-// parameter — bagian yang paling mudah salah. Pemeriksaan "halaman benar-benar
-// dirender" pada database aplikasi ada di PortalOrangTuaMysqlTest.
 class PortalOrangTuaTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** True bila suite berjalan di MySQL/MariaDB (mis. phpunit.xml menunjuk msbd_25_test). */
+
     private bool $mysql = false;
 
-    /** Rantai FK minimal (tahun ajaran -> kelas -> mapel -> guru -> jadwal). Dibuat sekali per tes. */
+
     private ?array $dasar = null;
 
-    /** Nomor urut untuk nis/nisn/username, supaya nilainya unik dan hasil tes dapat diulang. */
+
     private int $urut = 0;
 
-    /** Penghitung id_presensi untuk tabel shim sqlite. */
+
     private int $presensiShim = 0;
 
     protected function setUp(): void
@@ -50,13 +32,13 @@ class PortalOrangTuaTest extends TestCase
 
         $this->withoutMiddleware(DBDynamicConnection::class);
 
-        // Di MySQL, view dan stored function dibuat oleh migrasi, jadi tes memakai objek
-        // SUNGGUHAN — tidak ada shim. Di sqlite, migrasi itu sengaja dilewati sehingga
-        // view diganti tabel bernama sama dan stored function diganti fungsi PHP.
-        //
-        // Shim TIDAK dipasang di MySQL: nama view sudah dipakai, sehingga Schema::create
-        // gagal 1050. Lebih buruk lagi, DDL MySQL tidak bisa di-rollback, jadi view asli
-        // akan hilang untuk seluruh sisa suite.
+
+
+
+
+
+
+
         $this->mysql = in_array(DB::getDriverName(), ['mysql', 'mariadb'], true);
 
         if (! $this->mysql) {
@@ -65,14 +47,14 @@ class PortalOrangTuaTest extends TestCase
         }
     }
 
-    /** Hanya dipakai pada sqlite. */
+
     private function pasangShimView(): void
     {
-        // dropIfExists perlu karena RefreshDatabase memakai ulang PDO :memory: yang sama
-        // untuk seluruh kelas, sehingga tabel shim bisa tertinggal dari tes sebelumnya.
+
+
         Schema::dropIfExists('v_portal_anak_orang_tua');
 
-        // Kolom mengikuti definisi v_portal_anak_orang_tua.
+
         Schema::create('v_portal_anak_orang_tua', function (Blueprint $t) {
             $t->increments('id_orang_tua');
             $t->string('hubungan')->nullable();
@@ -91,7 +73,7 @@ class PortalOrangTuaTest extends TestCase
             $t->string('nama_tahun_ajaran')->nullable();
         });
 
-        // Kolom mengikuti definisi v_rekap_presensi_siswa.
+
         Schema::dropIfExists('v_rekap_presensi_siswa');
         Schema::create('v_rekap_presensi_siswa', function (Blueprint $t) {
             $t->increments('id_presensi');
@@ -113,12 +95,12 @@ class PortalOrangTuaTest extends TestCase
         });
     }
 
-    /** Stored function MySQL digantikan fungsi PHP pada koneksi sqlite. */
+
     private function pasangShimFungsi(): void
     {
         $pdo = DB::connection()->getPdo();
 
-        // PDO MySQL tidak punya sqliteCreateFunction; di MySQL fungsi aslinya sudah ada.
+
         if (! method_exists($pdo, 'sqliteCreateFunction')) {
             return;
         }
@@ -146,13 +128,7 @@ class PortalOrangTuaTest extends TestCase
         }, 1);
     }
 
-    /**
-     * Rantai FK minimal yang dibutuhkan VIEW pada MySQL:
-     * tahun ajaran aktif -> kelas, mata pelajaran, guru, jadwal pelajaran.
-     *
-     * Dibuat sekali per tes (di-cache) karena setiap tes berjalan dalam transaksi
-     * yang di-rollback, jadi datanya tidak pernah menumpuk antar tes.
-     */
+
     private function dasar(): array
     {
         if ($this->dasar !== null) {
@@ -206,7 +182,7 @@ class PortalOrangTuaTest extends TestCase
         return $this->dasar = compact('idGuru', 'idTahun', 'idKelas', 'idMapel', 'idJadwal');
     }
 
-    /** Membuat orang tua + anak + relasi. Mengembalikan [user, id_orang_tua, id_siswa]. */
+
     private function buatKeluarga(string $nama): array
     {
         $this->urut++;
@@ -231,8 +207,8 @@ class PortalOrangTuaTest extends TestCase
             'is_active' => true,
         ]);
 
-        // nis/nisn/username unik di MySQL, jadi nilainya diambil dari penghitung —
-        // bukan random_int, agar hasil tes dapat diulang persis.
+
+
         $idSiswa = DB::table('siswa')->insertGetId([
             'id_user' => $idUserSiswa,
             'nis' => '9'.str_pad((string) $this->urut, 6, '0', STR_PAD_LEFT),
@@ -250,7 +226,7 @@ class PortalOrangTuaTest extends TestCase
         ]);
 
         if ($this->mysql) {
-            // View mengambil kelas lewat anggota_kelas pada tahun ajaran aktif.
+
             $dasar = $this->dasar();
 
             DB::table('anggota_kelas')->insert([
@@ -259,7 +235,7 @@ class PortalOrangTuaTest extends TestCase
                 'no_absen' => $this->urut,
             ]);
         } else {
-            // sqlite: view diganti tabel shim, jadi barisnya diisi langsung.
+
             DB::table('v_portal_anak_orang_tua')->insert([
                 'id_orang_tua' => $idOrangTua,
                 'hubungan' => 'ibu',
@@ -280,14 +256,7 @@ class PortalOrangTuaTest extends TestCase
         return [User::find($idUser), $idOrangTua, $idSiswa];
     }
 
-    /**
-     * Menambah satu baris presensi.
-     *
-     * Di MySQL baris ditulis ke tabel dasar `presensi`; view dan stored function
-     * menghitungnya sendiri — persis seperti di produksi (termasuk trigger
-     * trg_after_presensi_insert yang mengisi log_presensi).
-     * Di sqlite baris ditulis langsung ke tabel shim.
-     */
+
     private function tambahPresensi(int $idSiswa, string $status, string $tanggal): void
     {
         if (! $this->mysql) {
@@ -315,7 +284,7 @@ class PortalOrangTuaTest extends TestCase
 
         $dasar = $this->dasar();
 
-        // uq_sesi_jadwal_tanggal: satu sesi per (jadwal, tanggal).
+
         $idSesi = DB::table('sesi_presensi')
             ->where('id_jadwal', $dasar['idJadwal'])
             ->where('tanggal', $tanggal)
@@ -362,10 +331,10 @@ class PortalOrangTuaTest extends TestCase
             ->assertSee('Matematika');
     }
 
-    // Angka persentase dihitung stored function MySQL, bukan di PHP. Di sqlite fungsi
-    // itu diganti shim PHP, jadi yang diuji di sini adalah jalur MySQL yang sesungguhnya:
-    // hadir dari 2 presensi = 50,00%. Kalau collation parameter salah (error 1267) atau
-    // grant EXECUTE hilang, halaman ini 500 dan tes gagal.
+
+
+
+
     public function test_persentase_kehadiran_dihitung_stored_function(): void
     {
         [$user, , $idSiswa] = $this->buatKeluarga('j');
@@ -378,8 +347,8 @@ class PortalOrangTuaTest extends TestCase
             ->assertSee('50.00%');
     }
 
-    // Di MySQL, objek yang dibaca harus benar-benar VIEW hasil migrasi, bukan tabel
-    // shim. Ini yang membuktikan migrasi 2026_11_17_000014 dipakai oleh tes.
+
+
     public function test_view_anak_berupa_view_sungguhan_bukan_tabel_shim(): void
     {
         if (! $this->mysql) {
@@ -396,8 +365,8 @@ class PortalOrangTuaTest extends TestCase
         $this->assertSame('VIEW', $jenis->t);
     }
 
-    // Trigger trg_after_presensi_insert harus ikut terpicu saat tes menulis presensi
-    // lewat tabel dasar — bukti bahwa fixture memakai jalur produksi, bukan menyuap view.
+
+
     public function test_presensi_lewat_tabel_dasar_memicu_trigger_log(): void
     {
         if (! $this->mysql) {
@@ -414,7 +383,7 @@ class PortalOrangTuaTest extends TestCase
         $this->assertSame('hadir', $log->first()->status_baru);
     }
 
-    // Inti keamanan fitur: angka di URL tidak boleh dipakai melihat anak orang lain.
+
     public function test_orang_tua_tidak_bisa_melihat_anak_orang_lain(): void
     {
         [$userA] = $this->buatKeluarga('c');
@@ -441,7 +410,7 @@ class PortalOrangTuaTest extends TestCase
     {
         [$user] = $this->buatKeluarga('e');
 
-        // Portal hanya-baca: POST tidak punya rute sama sekali.
+
         $this->actingAs($user)->post('/ortu')->assertStatus(405);
         $this->actingAs($user)->post('/ortu/anak/1')->assertStatus(405);
     }
@@ -476,14 +445,14 @@ class PortalOrangTuaTest extends TestCase
         $this->tambahPresensi($idSiswa, 'hadir', '2026-11-10');
         $this->tambahPresensi($idSiswa, 'alpa', '2026-10-10');
 
-        // Oktober: hanya baris Oktober yang tampil.
+
         $this->actingAs($user)
             ->get('/ortu/anak/'.$idSiswa.'?bulan=2026-10')
             ->assertOk()
             ->assertSee('2026-10-10')
             ->assertDontSee('2026-11-10');
 
-        // November: sebaliknya.
+
         $this->actingAs($user)
             ->get('/ortu/anak/'.$idSiswa.'?bulan=2026-11')
             ->assertOk()

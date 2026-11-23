@@ -5,39 +5,12 @@ namespace Tests\Feature\Voting;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Data uji untuk fitur pemilihan.
- *
- * Sengaja memakai DB::table() langsung, bukan model, agar test database tidak
- * bergantung pada model yang baru dibuat pada Task 9.
- *
- * Pemakaian di kelas test:
- *
- *     use DatabaseTruncation;
- *     use VotingTestSupport;
- *
- *     protected array $tablesToTruncate = [...]; // lihat daftar di plan Task 1
- *
- * Jangan memakai RefreshDatabase / DatabaseTransactions: middleware
- * DBDynamicConnection mengganti koneksi default ke mysql_siswa / mysql_admin,
- * sehingga transaksi test (yang dibuka pada koneksi `mysql`) tidak terlihat
- * dari dalam request.
- */
 trait VotingTestSupport
 {
-    /** Penomoran seed agar satu test boleh memanggil seed lebih dari sekali. */
+
     protected static int $seedCounter = 0;
 
-    /**
-     * Fitur pemilihan bergantung pada MySQL (stored procedure/function/view/trigger).
-     * Bila koneksi MySQL tidak tersedia, test dilewati alih-alih gagal, supaya
-     * suite fitur lain (kas, denah, presensi) tetap bisa dijalankan di mesin
-     * tanpa MySQL.
-     *
-     * Catatan: test yang memakai trait ini WAJIB menyiapkan skema lebih dulu
-     * (DatabaseTruncation / RefreshDatabase). Kalau MySQL tersedia tetapi tabel
-     * belum ada, biarkan test gagal apa adanya agar masalahnya terlihat.
-     */
+
     protected function setUpVotingDatabase(): void
     {
         try {
@@ -47,7 +20,7 @@ trait VotingTestSupport
         }
     }
 
-    /** Daftar tabel yang harus dikosongkan antar test. */
+
     protected array $tablesToTruncate = [
         'suara',
         'daftar_pemilih',
@@ -69,7 +42,7 @@ trait VotingTestSupport
         return User::findOrFail($idUser);
     }
 
-    /** Pemilihan berstatus `berlangsung`, waktunya sedang berjalan. */
+
     protected function seedPemilihanBerlangsung(): array
     {
         return $this->seedPemilihanDasar(
@@ -79,7 +52,7 @@ trait VotingTestSupport
         );
     }
 
-    /** Pemilihan berstatus `draf`, waktunya belum dimulai. */
+
     protected function seedPemilihanDraf(): array
     {
         return $this->seedPemilihanDasar(
@@ -89,16 +62,13 @@ trait VotingTestSupport
         );
     }
 
-    /**
-     * Kerangka data lengkap. Bentuk array kembalian dipakai oleh SEMUA task,
-     * jadi kunci-kuncinya tidak boleh berubah.
-     */
+
     private function seedPemilihanDasar(string $status, $mulai, $selesai): array
     {
         $hash = bcrypt('password');
 
-        // Penanda unik agar satu test boleh memanggil seed lebih dari sekali
-        // (mis. membandingkan dua pemilihan) tanpa menabrak unique username.
+
+
         $cap = 'uji_'.(++self::$seedCounter).'_';
 
         $buatUser = fn (string $username, string $role) => DB::table('users')->insertGetId([
@@ -175,8 +145,8 @@ trait VotingTestSupport
             'deskripsi' => 'Pemilihan untuk keperluan pengujian.',
             'waktu_mulai' => $mulai,
             'waktu_selesai' => $selesai,
-            // Selalu dibuat sebagai draf lebih dulu: trigger database menolak
-            // penambahan kandidat/pemilih pada pemilihan yang sudah dibuka.
+
+
             'status' => 'draf',
             'dibuat_oleh' => $idAdmin,
         ]);
@@ -204,8 +174,8 @@ trait VotingTestSupport
             ]);
         }
 
-        // Baru setelah kandidat & pemilih lengkap, status diubah ke nilai yang diminta.
-        // Ini meniru alur nyata: data disiapkan saat draf, lalu pemilihan dibuka.
+
+
         if ($status !== 'draf') {
             DB::table('pemilihan')
                 ->where('id_pemilihan', $idPemilihan)

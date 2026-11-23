@@ -15,7 +15,7 @@ class PindahPosisiRequest extends FormRequest
         return $posisi ? Gate::allows('denah.kelola-kursi', $posisi->denah->kelas) : false;
     }
 
-    /** @return array<string, mixed> */
+
     public function rules(): array
     {
         return [

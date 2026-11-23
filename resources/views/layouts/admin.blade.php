@@ -12,8 +12,7 @@
         *{box-sizing:border-box}
         body{margin:0;font-family:Figtree,system-ui,-apple-system,sans-serif;background:#f6f7f8;color:#1f2937}
         a{color:inherit;text-decoration:none}
-        /* Bar atas tipis, sama seperti halaman lain. Diletakkan di atas bar
-           breadcrumb, di dalam kolom konten supaya sidebar tetap penuh. */
+
         .topbar{background:#09656F;color:#fff;padding:9px 22px;font-size:12px}
         .topbar-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
         .topbar .dot{width:6px;height:6px;border-radius:999px;background:#C97A14;display:inline-block;animation:pulse 2s infinite}
@@ -24,7 +23,7 @@
         .brand .logo{width:34px;height:34px;border-radius:10px;background:#C97A14;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
         .brand .nama{font-size:13px;font-weight:800;color:#fff;line-height:1.1}
         .brand .sub{font-size:11px;color:#8fc3c8}
-        /* Logo asli berlatar krem; di sidebar gelap diberi alas krem agar tetap terbaca. */
+
         .logo-sidebar{display:inline-flex;align-items:center;justify-content:center;background:#F9F5E9;border-radius:9px;padding:4px 6px;flex-shrink:0}
         .grup{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#7fb1b6;font-weight:700;padding:14px 10px 6px}
         aside a.menu{display:block;padding:7px 10px;border-radius:9px;font-size:13px;color:#d7eef0}
@@ -32,8 +31,7 @@
         aside a.menu.aktif{background:#09656F;color:#fff;font-weight:600}
         .atas{background:#fff;border-bottom:1px solid #eef0f2;padding:10px 22px;display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:0;z-index:20}
         .atas .jalur{font-size:12px;color:#9ca3af}
-        /* Tombol profil ke /akun. Panel admin tidak punya hamburger, jadi tombolnya
-           tampil di semua lebar; nama pengguna disembunyikan di layar sempit. */
+
         .nav-profil{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:rgba(9,101,111,.08);color:#09656F;flex-shrink:0}
         .nav-profil:hover{background:rgba(9,101,111,.15)}
         .kembali-wrap{margin-bottom:14px}
@@ -74,9 +72,7 @@
         .grid{display:grid;gap:14px}
         .grid-4{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
         .grid-2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
-        /* Grid dua kolom (konten utama + panel samping). Dulu ditulis inline di
-           tiap view sehingga media query tidak bisa menimpanya; di layar sempit
-           kolom kiri terjepit sampai ~64px dan teks patah per kata. */
+
         .grid-dua{grid-template-columns:minmax(0,2fr) minmax(280px,1fr);align-items:start}
         .stat{display:flex;flex-direction:column;gap:2px}
         .stat .angka{font-size:22px;font-weight:800;color:#09656F;line-height:1.1}
@@ -95,31 +91,25 @@
             .kerangka{grid-template-columns:1fr}
             aside{position:static;height:auto}
             main{padding:16px}
-            /* Tabel admin lebih lebar dari kartunya (min-content tabel bisa
-               >500px). Tanpa wadah geser, tabel menembus keluar kartu dan
-               seluruh halaman ikut melebar. overflow-x:auto membuat HANYA area
-               kartu yang bisa digeser. Tinggi sengaja tidak dibatasi agar isi
-               tidak terpotong (overflow-x:auto memaksa overflow-y ikut auto). */
+
             .kartu{overflow-x:auto;-webkit-overflow-scrolling:touch}
-            /* Satu kolom: konten utama di atas, panel samping di bawah. */
+
             .grid-dua{grid-template-columns:minmax(0,1fr)}
-            /* Tiga dropdown filter tidak muat berdampingan; bertumpuk selebar
-               layar agar tidak memaksa scroll horizontal. */
+
             .filter{flex-direction:column;align-items:stretch}
             .filter > *{width:100%}
         }
         @media(max-width:640px){
-            /* Nama pengguna memakan ruang di bar atas; profil & Keluar tetap. */
+
             .atas .badge{display:none}
         }
     </style>
     @stack('gaya')
 </head>
-{{-- Skrip posisi gulir sidebar (dipakai bersama layout lain). --}}
 @include('partials.css-sidebar-admin')
 <body>
 @php
-    // Kelompok menu mengikuti daftar fitur admin (Akun, Data master, Akademik, Organisasi, Pemilihan, Pemantauan).
+
     $menu = [
         'Ringkasan' => [
             ['admin.dashboard', 'Dasbor', 'admin.dashboard'],
@@ -153,17 +143,10 @@
         ],
     ];
 @endphp
-{{-- Dua kelas sengaja dipakai: .kerangka menyediakan grid dasar di layout ini,
-     sedangkan .kerangka-admin adalah nama yang dipakai partial CSS bersama
-     (dipakai juga oleh /kelola/pemilihan, /kas, /denah). Dengan keduanya,
-     aturan responsif sidebar hanya ditulis sekali di partial. --}}
 <div class="kerangka kerangka-admin">
     @include('partials.sidebar-admin')
 
     <div>
-        {{-- Bar atas: halaman admin sebelumnya hanya punya bar breadcrumb,
-             sehingga terasa berbeda dari halaman lain. Strip ini menyamakannya
-             tanpa mengulang logo SakuSaka yang sudah ada di sidebar. --}}
         <div class="topbar">
             <div class="topbar-inner">
                 <span class="dot"></span>
@@ -200,8 +183,7 @@
     </div>
 </div>
 <script>
-    // Konfirmasi aksi berisiko: <form data-konfirmasi="...">. Teks diambil dari atribut HTML
-    // (sudah di-escape Blade), jadi aman untuk nama yang mengandung tanda kutip.
+
     document.addEventListener('submit', function (e) {
         var pesan = e.target.dataset ? e.target.dataset.konfirmasi : null;
         if (pesan && ! window.confirm(pesan)) { e.preventDefault(); }

@@ -4,16 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-// Fitur 8 (dashboard siswa): view perangkat kelas & organisasi.
-//
-// siswa_app sengaja TIDAK diberi hak baca pada tabel dasar pengurus_kelas,
-// pengurus_organisasi, jabatan, maupun kelas (prinsip least privilege, lihat
-// migrasi 000033). Halaman /siswa/perangkat karena itu membaca view sempit ini,
-// bukan tabelnya langsung.
-//
-// View memakai SQL SECURITY DEFINER (bawaan MySQL), sehingga siswa_app cukup
-// diberi SELECT pada view-nya saja; hak baca tabel dasar tetap dipegang pemilik
-// view dan tidak menular ke siswa_app.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -85,8 +75,8 @@ SQL);
 
             DB::unprepared('FLUSH PRIVILEGES');
         } catch (\Throwable $e) {
-            // Dinaikkan ke error, bukan warning: tanpa GRANT ini halaman
-            // /siswa/perangkat pasti gagal dengan error 1142 di produksi.
+
+
             Log::error('Migrasi 000016: gagal memberi hak SELECT view perangkat. Pesan: '.$e->getMessage());
 
             throw $e;
@@ -107,7 +97,7 @@ SQL);
             try {
                 DB::unprepared("REVOKE SELECT ON `{$db}`.`{$view}` FROM '{$siswa}'@'{$host}'");
             } catch (\Throwable $e) {
-                // REVOKE bisa gagal bila GRANT sudah tidak ada; bukan kegagalan.
+
             }
 
             DB::unprepared("DROP VIEW IF EXISTS {$view}");

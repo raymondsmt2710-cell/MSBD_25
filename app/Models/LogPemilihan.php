@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-// Audit pemilihan. Diisi oleh trigger, tidak pernah ditulis aplikasi.
 class LogPemilihan extends Model
 {
     protected $table = 'log_pemilihan';

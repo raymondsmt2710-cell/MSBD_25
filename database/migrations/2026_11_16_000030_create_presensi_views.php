@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Database View (materi View & Query Kompleks): JOIN panjang disimpan sekali, dibaca dengan DB::table('nama_view').
 return new class extends Migration
 {
     private function mysql(): bool

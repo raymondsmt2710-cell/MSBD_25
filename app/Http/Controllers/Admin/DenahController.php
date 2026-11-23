@@ -10,14 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Fitur 20 — Kelola denah tempat duduk semua kelas.
- *
- * Satu kelas boleh punya beberapa versi denah (riwayat rotasi tempat duduk),
- * tetapi hanya satu yang aktif. posisi_duduk menjamin satu kursi satu siswa
- * (unique id_denah+baris+kolom) dan satu siswa satu kursi (unique id_denah+id_siswa);
- * aplikasi menambah syarat bahwa siswa harus anggota kelas tersebut.
- */
 class DenahController extends AdminController
 {
     private const MEJA_GURU = ['depan_kiri', 'depan_tengah', 'depan_kanan'];
@@ -99,14 +91,14 @@ class DenahController extends AdminController
             ]);
 
             if ($data['isi'] === 'salin' && $lama) {
-                // Salin kursi dari denah aktif sebelumnya; kursi di luar ukuran baru diabaikan.
+
                 $baris = DB::table('posisi_duduk')->where('id_denah', $lama->id_denah)
                     ->where('baris', '<=', $data['jumlah_baris'])->where('kolom', '<=', $data['jumlah_kolom'])
                     ->whereIn('id_siswa', DB::table('anggota_kelas')->select('id_siswa')->where('id_kelas', $kelas->id_kelas))
                     ->get(['id_siswa', 'baris', 'kolom']);
                 $this->simpanKursi($denah->id_denah, $baris->map(fn ($p) => (array) $p)->all());
             } elseif (in_array($data['isi'], ['absen', 'acak'], true)) {
-                // Diisi baris demi baris dari depan, kiri ke kanan.
+
                 $this->simpanKursi($denah->id_denah, $siswa->values()->map(fn ($id, $i) => [
                     'id_siswa' => $id,
                     'baris' => intdiv($i, $data['jumlah_kolom']) + 1,
@@ -198,12 +190,12 @@ class DenahController extends AdminController
             return back()->with('error', 'Denah aktif tidak dapat dihapus. Aktifkan denah lain terlebih dahulu.');
         }
 
-        $denah->delete(); // posisi_duduk ikut terhapus (CASCADE)
+        $denah->delete();
 
         return redirect()->route('admin.denah.kelas', $denah->id_kelas)->with('success', 'Denah dihapus.');
     }
 
-    /** Urutan id siswa untuk pengisian otomatis. */
+
     private function urutanSiswa(Kelas $kelas, string $mode)
     {
         $q = DB::table('anggota_kelas as ak')

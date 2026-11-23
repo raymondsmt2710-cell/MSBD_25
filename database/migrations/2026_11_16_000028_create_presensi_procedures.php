@@ -3,8 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Stored Procedure presensi. Dibuat dengan DB::unprepared (materi bagian 1),
-// dipanggil dari Controller dengan DB::statement('CALL ...', [...]) + parameter OUT (@var).
 return new class extends Migration
 {
     private function mysql(): bool
@@ -22,7 +20,7 @@ return new class extends Migration
             DB::unprepared("DROP PROCEDURE IF EXISTS {$p}");
         }
 
-        // 1. Guru membuka sesi presensi untuk jadwalnya hari ini
+
         DB::unprepared(<<<'SQL'
 CREATE PROCEDURE sp_buka_sesi(
     IN p_id_jadwal INT,
@@ -61,7 +59,7 @@ BEGIN
 END
 SQL);
 
-        // 2. Membuat token sekali pakai (kode acak dibuat Laravel, waktu kedaluwarsa dihitung MySQL)
+
         DB::unprepared(<<<'SQL'
 CREATE PROCEDURE sp_buat_token_presensi(
     IN p_id_sesi INT,
@@ -91,9 +89,9 @@ BEGIN
 END
 SQL);
 
-        // 3. Siswa memindai QR: validasi + "konsumsi" token secara atomik + catat kehadiran.
-        //    Tidak ada START TRANSACTION di sini: transaksi dikelola Controller (DB::beginTransaction),
-        //    karena START TRANSACTION di dalam procedure akan meng-COMMIT transaksi yang sedang berjalan.
+
+
+
         DB::unprepared(<<<'SQL'
 CREATE PROCEDURE sp_scan_presensi(
     IN p_kode VARCHAR(64),
@@ -146,7 +144,7 @@ BEGIN
 END
 SQL);
 
-        // 4. Menutup sesi: siswa yang belum tercatat otomatis izin/sakit (jika ada pengajuan disetujui) atau alpa
+
         DB::unprepared(<<<'SQL'
 CREATE PROCEDURE sp_tutup_sesi(
     IN p_id_sesi INT,

@@ -15,7 +15,7 @@ class KasTest extends TestCase
 {
     use MembuatSekolah, RefreshDatabase;
 
-    /** @var array<string, mixed> */
+
     private array $sekolah;
 
     protected function setUp(): void
@@ -40,8 +40,8 @@ class KasTest extends TestCase
 
     public function test_wadah_tabel_transaksi_bisa_digeser_bukan_memotong(): void
     {
-        // overflow-hidden memotong kolom terakhir tabel transaksi sehingga datanya
-        // tidak bisa diakses sama sekali di layar sempit. Harus bisa digeser.
+
+
         $html = $this->actingAs($this->sekolah['admin'])
             ->get('/kas')
             ->assertOk()
@@ -249,7 +249,7 @@ class KasTest extends TestCase
             ->assertSee('Laporan Keuangan Kelas');
     }
 
-    /** @return array<string, mixed> */
+
     private function payloadTransaksi(): array
     {
         return [

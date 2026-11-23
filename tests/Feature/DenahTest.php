@@ -13,7 +13,7 @@ class DenahTest extends TestCase
 {
     use MembuatSekolah, RefreshDatabase;
 
-    /** @var array<string, mixed> */
+
     private array $sekolah;
 
     protected function setUp(): void
@@ -136,8 +136,8 @@ class DenahTest extends TestCase
             ->assertForbidden();
     }
 
-    // Dulu kursi di luar grid dihapus diam-diam (bug #9). Sekarang request
-    // ditolak agar tidak ada murid yang kehilangan tempat tanpa disadari.
+
+
     public function test_simpan_denah_menolak_memperkecil_grid_selama_ada_kursi_di_luar(): void
     {
         $denah = $this->buatDenah();
@@ -163,7 +163,7 @@ class DenahTest extends TestCase
             ])
             ->assertStatus(422);
 
-        // Ukuran denah dan seluruh kursi tetap utuh.
+
         $this->assertSame(6, $denah->fresh()->jumlah_baris);
         $this->assertSame(1, PosisiDuduk::where('baris', 6)->count());
         $this->assertSame(4, PosisiDuduk::where('id_denah', $denah->id_denah)->count());
@@ -173,7 +173,7 @@ class DenahTest extends TestCase
     {
         $denah = $this->buatDenah();
 
-        // Semua murid ditaruh di dalam grid 2x2 yang baru.
+
         PosisiDuduk::where('id_denah', $denah->id_denah)
             ->where(fn ($q) => $q->where('baris', '>', 2)->orWhere('kolom', '>', 2))
             ->delete();
@@ -215,7 +215,7 @@ class DenahTest extends TestCase
         return $denah;
     }
 
-    /** @return array<string, mixed> */
+
     private function payloadRuangan(): array
     {
         return [

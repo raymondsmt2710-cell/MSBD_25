@@ -6,14 +6,6 @@ use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Bug: siswa yang sama bisa didaftarkan sebagai ketua pada dua kandidat berbeda.
- * Akibatnya satu orang bisa "mencalonkan diri" dua kali (No. 01 dan No. 02),
- * sehingga pemilihan jadi tidak bermakna.
- *
- * Aturan yang benar: dalam satu pemilihan, seorang siswa hanya boleh muncul
- * sekali — baik sebagai ketua maupun wakil, di kandidat mana pun.
- */
 class KandidatGandaTest extends TestCase
 {
     use DatabaseTruncation;
@@ -29,11 +21,11 @@ class KandidatGandaTest extends TestCase
     {
         $d = $this->seedPemilihanDraf();
 
-        // Kandidat No.1 sudah memakai siswa[0] sebagai ketua.
+
         $this->actingAs($this->userDari($d['id_admin']))
             ->post(route('kelola.pemilihan.kandidat.simpan', $d['id_pemilihan']), [
                 'nomor_urut' => 3,
-                'id_siswa_ketua' => $d['id_siswa'][0],   // siswa yang sama
+                'id_siswa_ketua' => $d['id_siswa'][0],
             ])
             ->assertSessionHasErrors('id_siswa_ketua');
 
@@ -49,7 +41,7 @@ class KandidatGandaTest extends TestCase
             ->post(route('kelola.pemilihan.kandidat.simpan', $d['id_pemilihan']), [
                 'nomor_urut' => 3,
                 'id_siswa_ketua' => $d['id_siswa'][1],
-                'id_siswa_wakil' => $d['id_siswa'][0],   // sudah jadi ketua kandidat lain
+                'id_siswa_wakil' => $d['id_siswa'][0],
             ])
             ->assertSessionHasErrors('id_siswa_wakil');
 
@@ -61,7 +53,7 @@ class KandidatGandaTest extends TestCase
     {
         $d = $this->seedPemilihanDraf();
 
-        // Buat siswa baru lalu jadikan wakil pada kandidat No.1.
+
         $idWakil = DB::connection('mysql')->table('siswa')->insertGetId([
             'id_user' => DB::connection('mysql')->table('users')->insertGetId([
                 'username' => 'uji_wakil_baru',
@@ -77,7 +69,7 @@ class KandidatGandaTest extends TestCase
             ->where('id_pemilihan', $d['id_pemilihan'])->where('nomor_urut', 1)
             ->update(['id_siswa_wakil' => $idWakil]);
 
-        // Siswa ketiga yang belum dipakai, agar penolakan murni karena $idWakil sudah jadi wakil.
+
         $idKetiga = DB::connection('mysql')->table('siswa')->insertGetId([
             'id_user' => DB::connection('mysql')->table('users')->insertGetId([
                 'username' => 'uji_ketiga_wakil',
@@ -93,7 +85,7 @@ class KandidatGandaTest extends TestCase
             ->post(route('kelola.pemilihan.kandidat.simpan', $d['id_pemilihan']), [
                 'nomor_urut' => 3,
                 'id_siswa_ketua' => $idKetiga,
-                'id_siswa_wakil' => $idWakil,   // sudah jadi wakil kandidat No.1
+                'id_siswa_wakil' => $idWakil,
             ])
             ->assertSessionHasErrors('id_siswa_wakil');
     }
@@ -115,7 +107,7 @@ class KandidatGandaTest extends TestCase
     {
         $d = $this->seedPemilihanDraf();
 
-        // Dua siswa yang belum dipakai kandidat mana pun.
+
         $idKetiga = DB::connection('mysql')->table('siswa')->insertGetId([
             'id_user' => DB::connection('mysql')->table('users')->insertGetId([
                 'username' => 'uji_tambahan_ketiga',
@@ -155,7 +147,7 @@ class KandidatGandaTest extends TestCase
     {
         $d = $this->seedPemilihanDraf();
 
-        // Ubah kandidat No.1 tanpa mengganti ketua/wakilnya — harus tetap boleh.
+
         $this->actingAs($this->userDari($d['id_admin']))
             ->post(route('kelola.pemilihan.kandidat.simpan', $d['id_pemilihan']), [
                 'id_kandidat' => $d['id_kandidat'][0],

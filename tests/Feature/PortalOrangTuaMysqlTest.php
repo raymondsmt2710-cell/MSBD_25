@@ -7,14 +7,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-// Tes yang MEMERLUKAN MySQL sungguhan: view v_portal_anak_orang_tua dan
-// stored function fn_persentase_kehadiran / fn_jumlah_presensi tidak ada di sqlite.
-//
-// Kelas ini sengaja TIDAK memakai RefreshDatabase/DatabaseTruncation: ia hanya
-// membaca data yang sudah ada di database aplikasi, tidak menulis apa pun.
-// Semua pemeriksaan di sini adalah "halaman benar-benar bisa dirender", sehingga
-// kegagalan seperti 1267 (collation) atau grant yang kurang ikut terdeteksi —
-// hal yang tidak mungkin ditangkap tes sqlite.
 class PortalOrangTuaMysqlTest extends TestCase
 {
     protected function setUp(): void
@@ -28,7 +20,7 @@ class PortalOrangTuaMysqlTest extends TestCase
         $this->withoutMiddleware(DBDynamicConnection::class);
     }
 
-    /** Akun orang tua yang benar-benar ada di database (hasil seeder). */
+
     private function orangTuaSeeder(): User
     {
         $user = User::where('role', 'orang_tua')->orderBy('id_user')->first();
@@ -67,8 +59,8 @@ class PortalOrangTuaMysqlTest extends TestCase
             ->assertSee('Ringkasan Kehadiran');
     }
 
-    // Stored function dihitung MySQL. Kalau collation parameter salah, panggilan ini
-    // melempar 1267 dan halaman menjadi 500 — persis bug yang pernah terjadi.
+
+
     public function test_stored_function_kehadiran_bisa_dipanggil(): void
     {
         $anak = DB::table('v_portal_anak_orang_tua')->first();

@@ -78,8 +78,8 @@ class RekamSuaraTest extends TestCase
 
     public function test_ditolak_di_luar_rentang_waktu(): void
     {
-        // Pemilihan yang waktunya sudah lewat dibuat sebagai draf dulu, lalu dibuka.
-        // (Trigger menolak penambahan pemilih/kandidat pada pemilihan yang sudah berlangsung.)
+
+
         $d = $this->seedPemilihanDraf();
 
         $idBaru = DB::table('pemilihan')->insertGetId([

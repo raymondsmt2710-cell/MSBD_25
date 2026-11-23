@@ -10,16 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Fitur 8 — Kelola kelas dan wali kelas.
- * Fitur 9 — Penempatan siswa ke kelas (roster kelas digital).
- *
- * Aturan yang dijaga:
- *  - nama kelas unik dalam satu tahun ajaran;
- *  - seorang guru menjadi wali paling banyak satu kelas per tahun ajaran;
- *  - seorang siswa hanya berada di satu kelas per tahun ajaran;
- *  - nomor absen unik dalam satu kelas.
- */
 class KelasController extends AdminController
 {
     public function index(Request $request)
@@ -68,7 +58,7 @@ class KelasController extends AdminController
             ->orderBy('s.nama_siswa')
             ->get(['ak.id_anggota', 'ak.no_absen', 's.id_siswa', 's.nis', 's.nama_siswa', 's.jenis_kelamin', 's.status']);
 
-        // Kandidat penempatan: siswa aktif yang belum punya kelas di tahun ajaran ini.
+
         $belumBerkelas = DB::table('siswa as s')
             ->where('s.status', 'aktif')
             ->whereNotExists(function ($q) use ($kelas) {
@@ -103,8 +93,8 @@ class KelasController extends AdminController
 
     public function destroy(Kelas $kelas)
     {
-        // FK kelas → anggota/jadwal/kas/denah berjenis CASCADE: menghapus kelas yang berisi
-        // akan ikut menghapus riwayat presensi dan kas. Karena itu hanya kelas kosong yang boleh dihapus.
+
+
         if ($this->punyaIsi($kelas)) {
             return back()->with('error', 'Kelas tidak dapat dihapus karena sudah berisi siswa, jadwal, atau transaksi kas.');
         }
@@ -115,9 +105,9 @@ class KelasController extends AdminController
             ->with('success', "Kelas {$kelas->nama_kelas} dihapus.");
     }
 
-    // ------------------------------------------------------------------
-    // Fitur 9 — anggota kelas
-    // ------------------------------------------------------------------
+
+
+
 
     public function tambahAnggota(Request $request, Kelas $kelas)
     {
@@ -127,8 +117,8 @@ class KelasController extends AdminController
         ], ['id_siswa.*.exists' => 'Hanya siswa berstatus aktif yang dapat ditempatkan.']);
 
         $jumlah = DB::transaction(function () use ($kelas, $data) {
-            // Kunci kelas lain di tahun ajaran yang sama agar dua admin tidak menempatkan
-            // siswa yang sama ke dua kelas berbeda secara bersamaan.
+
+
             $sudahBerkelas = DB::table('anggota_kelas as ak')
                 ->join('kelas as k', 'k.id_kelas', '=', 'ak.id_kelas')
                 ->where('k.id_tahun_ajaran', $kelas->id_tahun_ajaran)
@@ -143,7 +133,7 @@ class KelasController extends AdminController
 
             $nomor = (int) DB::table('anggota_kelas')->where('id_kelas', $kelas->id_kelas)->max('no_absen');
 
-            // Nomor absen lanjutan mengikuti urutan nama siswa yang ditambahkan.
+
             $siswa = DB::table('siswa')->whereIn('id_siswa', $data['id_siswa'])->orderBy('nama_siswa')->pluck('id_siswa');
 
             DB::table('anggota_kelas')->insert($siswa->map(fn ($id) => [
@@ -173,7 +163,7 @@ class KelasController extends AdminController
         DB::transaction(function () use ($kelas, $data) {
             foreach ($data['no_absen'] as $idAnggota => $no) {
                 DB::table('anggota_kelas')
-                    ->where('id_kelas', $kelas->id_kelas)   // id_anggota dari kelas lain diabaikan
+                    ->where('id_kelas', $kelas->id_kelas)
                     ->where('id_anggota', (int) $idAnggota)
                     ->update(['no_absen' => $no]);
             }
@@ -204,7 +194,7 @@ class KelasController extends AdminController
         $baris = AnggotaKelas::where('id_kelas', $kelas->id_kelas)->findOrFail($anggota);
 
         DB::transaction(function () use ($kelas, $baris) {
-            // Jabatan dan kursi di kelas ini ikut dilepas; riwayat presensi tetap tersimpan.
+
             DB::table('pengurus_kelas')->where('id_kelas', $kelas->id_kelas)->where('id_siswa', $baris->id_siswa)->delete();
             DB::table('posisi_duduk')
                 ->whereIn('id_denah', DB::table('denah_kelas')->select('id_denah')->where('id_kelas', $kelas->id_kelas))
@@ -216,7 +206,7 @@ class KelasController extends AdminController
         return back()->with('success', 'Siswa dikeluarkan dari kelas. Jabatan dan kursinya di kelas ini ikut dilepas.');
     }
 
-    // ------------------------------------------------------------------
+
 
     private function dataForm(Kelas $kelas): array
     {

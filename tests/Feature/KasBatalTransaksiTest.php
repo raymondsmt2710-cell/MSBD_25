@@ -9,19 +9,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\MembuatSekolah;
 use Tests\TestCase;
 
-/**
- * Regresi bug #1: tombol "Batal" di halaman kas mengirim POST + FormData
- * dengan `_method=DELETE` tanpa header Content-Type. PHP tidak mengurai body
- * sehingga method override tidak terbaca dan request jatuh ke route
- * POST /kas/transaksi (store), gagal validasi, transaksi tidak pernah batal.
- *
- * Perbaikannya: kirim DELETE sungguhan dengan body JSON.
- */
 class KasBatalTransaksiTest extends TestCase
 {
     use MembuatSekolah, RefreshDatabase;
 
-    /** @var array<string, mixed> */
+
     private array $sekolah;
 
     protected function setUp(): void

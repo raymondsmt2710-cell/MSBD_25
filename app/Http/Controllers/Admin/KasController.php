@@ -10,14 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
-/**
- * Fitur 19 — Kelola kas semua kelas.
- *
- * Pencatatan harian tetap oleh bendahara. Admin melihat seluruh kelas dan boleh
- * membatalkan transaksi sebagai koreksi. Transaksi TIDAK pernah dihapus atau diubah
- * nominalnya: pembatalan hanya menandai is_batal beserta siapa, kapan, dan alasannya,
- * sehingga jejak audit tetap utuh dan saldo dihitung tanpa transaksi batal.
- */
 class KasController extends AdminController
 {
     public function index(Request $request)
@@ -33,7 +25,7 @@ class KasController extends AdminController
         $idTahun = $this->idTahunAjaranTerpilih($request->query('tahun'));
         $modeBatal = $filter['batal'] ?? 'semua';
 
-        // Saldo per kelas: hanya transaksi yang tidak dibatalkan.
+
         $saldo = DB::table('kelas as k')
             ->leftJoin('transaksi_kas as t', fn ($j) => $j->on('t.id_kelas', '=', 'k.id_kelas')->where('t.is_batal', false))
             ->where('k.id_tahun_ajaran', $idTahun ?? 0)
@@ -79,7 +71,7 @@ class KasController extends AdminController
         ], ['alasan_batal.required' => 'Alasan pembatalan wajib diisi untuk keperluan audit.']);
 
         $berubah = DB::transaction(function () use ($request, $transaksi, $data) {
-            // Update bersyarat: dua admin yang membatalkan bersamaan tidak saling menimpa jejak audit.
+
             $berubah = TransaksiKas::whereKey($transaksi->id_transaksi)
                 ->where('is_batal', false)
                 ->update([
@@ -89,9 +81,9 @@ class KasController extends AdminController
                     'alasan_batal' => $data['alasan_batal'],
                 ]);
 
-            // Transaksi hasil verifikasi iuran: kembalikan iurannya ke "belum bayar",
-            // sama seperti pembatalan oleh bendahara. Tanpa ini siswa tetap tampil lunas
-            // di matriks padahal uangnya tidak lagi dihitung dalam saldo.
+
+
+
             if ($berubah) {
                 IuranKas::where('id_transaksi', $transaksi->id_transaksi)->update([
                     'status' => StatusIuran::BelumBayar->value,

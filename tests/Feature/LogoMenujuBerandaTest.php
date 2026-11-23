@@ -8,18 +8,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Logo/brand di header harus selalu menuju BERANDA PERAN, di halaman mana pun.
- *
- * Sebelumnya tiap layout punya tujuan sendiri-sendiri:
- *   - layouts/presensi     -> halaman presensi (mengklik logo hanya memuat ulang
- *                             halaman yang sedang dibuka, terasa seperti refresh)
- *   - layouts/pemilihan    -> url('/') (pengguna login terlempar ke halaman tamu)
- *   - components/app-layout-> url('/') (sama, untuk halaman kas & denah)
- *
- * Yang benar: route(auth()->user()->role->home()) untuk pengguna yang login,
- * dan url('/') hanya untuk tamu.
- */
 class LogoMenujuBerandaTest extends TestCase
 {
     use DatabaseTruncation;
@@ -63,7 +51,7 @@ class LogoMenujuBerandaTest extends TestCase
         return User::find($idUser);
     }
 
-    /** Mengambil href logo dari HTML halaman. */
+
     private function hrefLogo(string $html): ?string
     {
         if (preg_match('/<a href="([^"]*)" class="brand">/', $html, $m)) {
@@ -77,10 +65,7 @@ class LogoMenujuBerandaTest extends TestCase
         return null;
     }
 
-    /**
-     * Halaman presensi: logo harus ke beranda peran, bukan memuat ulang halaman
-     * presensi itu sendiri.
-     */
+
     public function test_logo_di_halaman_presensi_menuju_beranda_siswa(): void
     {
         $siswa = $this->buatAkun('siswa', 'logo_siswa');
@@ -100,9 +85,7 @@ class LogoMenujuBerandaTest extends TestCase
         }
     }
 
-    /**
-     * Halaman pemilihan: logo harus ke beranda peran, bukan ke url('/').
-     */
+
     public function test_logo_di_halaman_pemilihan_menuju_beranda_siswa(): void
     {
         $siswa = $this->buatAkun('siswa', 'logo_pemilihan');
@@ -115,13 +98,7 @@ class LogoMenujuBerandaTest extends TestCase
         $this->assertSame(route('siswa.beranda'), $this->hrefLogo($html));
     }
 
-    /**
-     * Halaman kas & denah memakai components/app-layout.
-     *
-     * Keduanya hanya bisa dibuka bila pengguna punya kelas aktif (fitur rekan
-     * tim), jadi kelas dan keanggotaan disiapkan lebih dulu. Yang diuji di sini
-     * hanya tujuan logo, bukan isi halamannya.
-     */
+
     public function test_logo_di_halaman_kas_dan_denah_menuju_beranda_siswa(): void
     {
         $siswa = $this->buatAkun('siswa', 'logo_kas');
@@ -138,7 +115,7 @@ class LogoMenujuBerandaTest extends TestCase
         }
     }
 
-    /** Membuat tahun ajaran aktif, kelas, dan mendaftarkan siswa ke kelas itu. */
+
     private function siapkanKelasUntukSiswa(User $siswa): void
     {
         $idSiswa = (int) DB::table('siswa')->where('id_user', $siswa->id_user)->value('id_siswa');
@@ -155,9 +132,7 @@ class LogoMenujuBerandaTest extends TestCase
         ]);
     }
 
-    /**
-     * Versi guru: presensi, perangkat, kas, denah, dan kelola pemilihan.
-     */
+
     public function test_logo_di_semua_halaman_guru_menuju_beranda_guru(): void
     {
         $guru = $this->buatAkun('guru', 'logo_guru');
@@ -177,9 +152,7 @@ class LogoMenujuBerandaTest extends TestCase
         }
     }
 
-    /**
-     * Admin: sidebar dan halaman lain yang dibuka admin tetap menuju /admin.
-     */
+
     public function test_logo_di_halaman_admin_menuju_dashboard_admin(): void
     {
         $admin = $this->buatAkun('admin', 'logo_admin');
@@ -198,9 +171,7 @@ class LogoMenujuBerandaTest extends TestCase
         }
     }
 
-    /**
-     * Orang tua: portal anak.
-     */
+
     public function test_logo_di_portal_orang_tua_menuju_portal(): void
     {
         $ortu = $this->buatAkun('orang_tua', 'logo_ortu');
@@ -210,10 +181,7 @@ class LogoMenujuBerandaTest extends TestCase
         $this->assertSame(route('ortu.index'), $this->hrefLogo($html));
     }
 
-    /**
-     * Halaman sesi presensi guru juga harus memakai layout presensi yang sama,
-     * jadi logonya menuju beranda guru.
-     */
+
     public function test_logo_di_halaman_sesi_guru_menuju_beranda_guru(): void
     {
         $guru = $this->buatAkun('guru', 'logo_sesi');
@@ -247,10 +215,7 @@ class LogoMenujuBerandaTest extends TestCase
         $this->assertSame(route('guru.beranda'), $this->hrefLogo($html));
     }
 
-    /**
-     * Tamu (belum login) tetap diarahkan ke halaman depan, bukan ke beranda peran
-     * yang tidak ia punya.
-     */
+
     public function test_logo_untuk_tamu_menuju_halaman_depan(): void
     {
         $html = $this->get(route('login'))->assertOk()->getContent();

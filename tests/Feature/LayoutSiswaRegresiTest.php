@@ -7,12 +7,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Penjaga refactor layout bersama (Task 1 dashboard guru).
- *
- * Layout siswa dipecah menjadi layouts/dashboard (chrome) + layouts/siswa (nav).
- * Tes ini memastikan pemecahan itu tidak mengubah judul maupun isi halaman siswa.
- */
 class LayoutSiswaRegresiTest extends TestCase
 {
     use RefreshDatabase;
@@ -46,8 +40,8 @@ class LayoutSiswaRegresiTest extends TestCase
 
     public function test_judul_halaman_perangkat_tidak_tertimpa_judul_layout(): void
     {
-        // Regresi yang dicegah: @section('judul', ...) di layout perantara menimpa
-        // judul yang didaftarkan halaman anak, sehingga judul jadi "Beranda Siswa".
+
+
         $user = $this->buatSiswa();
 
         $html = $this->actingAs($user)
@@ -81,11 +75,7 @@ class LayoutSiswaRegresiTest extends TestCase
             ->assertSee(route('siswa.pemilihan.index'), false);
     }
 
-    /**
-     * Regresi: menu "Keuangan Kelas" dulu tidak pernah dirender untuk siswa,
-     * padahal halaman /kas memang terbuka bagi mereka (transparansi kas kelas).
-     * Akibatnya akun bendahara_kas tidak punya jalan masuk dari beranda.
-     */
+
     public function test_nav_siswa_memuat_tautan_keuangan_kelas(): void
     {
         $user = $this->buatSiswa();

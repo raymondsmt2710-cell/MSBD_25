@@ -14,6 +14,18 @@
     </div>
 </div>
 
+@if ($peranGanda)
+    {{-- Data lama: akun ini tercatat sebagai ayah dan ibu sekaligus. Aturan baru
+         sudah menolak input seperti ini, tetapi baris yang sudah ada tidak diubah
+         otomatis. Tandai agar admin tahu mana yang perlu dirapikan. --}}
+    <div class="err">
+        <strong>Peran ganda.</strong>
+        Akun ini tercatat sebagai <strong>ayah</strong> pada sebagian anak dan
+        <strong>ibu</strong> pada anak lain. Satu orang tua hanya boleh punya satu peran —
+        perbaiki hubungan yang salah menjadi <em>wali</em> bila memang berbeda.
+    </div>
+@endif
+
 <div class="kartu">
     <h2>Anak yang dapat dipantau ({{ $anak->count() }})</h2>
     @if ($anak->isEmpty())

@@ -63,6 +63,16 @@ class DatabaseSeeder extends Seeder
                 'jenis_kelamin' => 'L',
             ]);
 
+        $idGuruUser = $buatUser('guru2', 'guru');
+
+        $idGuru = DB::table('guru')->where('id_user', $idGuruUser)->value('id_guru')
+            ?? DB::table('guru')->insertGetId([
+                'id_user' => $idGuruUser,
+                'nip' => '198001012005011002',
+                'nama_guru' => 'Bapak Contoh Guru 2',
+                'jenis_kelamin' => 'P',
+            ]);
+
         // ---------- Kelas ----------
 
         $idKelas = DB::table('kelas')
@@ -94,8 +104,8 @@ class DatabaseSeeder extends Seeder
             $idSiswa = DB::table('siswa')->where('id_user', $idSiswaUser)->value('id_siswa')
                 ?? DB::table('siswa')->insertGetId([
                     'id_user' => $idSiswaUser,
-                    'nis' => '2026000'.$no,
-                    'nisn' => '00260000'.str_pad((string) $no, 2, '0', STR_PAD_LEFT),
+                    'nis' => '2026000' . $no,
+                    'nisn' => '00260000' . str_pad((string) $no, 2, '0', STR_PAD_LEFT),
                     'nama_siswa' => $nama,
                     'jenis_kelamin' => $no % 2 ? 'L' : 'P',
                     'status' => 'aktif',
@@ -116,30 +126,15 @@ class DatabaseSeeder extends Seeder
         }
 
         // ---------- Jadwal ----------
-        // Dibuat pada hari ini agar tombol "Buat Presensi" langsung bisa dicoba.
-        // Dicek per (kelas, mapel, guru, hari, jam) supaya tidak menumpuk saat diulang.
-
-        $hari = [1 => 'senin', 2 => 'selasa', 3 => 'rabu', 4 => 'kamis', 5 => 'jumat', 6 => 'sabtu'][$now->dayOfWeek] ?? 'senin';
-
-        $sudahJadwal = DB::table('jadwal_pelajaran')
-            ->where('id_kelas', $idKelas)
-            ->where('id_mapel', $idMapel)
-            ->where('id_guru', $idGuru)
-            ->where('hari', $hari)
-            ->where('jam_mulai', '07:30:00')
-            ->exists();
-
-        if (! $sudahJadwal) {
-            DB::table('jadwal_pelajaran')->insert([
-                'id_kelas' => $idKelas,
-                'id_mapel' => $idMapel,
-                'id_guru' => $idGuru,
-                'semester' => 'ganjil',
-                'hari' => $hari,
-                'jam_mulai' => '07:30:00',
-                'jam_selesai' => '09:00:00',
-            ]);
-        }
+        // SENGAJA TIDAK dibuat di sini.
+        //
+        // Versi sebelumnya membuat satu jadwal "hari ini" supaya tombol "Buat
+        // Presensi" langsung bisa dicoba. Akibatnya roster guru terisi satu baris
+        // tanpa guru pernah membuatnya, dan baris itu muncul di hari yang salah
+        // (mis. jadwal "Senin" terbentuk saat seeder dijalankan hari Kamis).
+        //
+        // Jadwal sekarang hanya dibuat lewat panel admin (/admin/jadwal) supaya
+        // data yang tampil selalu berasal dari keputusan pengguna.
 
         // ---------- Seeder fitur lain ----------
 

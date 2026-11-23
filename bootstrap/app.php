@@ -15,6 +15,26 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Aplikasi ini berjalan di belakang proxy yang menangani HTTPS:
+        // cloudflared (lokal) atau Nginx (produksi). Proxy meneruskan header
+        // X-Forwarded-Proto: https, tetapi Laravel mengabaikannya selama proxy
+        // belum dipercaya.
+        //
+        // Akibatnya request dianggap http meski pengunjung memakai https:
+        //   - asset() menghasilkan http://... di halaman https://
+        //   - browser memblokirnya sebagai mixed content (pemindai QR gagal dimuat)
+        //   - cookie sesi tidak ditandai Secure
+        //
+        // at: '*' aman karena satu-satunya jalan masuk adalah proxy itu sendiri;
+        // port 8000 tidak terbuka langsung ke internet.
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO
+        );
+
         // append => berjalan SETELAH StartSession, sehingga Auth::check() sudah tahu siapa yang login
         $middleware->web(append: [
             // Mencabut akses akun yang dinonaktifkan pada setiap request.

@@ -266,11 +266,17 @@
                                     <template x-for="(label, bulan) in matriks.bulan" :key="bulan">
                                         <td class="border-b border-gray-50 p-1 text-center">
                                             <button @click="toggleIuran(row, bulan)"
-                                                    :disabled="!bisaKelola"
+                                                    :disabled="!bisaKelola && !bisaLapor(row, bulan)"
                                                     :title="row.iuran[bulan]?.catatan ?? ''"
                                                     :class="chipClass(row.iuran[bulan]?.status)"
                                                     class="w-full min-w-[3rem] rounded-md border px-1 py-1.5 text-[10px] font-medium transition hover:opacity-80 disabled:cursor-default">
                                                 <span x-text="statusLabel(row.iuran[bulan]?.status)"></span>
+                                                {{-- Penanda bukti: terlihat bila ada bukti terunggah. --}}
+                                                <template x-if="row.iuran[bulan]?.bukti_tampil">
+                                                    <span @click.stop="lihatBukti(row.iuran[bulan])"
+                                                          title="Lihat bukti pembayaran"
+                                                          class="ml-0.5 inline-block align-middle text-[11px] underline">bukti</span>
+                                                </template>
                                             </button>
                                         </td>
                                     </template>

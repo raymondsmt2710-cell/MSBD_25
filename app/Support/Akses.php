@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Enums\Role;
+use App\Models\IuranKas;
 use App\Models\Jabatan;
 use App\Models\Kelas;
 use App\Models\User;
@@ -127,6 +128,31 @@ final class Akses
         }
 
         return null;
+    }
+
+    /**
+     * Orang tua boleh melaporkan pembayaran iuran HANYA untuk anaknya sendiri.
+     *
+     * Ini bukan hak kelola: laporan hanya mengubah status menjadi "menunggu"
+     * dan tidak dihitung sebagai pemasukan sampai bendahara memverifikasi.
+     */
+    public function bisaLaporIuran(User $user, IuranKas $iuran): bool
+    {
+        if ($user->role !== Role::OrangTua) {
+            return false;
+        }
+
+        $orangTua = $user->orangTua;
+        if (! $orangTua) {
+            return false;
+        }
+
+        // Iuran harus milik anak kandung/wali dari akun ini, dan anak itu
+        // masih anggota kelas tersebut.
+        return $orangTua->siswa()
+            ->where('siswa.id_siswa', $iuran->id_siswa)
+            ->whereHas('anggotaKelas', fn ($q) => $q->where('id_kelas', $iuran->id_kelas))
+            ->exists();
     }
 
     public function namaJabatan(User $user, Kelas $kelas): Collection

@@ -210,9 +210,17 @@ export default function kasPage(initial) {
         },
 
         async toggleIuran(siswa, bulan) {
-            if (!this.bisaKelola) return;
-
             const cell = siswa.iuran[bulan];
+
+            // Orang tua: klik sel = laporkan pembayaran anaknya (unggah bukti).
+            // Dilakukan sebelum cek bisaKelola karena orang tua bukan pengelola.
+            if (!this.bisaKelola) {
+                if (this.bisaLapor(siswa, bulan)) {
+                    this.laporIuran(siswa, bulan);
+                }
+                return;
+            }
+
             if (!cell) {
                 this.showToast('Tagihan bulan ini belum dibuat. Klik "Buat tagihan".', 'error');
                 return;
@@ -276,6 +284,71 @@ export default function kasPage(initial) {
             } catch (error) {
                 this.showToast(error.message, 'error');
             }
+        },
+
+        /**
+         * Apakah pengguna boleh melaporkan pembayaran sel ini.
+         * Hanya orang tua, hanya untuk anaknya sendiri, dan hanya bila iuran
+         * belum terverifikasi. Batas sebenarnya dijaga Gate iuran.lapor di server.
+         */
+        bisaLapor(row, bulan) {
+            if (this.bisaKelola) return false;
+            const cell = row?.iuran?.[bulan];
+            if (!cell || cell.status === 'terverifikasi') return false;
+            return Boolean(this.bisaLaporAnak?.[row.id_siswa]);
+        },
+
+        /** Orang tua mengunggah bukti bayar untuk anaknya. */
+        laporIuran(row, bulan) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', async () => {
+                const file = input.files?.[0];
+                if (!file) return;
+
+                const cell = row.iuran[bulan];
+                if (!cell?.id_iuran) {
+                    this.showToast('Tagihan bulan ini belum dibuat bendahara.', 'error');
+                    return;
+                }
+
+                const data = new FormData();
+                data.append('bukti', file);
+                data.append('_token', this.csrf());
+
+                try {
+                    const res = await fetch(`/kas/iuran/${cell.id_iuran}/lapor`, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': this.csrf(),
+                        },
+                        body: data,
+                    });
+                    const payload = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        const pesan = payload.errors
+                            ? Object.values(payload.errors).flat()[0]
+                            : (payload.message ?? 'Gagal mengirim bukti.');
+                        throw new Error(pesan);
+                    }
+                    this.showToast(payload.message ?? 'Bukti terkirim.');
+                    await this.muatData();
+                } catch (error) {
+                    this.showToast(error.message, 'error');
+                }
+            });
+
+            input.click();
+        },
+
+        /** Bendahara / orang tua membuka bukti pembayaran. */
+        lihatBukti(cell) {
+            if (!cell?.bukti_tampil) return;
+            window.open(cell.bukti_tampil, '_blank', 'noopener');
         },
 
         chipClass(status) {

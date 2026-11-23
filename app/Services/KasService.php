@@ -8,6 +8,7 @@ use App\Models\TransaksiKas;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class KasService
 {
@@ -126,6 +127,14 @@ class KasService
                             'status' => $item->status->value,
                             'nominal' => (float) $item->nominal,
                             'catatan' => $item->catatan,
+                            // Bukti yang diunggah orang tua harus bisa diperiksa
+                            // bendahara sebelum memverifikasi.
+                            'bukti_url' => $item->bukti_url,
+                            'bukti_tampil' => $item->bukti_url
+                                ? (str_starts_with($item->bukti_url, 'http')
+                                    ? $item->bukti_url
+                                    : Storage::disk('public')->url($item->bukti_url))
+                                : null,
                         ] : null];
                     })->all(),
                 ];

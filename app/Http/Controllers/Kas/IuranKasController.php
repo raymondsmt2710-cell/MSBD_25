@@ -8,6 +8,7 @@ use App\Enums\StatusIuran;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Kas\BatalIuranRequest;
 use App\Http\Requests\Kas\GenerateIuranRequest;
+use App\Http\Requests\Kas\LaporIuranRequest;
 use App\Http\Requests\Kas\VerifikasiIuranRequest;
 use App\Models\IuranKas;
 use App\Models\Kelas;
@@ -15,6 +16,7 @@ use App\Models\TransaksiKas;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class IuranKasController extends Controller
 {
@@ -105,6 +107,44 @@ class IuranKasController extends Controller
         return response()->json([
             'message' => 'Status iuran diperbarui.',
             'iuran' => $iuran->fresh('transaksi'),
+        ]);
+    }
+
+    /**
+     * Orang tua melaporkan pembayaran iuran anaknya.
+     *
+     * Sengaja TIDAK memakai kas.kelola: uang belum masuk. Status hanya menjadi
+     * "menunggu" dan transaksi kas baru dibuat saat bendahara memverifikasi.
+     */
+    public function lapor(LaporIuranRequest $request, IuranKas $iuran): JsonResponse
+    {
+        abort_if(
+            $iuran->status === StatusIuran::Terverifikasi,
+            422,
+            'Iuran ini sudah diverifikasi bendahara.',
+        );
+
+        $data = $request->validated();
+
+        $bukti = $request->file('bukti')->store('kas/bukti', 'public');
+
+        // Ganti bukti lama bila ada, agar tidak menumpuk file yatim.
+        if ($iuran->bukti_url && ! str_starts_with($iuran->bukti_url, 'http')) {
+            Storage::disk('public')->delete($iuran->bukti_url);
+        }
+
+        $iuran->update([
+            'status' => StatusIuran::Menunggu,
+            'bukti_url' => $bukti,
+            'catatan' => $data['catatan'] ?? null,
+            // Nominal hanya boleh diusulkan lebih kecil/sama; nilai tagihan
+            // tetap ditetapkan bendahara lewat generate().
+            'nominal' => $data['nominal'] ?? $iuran->nominal,
+        ]);
+
+        return response()->json([
+            'message' => 'Bukti pembayaran terkirim. Menunggu verifikasi bendahara.',
+            'iuran' => $iuran->fresh(),
         ]);
     }
 

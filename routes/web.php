@@ -159,6 +159,9 @@ Route::middleware('auth')->prefix('kas')->name('kas.')->group(function () {
     Route::post('/iuran/generate', [IuranKasController::class, 'generate'])->name('iuran.generate');
     Route::patch('/iuran/{iuran}/verifikasi', [IuranKasController::class, 'verifikasi'])->name('iuran.verifikasi');
     Route::patch('/iuran/{iuran}/batal', [IuranKasController::class, 'batal'])->name('iuran.batal');
+    // Orang tua melaporkan pembayaran anaknya (unggah bukti). Otorisasi ada di
+    // Gate iuran.lapor, bukan kas.kelola.
+    Route::post('/iuran/{iuran}/lapor', [IuranKasController::class, 'lapor'])->name('iuran.lapor');
 
     Route::get('/export', [ExportKasController::class, 'csv'])->name('export');
     Route::get('/cetak', [ExportKasController::class, 'cetak'])->name('cetak');

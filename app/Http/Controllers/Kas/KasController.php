@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Kas;
 
 use App\Enums\KategoriKas;
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\Kelas;
+use App\Models\User;
 use App\Services\KasService;
 use App\Support\Akses;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -47,6 +50,24 @@ class KasController extends Controller
         abort_if(! $kelas, 403, 'Anda belum terhubung ke kelas aktif mana pun.');
 
         return $kelas;
+    }
+
+    /**
+     * ID siswa yang pembayarannya boleh dilaporkan akun ini.
+     *
+     * Hanya orang tua, dan hanya untuk anaknya sendiri. Peran lain mendapat
+     * daftar kosong: bendahara memakai jalur verifikasi, bukan laporan.
+     *
+     * @param  Collection<int, int>|null  $idSiswaTerlihat
+     * @return array<int, bool>
+     */
+    private function idSiswaBolehLapor(User $user, ?Collection $idSiswaTerlihat): array
+    {
+        if ($user->role !== Role::OrangTua || $idSiswaTerlihat === null) {
+            return [];
+        }
+
+        return $idSiswaTerlihat->mapWithKeys(fn ($id) => [(int) $id => true])->all();
     }
 
     /** @return array<string, mixed> */
@@ -88,6 +109,10 @@ class KasController extends Controller
                 ->all(),
             'anggota' => $kelas->anggotaKelas()
                 ->with('siswa:id_siswa,nama_siswa,nis')
+                // Orang tua hanya boleh menerima data anaknya sendiri, sama
+                // seperti matriks iuran. Tanpa filter ini nama & NIS seluruh
+                // teman sekelas ikut terkirim ke browser orang tua.
+                ->when($idSiswaTerlihat !== null, fn ($q) => $q->whereIn('id_siswa', $idSiswaTerlihat))
                 ->get()
                 ->sortBy(fn ($item) => $item->no_absen ?? 999)
                 ->map(fn ($item) => [
@@ -99,6 +124,9 @@ class KasController extends Controller
                 ->values()
                 ->all(),
             'bisaKelola' => Gate::allows('kas.kelola', $kelas),
+            // ID siswa yang boleh dilaporkan pembayarannya oleh akun ini
+            // (orang tua: hanya anaknya sendiri). Kosong bagi peran lain.
+            'bisaLaporAnak' => $this->idSiswaBolehLapor($user, $idSiswaTerlihat),
             'kategori' => KategoriKas::values(),
             'filter' => $filter,
             'tahun' => $tahun,

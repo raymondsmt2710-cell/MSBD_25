@@ -109,6 +109,24 @@ Buka `http://127.0.0.1:8000`. Semua akun demo memakai password `password`:
 | `siswa2` | Siswa (Bendahara) | Catat dan verifikasi kas kelas |
 | `ortu1` | Orang tua | Lihat kas dan denah anak (hanya-baca) |
 
+### Orang tua melaporkan pembayaran iuran
+
+Orang tua **tidak** membayar lewat aplikasi dan **tidak** memverifikasi apa pun.
+Alurnya:
+
+1. Orang tua membuka halaman kas. Yang tampil hanya baris **anaknya sendiri**.
+2. Klik sel iuran anaknya -> pilih foto bukti transfer. Status menjadi
+   **Menunggu**. Uang belum dihitung sebagai pemasukan.
+3. Bendahara membuka bukti tersebut (tautan "bukti" pada sel), lalu
+   **memverifikasi** atau menolaknya. Baru pada titik ini transaksi kas dibuat.
+
+Batas yang dijaga (diuji di `IuranOrangTuaTest`): orang tua tidak pernah
+mendapat hak kelola, tidak dapat melaporkan untuk anak orang lain, dan tidak
+dapat mengubah status menjadi terverifikasi.
+
+> **Catatan teknis:** unggah bukti memerlukan `public/storage` yang tertaut.
+> Jalankan `php artisan storage:link` sekali di setiap mesin.
+
 ### Peran "Siswa Bendahara Kas"
 
 Selain empat peran bawaan (`admin`, `guru`, `siswa`, `orang_tua`), tersedia peran

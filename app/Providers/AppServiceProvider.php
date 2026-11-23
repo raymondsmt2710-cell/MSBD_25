@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\IuranKas;
 use App\Models\Kelas;
 use App\Models\Pemilihan;
 use App\Models\User;
@@ -31,6 +32,9 @@ class AppServiceProvider extends ServiceProvider
         // Otorisasi terpusat (lihat docs/superpowers/specs/2026-11-16-kas-dan-denah-design.md).
         Gate::define('kas.lihat', fn (User $user, Kelas $kelas) => app(Akses::class)->bisaLihatKelas($user, $kelas));
         Gate::define('kas.kelola', fn (User $user, Kelas $kelas) => app(Akses::class)->bisaKelolaKas($user, $kelas));
+        // Orang tua melaporkan pembayaran iuran anaknya (unggah bukti).
+        // Terpisah dari kas.kelola: uang tetap diverifikasi bendahara.
+        Gate::define('iuran.lapor', fn (User $user, IuranKas $iuran) => app(Akses::class)->bisaLaporIuran($user, $iuran));
         Gate::define('denah.kelola-kursi', fn (User $user, Kelas $kelas) => app(Akses::class)->bisaKelolaKursi($user, $kelas));
         Gate::define('denah.kelola-ruangan', fn (User $user) => app(Akses::class)->bisaKelolaRuangan($user));
 

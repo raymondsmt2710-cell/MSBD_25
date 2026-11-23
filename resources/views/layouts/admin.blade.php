@@ -137,7 +137,11 @@
         ],
     ];
 @endphp
-<div class="kerangka">
+{{-- Dua kelas sengaja dipakai: .kerangka menyediakan grid dasar di layout ini,
+     sedangkan .kerangka-admin adalah nama yang dipakai partial CSS bersama
+     (dipakai juga oleh /kelola/pemilihan, /kas, /denah). Dengan keduanya,
+     aturan responsif sidebar hanya ditulis sekali di partial. --}}
+<div class="kerangka kerangka-admin">
     @include('partials.sidebar-admin')
 
     <div>

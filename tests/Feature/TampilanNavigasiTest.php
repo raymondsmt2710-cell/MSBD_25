@@ -214,4 +214,44 @@ class TampilanNavigasiTest extends TestCase
             'Item menu yang sedang dibuka harus tetap ditandai .aktif.'
         );
     }
+
+    public function test_css_sidebar_admin_punya_aturan_hamburger(): void
+    {
+        // Sidebar admin dipakai empat layout, jadi aturannya harus ada di partial
+        // bersama. Tes ini menjaga agar aturan responsif tidak hilang saat partial
+        // dirapikan: tanpa .sidebar-terbuka, tombol hamburger tidak mengendalikan
+        // apa pun; tanpa max-width, halaman melebar horizontal di ponsel.
+        $admin = $this->buatAkun('admin', 'nav_admin_css');
+
+        $html = $this->actingAs($admin)
+            ->get(route('admin.kelas.index'))
+            ->assertOk()
+            ->getContent();
+
+        // Layout admin WAJIB memakai kelas yang sama dengan partial CSS, kalau tidak
+        // aturan responsif di bawah tidak akan pernah berlaku di /admin/*.
+        $this->assertMatchesRegularExpression(
+            '/<div class="kerangka kerangka-admin">/',
+            $html,
+            'Pembungkus layout admin harus memakai kelas kerangka-admin.'
+        );
+
+        $this->assertMatchesRegularExpression(
+            '/\.sidebar-terbuka\s+nav|\.sidebar-terbuka\s*>\s*nav|\.sidebar-terbuka\s+#menu-admin/',
+            $html,
+            'CSS harus punya aturan yang menampilkan nav saat .sidebar-terbuka.'
+        );
+
+        $this->assertMatchesRegularExpression(
+            '/\.sidebar-toggle\s*\{[^}]*display\s*:\s*none/',
+            $html,
+            'Tombol hamburger harus disembunyikan di desktop (display:none sebagai default).'
+        );
+
+        $this->assertMatchesRegularExpression(
+            '/@media\s*\(max-width:\s*860px\)/',
+            $html,
+            'Perilaku ponsel harus dibatasi media query 860px.'
+        );
+    }
 }

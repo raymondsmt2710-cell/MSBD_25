@@ -112,8 +112,84 @@ class AkunDanMasterTest extends AdminTestCase
         $this->assertSame([$idOrtu2], $utama->map(fn ($v) => (int) $v)->all());
     }
 
-    public function test_hanya_satu_tahun_ajaran_aktif_dan_periode_tidak_tumpang_tindih(): void
+    public function test_akun_orang_tua_tidak_boleh_ayah_dan_ibu_sekaligus(): void
     {
+        // Satu orang tidak mungkin menjadi ayah bagi satu anak dan ibu bagi anak
+        // lain. Aturan lama hanya memeriksa per SISWA, sehingga akun yang sudah
+        // 'ayah' di anak A bisa ditambahkan 'ibu' di anak B — dan data seperti itu
+        // benar-benar ada (Dani Sigalingging: ayah 2 anak, ibu 1 anak).
+        //
+        // Fixture: $this->d['id_ortu'] sudah 'ayah' untuk id_siswa1.
+        $this->sebagaiAdmin()->post(route('admin.orang-tua.anak.simpan', $this->d['id_ortu']), [
+            'id_siswa' => $this->d['id_siswa2'], 'hubungan' => 'ibu',
+        ])->assertSessionHas('error');
+
+        // Tidak ada baris baru yang tercipta.
+        $this->assertSame(
+            0,
+            DB::table('orang_tua_siswa')
+                ->where('id_orang_tua', $this->d['id_ortu'])
+                ->where('id_siswa', $this->d['id_siswa2'])
+                ->count()
+        );
+
+        // Peran yang sama untuk anak lain tetap boleh (ayah juga untuk Budi).
+        $this->sebagaiAdmin()->post(route('admin.orang-tua.anak.simpan', $this->d['id_ortu']), [
+            'id_siswa' => $this->d['id_siswa2'], 'hubungan' => 'ayah',
+        ])->assertSessionHas('success');
+    }
+
+    public function test_akun_orang_tua_boleh_wali_walau_sudah_ayah(): void
+    {
+        // 'wali' tidak menyatakan jenis kelamin, jadi tidak bertentangan dengan
+        // peran ayah/ibu yang sudah ada.
+        $this->sebagaiAdmin()->post(route('admin.orang-tua.anak.simpan', $this->d['id_ortu']), [
+            'id_siswa' => $this->d['id_siswa3'], 'hubungan' => 'wali',
+        ])->assertSessionHas('success');
+    }
+
+    public function test_mengubah_hubungan_ke_peran_yang_bertentangan_ditolak(): void
+    {
+        // Jalur ubah (PUT) harus memakai aturan yang sama, kalau tidak aturan ini
+        // bisa dilewati lewat tombol "Ubah hubungan".
+        $idOrtu3 = DB::table('orang_tua')->insertGetId(['id_user' => $this->buatUser('ortu3', 'orang_tua'), 'nama' => 'Ibu Budi']);
+        DB::table('orang_tua_siswa')->insert([
+            'id_orang_tua' => $idOrtu3, 'id_siswa' => $this->d['id_siswa2'],
+            'hubungan' => 'ibu', 'is_kontak_utama' => false,
+        ]);
+
+        // ortu3 sudah 'ibu' di Budi; ubah menjadi 'ayah' harus ditolak.
+        $this->sebagaiAdmin()->put(route('admin.orang-tua.anak.ubah', [$idOrtu3, $this->d['id_siswa2']]), [
+            'hubungan' => 'ayah',
+        ])->assertSessionHas('error');
+
+        $this->assertSame(
+            'ibu',
+            DB::table('orang_tua_siswa')
+                ->where('id_orang_tua', $idOrtu3)
+                ->where('id_siswa', $this->d['id_siswa2'])
+                ->value('hubungan')
+        );
+    }
+
+    public function test_perintah_laporan_menampilkan_akun_orang_tua_berperan_ganda(): void
+    {
+        // Data lama bisa berisi akun yang 'ayah' di satu anak dan 'ibu' di anak
+        // lain (terbukti ada di data nyata). Aturan baru tidak mengubah data lama,
+        // jadi sediakan perintah untuk MELAPORKANNYA agar bisa diperbaiki manual.
+        DB::table('orang_tua_siswa')->insert([
+            'id_orang_tua' => $this->d['id_ortu'],
+            'id_siswa' => $this->d['id_siswa2'],
+            'hubungan' => 'ibu', // sengaja campur: id_ortu sudah 'ayah' di siswa1
+            'is_kontak_utama' => false,
+        ]);
+
+        $this->artisan('orang-tua:periksa-peran')
+            ->expectsOutputToContain('Ayah Ani')
+            ->assertExitCode(0);
+    }
+
+    public function test_hanya_satu_tahun_ajaran_aktif_dan_periode_tidak_tumpang_tindih(): void    {
         $this->sebagaiAdmin()->post(route('admin.tahun-ajaran.store'), [
             'nama' => '2027/2028', 'tanggal_mulai' => '2027-01-01', 'tanggal_selesai' => '2027-12-31',
         ])->assertSessionHasErrors('tanggal_mulai');

@@ -180,19 +180,51 @@ class OrangTuaController extends AdminController
     }
 
     /** Pesan galat bila siswa sudah punya ayah/ibu lain; null bila aman. */
+    /**
+     * Periksa apakah hubungan yang diminta bertentangan dengan data yang ada.
+     *
+     * Dua aturan:
+     *   1. Per SISWA: satu siswa hanya boleh punya satu ayah dan satu ibu.
+     *   2. Per AKUN ORANG TUA: satu akun hanya boleh punya satu peran untuk
+     *      SEMUA anaknya. Orang yang sama tidak mungkin ayah bagi satu anak dan
+     *      ibu bagi anak lain — aturan 1 saja tidak menangkap kasus itu karena
+     *      ia hanya melihat satu siswa.
+     *
+     * 'wali' tidak menyatakan jenis kelamin, jadi selalu boleh dan tidak pernah
+     * dianggap bertentangan.
+     */
     private function bentrokHubungan(int $idSiswa, string $hubungan, int $abaikanIdOrangTua): ?string
     {
         if ($hubungan === 'wali') {
             return null;
         }
 
+        // Aturan 1: siswa ini sudah punya ayah/ibu lain.
         $sudahAda = DB::table('orang_tua_siswa')
             ->where('id_siswa', $idSiswa)
             ->where('hubungan', $hubungan)
             ->where('id_orang_tua', '!=', $abaikanIdOrangTua)
             ->exists();
 
-        return $sudahAda ? "Siswa ini sudah memiliki {$hubungan} yang terdaftar. Gunakan hubungan \"wali\" atau ubah data yang ada." : null;
+        if ($sudahAda) {
+            return "Siswa ini sudah memiliki {$hubungan} yang terdaftar. Gunakan hubungan \"wali\" atau ubah data yang ada.";
+        }
+
+        // Aturan 2: akun orang tua ini sudah berperan sebagai peran LAIN di anak
+        // mana pun (ayah/ibu). Peran yang sama di anak lain tetap boleh.
+        $peranLain = DB::table('orang_tua_siswa')
+            ->where('id_orang_tua', $abaikanIdOrangTua)
+            ->where('hubungan', '!=', $hubungan)
+            ->where('hubungan', '!=', 'wali')
+            ->value('hubungan');
+
+        if ($peranLain !== null) {
+            return "Akun ini sudah terdaftar sebagai {$peranLain} pada anak lain. "
+                .'Satu akun orang tua hanya boleh punya satu peran; '
+                .'gunakan hubungan "wali" bila memang berbeda.';
+        }
+
+        return null;
     }
 
     private function validasi(Request $request): array

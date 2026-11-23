@@ -374,4 +374,297 @@ class DashboardSiswaTest extends TestCase
             ->assertSee('id="ringkasan"', false)
             ->assertSee('id="roster"', false);
     }
+
+    // ---------- Pengisi beranda: jadwal, riwayat, pemilihan ----------
+
+    public function test_beranda_menampilkan_jadwal_hari_ini(): void
+    {
+        // Roster disimpan per nama hari, jadi jadwal harus memakai hari ini
+        // (bukan tanggal) supaya cocok dengan query di controller.
+        $user = $this->buatSiswa('Siswa Jadwal', '20260101');
+        $idSiswa = $user->siswa->id_siswa;
+
+        [$idKelas, $idGuru, $idMapel] = $this->siapkanKelas($idSiswa, 'X UJI 1');
+
+        DB::table('jadwal_pelajaran')->insert([
+            'id_kelas' => $idKelas,
+            'id_mapel' => $idMapel,
+            'id_guru' => $idGuru,
+            'semester' => 'ganjil',
+            'hari' => strtolower(\Illuminate\Support\Carbon::today()->locale('id')->isoFormat('dddd')),
+            'jam_mulai' => '07:30:00',
+            'jam_selesai' => '09:00:00',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->assertSee('Jadwal Pelajaran')
+            ->assertSee('Matematika')
+            ->assertSee('07:30');
+    }
+
+    public function test_beranda_menampilkan_pesan_bila_tidak_ada_jadwal(): void
+    {
+        // Hari tanpa jadwal tetap harus punya isi, bukan kartu kosong.
+        $user = $this->buatSiswa('Siswa Kosong', '20260102');
+
+        $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->assertSee('Jadwal Pelajaran')
+            ->assertSee('Tidak ada jadwal pelajaran untuk hari ini');
+    }
+
+    public function test_beranda_menampilkan_riwayat_presensi_terakhir(): void
+    {
+        $user = $this->buatSiswa('Siswa Riwayat', '20260103');
+        $idSiswa = $user->siswa->id_siswa;
+
+        [$idKelas, $idGuru, $idMapel] = $this->siapkanKelas($idSiswa, 'X UJI 2');
+
+        $idJadwal = DB::table('jadwal_pelajaran')->insertGetId([
+            'id_kelas' => $idKelas,
+            'id_mapel' => $idMapel,
+            'id_guru' => $idGuru,
+            'semester' => 'ganjil',
+            'hari' => 'senin',
+            'jam_mulai' => '07:30:00',
+            'jam_selesai' => '09:00:00',
+        ]);
+
+        $idSesi = DB::table('sesi_presensi')->insertGetId([
+            'id_jadwal' => $idJadwal,
+            'tanggal' => '2026-11-10',
+            'status' => 'ditutup',
+        ]);
+
+        DB::table('presensi')->insert([
+            'id_sesi' => $idSesi,
+            'id_siswa' => $idSiswa,
+            'status' => 'hadir',
+            'metode' => 'manual',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->assertSee('Presensi Terakhir')
+            ->assertSee('10 Nov 2026')
+            ->assertSee('hadir')
+            ->assertSee('Lihat semua presensi');
+    }
+
+    public function test_beranda_menampilkan_pemilihan_yang_sedang_berlangsung(): void
+    {
+        $user = $this->buatSiswa('Siswa Pil', '20260104');
+        $idSiswa = $user->siswa->id_siswa;
+
+        $this->siapkanPemilihan($idSiswa, 'berlangsung');
+
+        $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->assertSee('Pemilihan Uji')
+            ->assertSee('Pilih Sekarang')
+            // isoFormat() memakai token moment.js: menit = mm, bukan i.
+            // Tanpa ini "18:i" lolos ke halaman tanpa terdeteksi.
+            ->assertSee('24 Nov 2026, 18:00')
+            ->assertDontSee('18:i');
+    }
+
+    public function test_beranda_tidak_menampilkan_kartu_pemilihan_bila_tidak_ada(): void
+    {
+        // Tanpa pemilihan aktif, bagian ini dilewati agar tidak menambah
+        // ruang kosong di beranda.
+        $user = $this->buatSiswa('Siswa Tanpa Pil', '20260105');
+
+        $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->assertDontSee('Pilih Sekarang');
+    }
+
+    public function test_pemilihan_yang_sudah_dipilih_menampilkan_status_tercatat(): void
+    {
+        $user = $this->buatSiswa('Siswa Sudah Pil', '20260106');
+        $idSiswa = $user->siswa->id_siswa;
+
+        $this->siapkanPemilihan($idSiswa, 'berlangsung', true);
+
+        $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->assertSee('Suara sudah tercatat')
+            ->assertDontSee('Pilih Sekarang');
+    }
+
+    public function test_tabel_presensi_bertumpuk_di_ponsel_sempit(): void
+    {
+        // Tiga kolom pada layar 320px hanya menyisakan ~80px per kolom. Pola
+        // proyek ini: tiap baris jadi kartu, label kolom lewat data-label.
+        // Tabel hanya terender kalau ada data, jadi presensi disemai dulu.
+        $user = $this->buatSiswa('Siswa Tabel', '20260107');
+        $this->siapkanPresensi($user->siswa->id_siswa);
+
+        $html = $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('data-label="Mata Pelajaran"', $html);
+        $this->assertStringContainsString('@media(max-width:560px)', $html);
+        $this->assertStringContainsString('content:attr(data-label)', $html);
+        // Aturan bertumpuk harus dibatasi ke .tabel-bertumpuk. Kalau memakai
+        // .tabel polos, tabel di guru/beranda dan siswa/perangkat ikut berubah
+        // tanpa data-label sehingga label kolomnya kosong.
+        $this->assertStringContainsString('.tabel-bertumpuk tbody td::before', $html);
+        $this->assertStringContainsString('class="tabel tabel-bertumpuk"', $html);
+        $this->assertStringNotContainsString('.tabel tbody td::before', $html);
+    }
+
+    public function test_tiga_bagian_beranda_berurutan(): void
+    {
+        // Penanda bahwa bagian baru benar-benar dirender berurutan.
+        $user = $this->buatSiswa('Siswa Urut', '20260108');
+
+        $this->actingAs($user)
+            ->get(route('siswa.beranda'))
+            ->assertOk()
+            ->assertSeeInOrder(['Jadwal Pelajaran', 'Presensi Terakhir']);
+    }
+
+    /** Kelas + guru + mapel minimal agar v_roster_presensi_siswa terisi. */
+    private function siapkanKelas(int $idSiswa, string $namaKelas): array
+    {
+        $idTahun = DB::table('tahun_ajaran')->insertGetId([
+            'nama' => '2026/2027',
+            'tanggal_mulai' => '2026-07-01',
+            'tanggal_selesai' => '2027-06-30',
+            'is_aktif' => 1,
+        ]);
+
+        $idGuruUser = DB::table('users')->insertGetId([
+            'username' => 'guru_'.$idSiswa,
+            'password_hash' => bcrypt('password'),
+            'role' => 'guru',
+            'is_active' => true,
+        ]);
+
+        $idGuru = DB::table('guru')->insertGetId([
+            'id_user' => $idGuruUser,
+            'nip' => '1990'.$idSiswa,
+            'nama_guru' => 'Bapak Uji',
+            'jenis_kelamin' => 'L',
+        ]);
+
+        $idMapel = DB::table('mata_pelajaran')->insertGetId([
+            'kode_mapel' => 'MTK'.$idSiswa,
+            'nama_mapel' => 'Matematika',
+        ]);
+
+        $idKelas = DB::table('kelas')->insertGetId([
+            'id_tahun_ajaran' => $idTahun,
+            'nama_kelas' => $namaKelas,
+            // tingkat bertipe tinyint unsigned, bukan huruf.
+            'tingkat' => 10,
+            'jurusan' => 'IPA',
+        ]);
+
+        DB::table('anggota_kelas')->insert([
+            'id_kelas' => $idKelas,
+            'id_siswa' => $idSiswa,
+            'no_absen' => 1,
+        ]);
+
+        return [$idKelas, $idGuru, $idMapel];
+    }
+
+    /**
+     * Pemilihan minimal satu organisasi + tahun ajaran, lengkap dengan siswa
+     * sebagai pemilih.
+     *
+     * Urutan penting: trigger trg_before_daftar_pemilih_insert menolak
+     * penambahan pemilih bila status pemilihan sudah 'berlangsung'. Jadi
+     * pemilihan dibuat sebagai draf dulu, pemilih didaftarkan, baru statusnya
+     * diubah — persis alur yang dipakai panitia sungguhan.
+     */
+    private function siapkanPemilihan(int $idSiswa, string $status = 'berlangsung', bool $sudahMemilih = false): int
+    {
+        $idTahun = DB::table('tahun_ajaran')->insertGetId([
+            'nama' => '2026/2027',
+            'tanggal_mulai' => '2026-07-01',
+            'tanggal_selesai' => '2027-06-30',
+            'is_aktif' => 1,
+        ]);
+
+        $idOrganisasi = DB::table('organisasi')->insertGetId([
+            'nama_organisasi' => 'OSIS Uji',
+            'singkatan' => 'OSIS',
+        ]);
+
+        $idAdmin = DB::table('users')->where('role', 'admin')->value('id_user');
+
+        if ($idAdmin === null) {
+            $idAdmin = DB::table('users')->insertGetId([
+                'username' => 'admin_uji_pil',
+                'password_hash' => bcrypt('password'),
+                'role' => 'admin',
+                'is_active' => true,
+            ]);
+        }
+
+        $idPemilihan = DB::table('pemilihan')->insertGetId([
+            'id_organisasi' => $idOrganisasi,
+            'id_tahun_ajaran' => $idTahun,
+            'judul' => 'Pemilihan Uji',
+            'waktu_mulai' => '2026-11-17 08:00:00',
+            'waktu_selesai' => '2026-11-24 18:00:00',
+            'status' => 'draf',
+            'dibuat_oleh' => $idAdmin,
+        ]);
+
+        DB::table('daftar_pemilih')->insert([
+            'id_pemilihan' => $idPemilihan,
+            'id_siswa' => $idSiswa,
+            'sudah_memilih' => $sudahMemilih ? 1 : 0,
+        ]);
+
+        if ($status !== 'draf') {
+            DB::table('pemilihan')
+                ->where('id_pemilihan', $idPemilihan)
+                ->update(['status' => $status]);
+        }
+
+        return $idPemilihan;
+    }
+
+    /** Satu jadwal + sesi + presensi, agar tabel riwayat terender. */
+    private function siapkanPresensi(int $idSiswa, string $status = 'hadir'): void
+    {
+        [$idKelas, $idGuru, $idMapel] = $this->siapkanKelas($idSiswa, 'X UJI T');
+
+        $idJadwal = DB::table('jadwal_pelajaran')->insertGetId([
+            'id_kelas' => $idKelas,
+            'id_mapel' => $idMapel,
+            'id_guru' => $idGuru,
+            'semester' => 'ganjil',
+            'hari' => 'senin',
+            'jam_mulai' => '07:30:00',
+            'jam_selesai' => '09:00:00',
+        ]);
+
+        $idSesi = DB::table('sesi_presensi')->insertGetId([
+            'id_jadwal' => $idJadwal,
+            'tanggal' => '2026-11-10',
+            'status' => 'ditutup',
+        ]);
+
+        DB::table('presensi')->insert([
+            'id_sesi' => $idSesi,
+            'id_siswa' => $idSiswa,
+            'status' => $status,
+            'metode' => 'manual',
+        ]);
+    }
 }

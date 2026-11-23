@@ -51,4 +51,114 @@
     </div>
 </div>
 
+{{-- ---------- Jadwal hari ini ----------
+     Bagian ini dan dua bagian di bawahnya mengisi ruang kosong setelah kartu
+     statistik. Semuanya tetap ditampilkan walau datanya kosong: pesan "belum
+     ada" lebih jelas daripada ruang kosong yang menganggur. --}}
+<section>
+    <div class="wrap">
+        <div class="judul-bagian">
+            <div class="kicker">Hari Ini</div>
+            <h2>Jadwal Pelajaran</h2>
+            <p>{{ \Illuminate\Support\Carbon::now()->locale('id')->isoFormat('dddd, D MMMM YYYY') }}</p>
+        </div>
+
+        <div class="kartu">
+            @forelse ($jadwalHariIni as $j)
+                <div class="aksi-baris">
+                    <div>
+                        <div class="aksi-jam">
+                            {{ substr($j->jam_mulai, 0, 5) }}–{{ substr($j->jam_selesai, 0, 5) }}
+                        </div>
+                        <div class="aksi-judul">{{ $j->nama_mapel }} &middot; {{ $j->nama_guru }}</div>
+                    </div>
+                    <span class="pill">{{ $j->nama_kelas }}</span>
+                </div>
+            @empty
+                <p class="kosong">Tidak ada jadwal pelajaran untuk hari ini.</p>
+            @endforelse
+        </div>
+    </div>
+</section>
+
+{{-- ---------- Presensi terakhir ---------- --}}
+<section>
+    <div class="wrap">
+        <div class="judul-bagian">
+            <div class="kicker">Riwayat</div>
+            <h2>Presensi Terakhir</h2>
+            <p>Lima catatan kehadiran terbaru Anda.</p>
+        </div>
+
+        <div class="kartu">
+            @if ($riwayatTerakhir->isEmpty())
+                <p class="kosong">Belum ada catatan presensi.</p>
+            @else
+                <table class="tabel tabel-bertumpuk">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Mata Pelajaran</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($riwayatTerakhir as $r)
+                            <tr>
+                                <td data-label="Tanggal">
+                                    {{ \Illuminate\Support\Carbon::parse($r->tanggal)->locale('id')->isoFormat('D MMM YYYY') }}
+                                    <div class="kecil">{{ substr($r->jam_mulai, 0, 5) }}–{{ substr($r->jam_selesai, 0, 5) }}</div>
+                                </td>
+                                <td data-label="Mata Pelajaran">{{ $r->nama_mapel }}</td>
+                                <td data-label="Status"><span class="badge {{ $r->status }}">{{ $r->status }}</span></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                <div class="form-aksi" style="margin-top:14px">
+                    <a class="btn garis" href="{{ route('siswa.presensi.riwayat') }}">Lihat semua presensi</a>
+                </div>
+            @endif
+        </div>
+    </div>
+</section>
+
+{{-- ---------- Pemilihan ----------
+     Hanya muncul bila ada pemilihan berlangsung/draf yang diikuti siswa.
+     Kalau tidak ada, bagian ini dilewati agar tidak menambah ruang kosong. --}}
+@if ($pemilihanAktif)
+    <section>
+        <div class="wrap">
+            <div class="judul-bagian">
+                <div class="kicker">Pemilihan</div>
+                <h2>{{ $pemilihanAktif->judul }}</h2>
+                <p>Suara Anda rahasia dan tidak dapat diubah setelah dikirim.</p>
+            </div>
+
+            <div class="kartu">
+                <div class="aksi-baris">
+                    <div>
+                        <div class="aksi-jam">{{ ucfirst($pemilihanAktif->status) }}</div>
+                        <div class="aksi-judul">
+                            Berakhir
+                            {{ \Illuminate\Support\Carbon::parse($pemilihanAktif->waktu_selesai)->locale('id')->isoFormat('D MMM YYYY, HH:mm') }}
+                        </div>
+                    </div>
+
+                    <div class="aksi-tombol">
+                        @if ($pemilihanAktif->sudah_memilih)
+                            <span class="status-pil">Suara sudah tercatat</span>
+                        @elseif ($pemilihanAktif->status === 'draf')
+                            <span class="status-pil">Menunggu dibuka panitia</span>
+                        @else
+                            <a class="btn" href="{{ route('siswa.pemilihan.index') }}">Pilih Sekarang</a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+@endif
+
 @endsection

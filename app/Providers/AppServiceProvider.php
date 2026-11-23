@@ -22,16 +22,16 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Paksa URL absolut memakai APP_URL. Tanpa ini, route() memakai alamat yang
-        // sedang dibuka di peramban guru, sehingga QR yang dihasilkan bisa berisi
-        // "localhost" dan tidak dapat dibuka dari ponsel siswa.
+        
+        
+        
         //
-        // PENGECUALIAN: bila permintaan datang lewat tunnel Cloudflare, pakai host
-        // tunnel yang sedang dipakai pengunjung. Alasannya, nilai APP_URL di .env
-        // "terkunci" pada saat `php artisan serve` dijalankan (diwarisi lewat
-        // putenv() ke proses anak php -S, dan Dotenv bersifat immutable). Jadi URL
-        // tunnel yang berubah tidak terbaca sampai server di-restart. Dengan cara
-        // ini, URL tunnel baru langsung dipakai tanpa perlu restart atau ubah .env.
+        
+        
+        
+        
+        
+        
         $host = request()->getHost();
 
         if (str_ends_with($host, '.trycloudflare.com')) {
@@ -40,20 +40,20 @@ class AppServiceProvider extends ServiceProvider
             URL::forceRootUrl($appUrl);
         }
 
-        // Otorisasi terpusat (lihat docs/superpowers/specs/2026-11-16-kas-dan-denah-design.md).
+        
         Gate::define('kas.lihat', fn (User $user, Kelas $kelas) => app(Akses::class)->bisaLihatKelas($user, $kelas));
         Gate::define('kas.kelola', fn (User $user, Kelas $kelas) => app(Akses::class)->bisaKelolaKas($user, $kelas));
-        // Orang tua melaporkan pembayaran iuran anaknya (unggah bukti).
-        // Terpisah dari kas.kelola: uang tetap diverifikasi bendahara.
+        
+        
         Gate::define('iuran.lapor', fn (User $user, IuranKas $iuran) => app(Akses::class)->bisaLaporIuran($user, $iuran));
         Gate::define('denah.kelola-kursi', fn (User $user, Kelas $kelas) => app(Akses::class)->bisaKelolaKursi($user, $kelas));
         Gate::define('denah.kelola-ruangan', fn (User $user) => app(Akses::class)->bisaKelolaRuangan($user));
 
-        // Fitur e-voting (dari main).
+        
         Gate::policy(Pemilihan::class, PemilihanPolicy::class);
 
-        // Fitur perangkat organisasi & kelas tidak punya model tunggal,
-        // jadi didaftarkan sebagai ability berbasis policy.
+        
+        
         Gate::define('perangkat.lihat', [PerangkatPolicy::class, 'lihat']);
         Gate::define('perangkat.kelola', [PerangkatPolicy::class, 'kelola']);
         Gate::define('perangkat.kelolaKelas', [PerangkatPolicy::class, 'kelolaKelas']);

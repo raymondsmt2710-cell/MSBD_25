@@ -4,7 +4,6 @@
 
 @section('isi')
 
-{{-- ---------- Hero ---------- --}}
 <div class="hero">
     <div class="hero-inner">
         <div class="lencana">
@@ -19,7 +18,6 @@
     </div>
 </div>
 
-{{-- ---------- Perangkat kelas ---------- --}}
 <section>
     <div class="wrap">
         <div class="judul-bagian">
@@ -57,7 +55,6 @@
     </div>
 </section>
 
-{{-- ---------- Perangkat organisasi ---------- --}}
 <section>
     <div class="wrap">
         <div class="judul-bagian">

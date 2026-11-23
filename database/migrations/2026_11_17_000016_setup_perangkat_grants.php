@@ -3,18 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// DCL (materi Manajemen User & Hak Akses): hak akses untuk fitur perangkat
-// organisasi & kelas.
-//
-// Sebelum ini, siswa_app/guru_app belum punya SELECT ke kelas, guru, jabatan,
-// organisasi, tahun_ajaran, anggota_kelas, dan pengurus_*, sehingga halaman
-// perangkat gagal dengan "SELECT command denied".
-//
-// Prinsip least privilege tetap dijaga:
-//   - siswa   : SELECT saja (melihat), tanpa hak tulis apa pun;
-//   - guru    : SELECT + INSERT/UPDATE/DELETE pada pengurus_* (wali kelas/pembina);
-//   - admin   : penuh, tetapi hanya pada objek fitur ini.
-//   - orang_tua: TIDAK diberi akses ke fitur ini.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -54,7 +42,7 @@ return new class extends Migration
             }
         };
 
-        // ---------- ADMIN ----------
+
         $grant($a['admin'][0], [
             $t('jabatan') => 'SELECT, INSERT, UPDATE, DELETE',
             $t('pengurus_kelas') => 'SELECT, INSERT, UPDATE, DELETE',
@@ -72,9 +60,9 @@ return new class extends Migration
             $func('fn_jumlah_pengurus_organisasi') => 'EXECUTE',
         ]);
 
-        // ---------- GURU (wali kelas / pembina) ----------
-        // Hak tulis dibatasi oleh policy di aplikasi (hanya kelas yang dibimbing
-        // dan organisasi yang dibina) serta oleh trigger di database.
+
+
+
         $grant($a['guru'][0], [
             $t('jabatan') => 'SELECT',
             $t('pengurus_kelas') => 'SELECT, INSERT, UPDATE, DELETE',
@@ -92,7 +80,7 @@ return new class extends Migration
             $func('fn_jumlah_pengurus_organisasi') => 'EXECUTE',
         ]);
 
-        // ---------- SISWA (hanya melihat) ----------
+
         $grant($a['siswa'][0], [
             $t('jabatan') => 'SELECT',
             $t('pengurus_kelas') => 'SELECT',
@@ -110,8 +98,8 @@ return new class extends Migration
             $func('fn_jumlah_pengurus_organisasi') => 'EXECUTE',
         ]);
 
-        // ---------- ORANG TUA ----------
-        // Sengaja TIDAK diberi akses ke fitur perangkat.
+
+
 
         DB::unprepared('FLUSH PRIVILEGES');
     }

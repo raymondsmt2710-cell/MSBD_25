@@ -5,11 +5,6 @@ namespace Tests\Feature\Voting;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Tests\TestCase;
 
-/**
- * Regresi navigasi: halaman "/" dulu menampilkan welcome bawaan Laravel yang
- * tidak punya tautan ke fitur mana pun, dan tombol "Dashboard" mengarah ke
- * route /dashboard yang tidak ada (404).
- */
 class NavigasiTest extends TestCase
 {
     use DatabaseTruncation;
@@ -57,8 +52,8 @@ class NavigasiTest extends TestCase
         $d = $this->seedPemilihanBerlangsung();
 
         $this->actingAs($this->userDari($d['id_siswa_user'][0]))
-            // Sejak dashboard siswa, menu Pemilihan ada di navigasi beranda siswa,
-            // bukan lagi di layout presensi.
+
+
             ->get(route('siswa.beranda'))
             ->assertOk()
             ->assertSee(route('siswa.pemilihan.index'), false);
@@ -69,8 +64,8 @@ class NavigasiTest extends TestCase
         $d = $this->seedPemilihanDraf();
 
         $this->actingAs($this->userDari($d['id_panitia_user']))
-            // Sejak dashboard guru, guru (termasuk panitia) sengaja tidak ditawari tautan
-            // pemilihan dari halaman presensi; sejalan dengan DashboardGuruTest.
+
+
             ->get(route('guru.presensi.index'))
             ->assertOk()
             ->assertDontSee(route('kelola.pemilihan.index'), false);

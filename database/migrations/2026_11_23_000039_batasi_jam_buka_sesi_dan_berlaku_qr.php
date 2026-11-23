@@ -6,24 +6,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-// Membatasi jam buka sesi presensi dan jam berlaku QR.
-//
-// Dua jendela waktu yang BERBEDA, dan perbedaannya disengaja:
-//
-//   1. Guru boleh membuka sesi mulai 15 menit SEBELUM jam pelajaran, sampai
-//      jam pelajaran selesai. Tujuannya memberi waktu menyiapkan layar QR
-//      sebelum siswa masuk.
-//
-//   2. QR hanya berlaku DI DALAM jam pelajaran. Meski guru membuka lebih awal,
-//      siswa belum bisa memindai sampai jam_mulai tiba. Tanpa batas bawah ini,
-//      presensi bisa dicatat sebelum pelajaran dimulai.
-//
-// Karena itu token_presensi mendapat kolom baru `berlaku_mulai`. Sebelumnya
-// hanya ada kedaluwarsa_pada, sehingga tidak ada cara menyatakan "belum boleh
-// dipakai".
 return new class extends Migration
 {
-    /** Kelonggaran bagi guru membuka sesi sebelum jam pelajaran. */
+
     private const MENIT_SEBELUM = 15;
 
     private function mysql(): bool
@@ -42,11 +27,11 @@ return new class extends Migration
             return;
         }
 
-        // Kolom batas bawah masa berlaku token.
-        //
-        // Diisi dengan jam_mulai jadwal saat token dibuat. Baris lama (dibuat
-        // sebelum migrasi ini) diisi dari jadwalnya masing-masing agar tidak
-        // dianggap "belum berlaku selamanya".
+
+
+
+
+
         Schema::table('token_presensi', function (Blueprint $table) {
             $table->dateTime('berlaku_mulai')->nullable()->after('kode_token');
         });
@@ -59,7 +44,7 @@ SET t.berlaku_mulai = TIMESTAMP(s.tanggal, j.jam_mulai)
 WHERE t.berlaku_mulai IS NULL
 SQL);
 
-        // Baris yang tidak punya jadwal sah: anggap sudah berlaku sejak dibuat.
+
         DB::unprepared('UPDATE token_presensi SET berlaku_mulai = dibuat_pada WHERE berlaku_mulai IS NULL');
 
         $this->buatUlangBukaSesi();
@@ -68,12 +53,7 @@ SQL);
         $this->beriHak();
     }
 
-    /**
-     * sp_buka_sesi: cek hari DAN jam.
-     *
-     * Jendela buka: jam_mulai - 15 menit s/d jam_selesai.
-     * Di luar itu sesi tidak boleh dibuat.
-     */
+
     private function buatUlangBukaSesi(): void
     {
         DB::unprepared('DROP PROCEDURE IF EXISTS sp_buka_sesi');
@@ -138,12 +118,7 @@ END
 SQL);
     }
 
-    /**
-     * sp_scan_presensi: tolak pemindaian sebelum jam pelajaran dimulai.
-     *
-     * Pesan dibedakan dari "kedaluwarsa" supaya siswa tahu harus menunggu,
-     * bukan mengira QR-nya salah.
-     */
+
     private function buatUlangScan(): void
     {
         DB::unprepared('DROP PROCEDURE IF EXISTS sp_scan_presensi');
@@ -208,7 +183,7 @@ END
 SQL);
     }
 
-    /** fn_token_valid: dipakai halaman konfirmasi siswa sebelum menekan "Saya Hadir". */
+
     private function buatUlangTokenValid(): void
     {
         DB::unprepared('DROP FUNCTION IF EXISTS fn_token_valid');
@@ -241,8 +216,8 @@ SQL);
         $siswa = env('DB_USERNAME_SISWA', 'siswa_app');
         $guru = env('DB_USERNAME_GURU', 'guru_app');
 
-        // DROP PROCEDURE/FUNCTION menghapus hak EXECUTE, jadi diberikan lagi.
-        // 1044/1142/1227 = tidak punya hak GRANT; 1133 = user tidak ada; 1410 = sudah ada.
+
+
         $aman = [1044, 1133, 1142, 1227, 1410];
 
         foreach ([

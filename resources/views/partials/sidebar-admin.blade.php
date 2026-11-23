@@ -1,16 +1,5 @@
-{{--
-    Sidebar panel administrator.
-
-    Dipakai layout admin DAN halaman lain yang dibuka admin (/perangkat,
-    /kelola/pemilihan, /kas, /denah), supaya admin selalu punya navigasi yang
-    sama di mana pun ia berada.
-
-    Butuh CSS .kerangka-admin / aside / .brand / .grup / aside a.menu dari
-    partials/css-sidebar-admin.blade.php, dan skrip buka-tutup dari
-    partials/script-sidebar-admin.blade.php.
---}}
 @php
-    // Kolom keempat adalah nama ikon di components/ikon.blade.php.
+
     $menuAdmin = [
         'Ringkasan' => [
             ['admin.dashboard', 'Dasbor', 'admin.dashboard', 'grid-3x3'],
@@ -45,9 +34,6 @@
     ];
 @endphp
 <aside>
-    {{-- Kepala sidebar: merek + tombol hamburger. Tombolnya <button> supaya
-         bisa difokus dan diaktifkan dengan Enter/Space. aria-expanded diubah
-         oleh partials/script-sidebar-admin; aria-controls menunjuk nav di bawah. --}}
     <div class="sidebar-kepala">
         <a href="{{ route('admin.dashboard') }}" class="brand">
             <span class="logo-sidebar">

@@ -15,9 +15,6 @@
 </div>
 
 @if ($peranGanda)
-    {{-- Data lama: akun ini tercatat sebagai ayah dan ibu sekaligus. Aturan baru
-         sudah menolak input seperti ini, tetapi baris yang sudah ada tidak diubah
-         otomatis. Tandai agar admin tahu mana yang perlu dirapikan. --}}
     <div class="err">
         <strong>Peran ganda.</strong>
         Akun ini tercatat sebagai <strong>ayah</strong> pada sebagian anak dan

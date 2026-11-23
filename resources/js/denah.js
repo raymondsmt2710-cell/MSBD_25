@@ -65,7 +65,6 @@ export default function denahPage(initial) {
             return Number(this.denah?.jumlah_kolom ?? 4);
         },
 
-        /** Satu meja = { baris, kolom, murid: { kiri, kanan } }. */
         mejaPada(baris, kolom) {
             const meja = this.kursi.find(
                 (k) => Number(k.baris) === Number(baris) && Number(k.kolom) === Number(kolom),
@@ -74,18 +73,15 @@ export default function denahPage(initial) {
             return meja ?? { baris: Number(baris), kolom: Number(kolom), murid: { kiri: null, kanan: null } };
         },
 
-        /** Ambil murid pada satu sisi meja ('kiri' | 'kanan'). */
         muridPada(baris, kolom, sisi) {
             return this.mejaPada(baris, kolom)?.murid?.[sisi] ?? null;
         },
 
-        /** Berapa murid yang sudah duduk di meja ini (maksimal 2). */
         jumlahDiMeja(baris, kolom) {
             const meja = this.mejaPada(baris, kolom);
             return ['kiri', 'kanan'].filter((s) => meja?.murid?.[s]).length;
         },
 
-        /** Sisi meja yang masih kosong, atau null bila meja sudah penuh. */
         sisiKosong(baris, kolom) {
             const meja = this.mejaPada(baris, kolom);
             return ['kiri', 'kanan'].find((s) => !meja?.murid?.[s]) ?? null;
@@ -108,12 +104,6 @@ export default function denahPage(initial) {
             window.location.href = url.toString();
         },
 
-        /**
-         * Klik pada satu sisi meja.
-         * @param {number} baris
-         * @param {number} kolom
-         * @param {'kiri'|'kanan'} sisi
-         */
         klikKursi(baris, kolom, sisi) {
             const murid = this.muridPada(baris, kolom, sisi);
 
@@ -124,7 +114,6 @@ export default function denahPage(initial) {
                 return;
             }
 
-            // Sedang menempatkan siswa baru: taruh di sisi yang diklik bila kosong.
             if (this.siswaAkanDitempatkan) {
                 if (!murid) {
                     this.tempatkan(baris, kolom, sisi);
@@ -135,7 +124,6 @@ export default function denahPage(initial) {
             }
 
             if (!murid) {
-                // Pindahkan murid terpilih ke sisi kosong ini.
                 if (this.kursiSwapPertama) {
                     this.pindah(this.kursiSwapPertama, baris, kolom, sisi);
                 }
@@ -259,7 +247,6 @@ export default function denahPage(initial) {
                 return;
             }
 
-            // Cari murid yang sudah duduk (bisa di sisi kiri atau kanan meja).
             let ketemu = null;
             for (const meja of this.kursi) {
                 for (const sisi of ['kiri', 'kanan']) {

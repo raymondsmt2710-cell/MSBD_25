@@ -149,12 +149,12 @@ class DemoSekolahSeeder extends Seeder
 
             $userBendahara = $daftarSiswa[1]->user;
 
-            // ---------- Akun demo peran "Siswa Bendahara Kas" ----------
-            // Peran ini memberi hak kelola kas kelasnya sendiri tanpa menjadi
-            // admin. Profilnya tetap baris tabel siswa, jadi presensi/perangkat/
-            // pemilihan tetap berlaku. Dibuat terpisah dari 8 siswa di atas agar
-            // tidak mengacak daftar nama dan nomor absen yang sudah dipakai
-            // matriks iuran.
+
+
+
+
+
+
             $userBendaharaKas = User::firstOrCreate(
                 ['username' => 'bendahara'],
                 ['password_hash' => $hash, 'role' => Role::BendaharaKas, 'is_active' => true],
@@ -164,7 +164,7 @@ class DemoSekolahSeeder extends Seeder
                 $userBendaharaKas->update(['password_hash' => $hash]);
             }
 
-            // Pastikan perannya benar walau akunnya sudah ada dari seed lama.
+
             if ($userBendaharaKas->role !== Role::BendaharaKas) {
                 $userBendaharaKas->update(['role' => Role::BendaharaKas]);
             }
@@ -223,7 +223,7 @@ class DemoSekolahSeeder extends Seeder
         });
     }
 
-    /** @param array<int, Siswa> $daftarSiswa */
+
     private function buatIuranDanTransaksi(Kelas $kelas, array $daftarSiswa, int $idPencatat): void
     {
         $nominalIuran = 20000;
@@ -309,7 +309,7 @@ class DemoSekolahSeeder extends Seeder
         );
     }
 
-    /** @param array<int, Siswa> $daftarSiswa */
+
     private function buatDenah(Kelas $kelas, array $daftarSiswa, int $idPembuat): void
     {
         $denah = DenahKelas::firstOrCreate(

@@ -19,7 +19,7 @@ class KandidatTest extends TestCase
         $this->setUpVotingDatabase();
     }
 
-    /** Buat siswa baru yang belum dipakai kandidat mana pun. */
+
     private function siswaBaru(string $username, string $nis, string $nisn): int
     {
         $idUser = DB::connection('mysql')->table('users')->insertGetId([
@@ -86,7 +86,7 @@ class KandidatTest extends TestCase
         $d = $this->seedPemilihanBerlangsung();
         $idSiswaBaru = $this->siswaBaru('kandidat_berlangsung', '9200003', '9200000003');
 
-        // Siswa baru (bukan duplikat), jadi penolakan murni karena status pemilihan.
+
         $this->actingAs($this->userDari($d['id_admin']))
             ->post(route('kelola.pemilihan.kandidat.simpan', $d['id_pemilihan']), [
                 'nomor_urut' => 9,

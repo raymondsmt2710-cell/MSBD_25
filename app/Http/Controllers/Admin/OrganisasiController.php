@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
-/** Fitur 11 — Kelola organisasi sekolah dan pembinanya. */
 class OrganisasiController extends AdminController
 {
     public function index()
@@ -71,8 +70,8 @@ class OrganisasiController extends AdminController
 
     public function destroy(Organisasi $organisasi)
     {
-        // pemilihan & pengurus_organisasi → organisasi berjenis CASCADE: menghapus organisasi
-        // yang pernah punya pemilihan akan ikut menghapus kandidat dan suara. Dicegah di sini.
+
+
         $dipakai = DB::table('pemilihan')->where('id_organisasi', $organisasi->id_organisasi)->exists()
             || DB::table('pengurus_organisasi')->where('id_organisasi', $organisasi->id_organisasi)->exists();
 

@@ -8,16 +8,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Batas jam pada fitur presensi.
- *
- * Dua jendela waktu yang berbeda dan disengaja:
- *   - Guru membuka sesi: 15 menit sebelum jam_mulai s/d jam_selesai
- *   - QR berlaku untuk siswa: jam_mulai s/d jam_selesai
- *
- * Sebelum perbaikan ini, sp_buka_sesi hanya memeriksa HARI. Akibatnya sesi
- * untuk jadwal 07:30-09:00 tetap bisa dibuka pukul 13:43.
- */
 class PresensiBatasJamTest extends TestCase
 {
     use DatabaseTruncation;
@@ -62,17 +52,13 @@ class PresensiBatasJamTest extends TestCase
         return User::find($idUser);
     }
 
-    /** Nama hari ini sesuai ENUM jadwal_pelajaran.hari. */
+
     private function hariIni(): string
     {
         return ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'][now()->dayOfWeek - 1] ?? 'senin';
     }
 
-    /**
-     * Menyiapkan kelas, mapel, dan jadwal pada hari ini.
-     *
-     * @return array{id_guru:int, id_kelas:int, id_jadwal:int, id_siswa:int}
-     */
+
     private function siapkanJadwal(string $jamMulai, string $jamSelesai): array
     {
         $guru = $this->buatGuru('jam_guru_'.uniqid());
@@ -103,7 +89,7 @@ class PresensiBatasJamTest extends TestCase
         return compact('idGuru', 'idKelas', 'idJadwal', 'idSiswa') + ['idUserGuru' => $guru->id_user];
     }
 
-    /** Memanggil sp_buka_sesi langsung dan mengembalikan statusnya. */
+
     private function panggilBukaSesi(int $idJadwal, int $idGuru): array
     {
         $k = DB::connection('mysql');
@@ -114,7 +100,7 @@ class PresensiBatasJamTest extends TestCase
         return [$r->st, $r->id];
     }
 
-    /** Memanggil sp_scan_presensi dan mengembalikan statusnya. */
+
     private function panggilScan(string $kode, int $idSiswa): string
     {
         $k = DB::connection('mysql');
@@ -124,13 +110,13 @@ class PresensiBatasJamTest extends TestCase
         return (string) $k->selectOne('SELECT @st AS st')->st;
     }
 
-    // ------------------------------------------------------------------
-    // Batas jam buka sesi (guru)
-    // ------------------------------------------------------------------
+
+
+
 
     public function test_sesi_tidak_bisa_dibuka_setelah_jam_selesai(): void
     {
-        // Jadwal yang sudah lewat hari ini: 00:01-00:02.
+
         $d = $this->siapkanJadwal('00:01:00', '00:02:00');
 
         [$status, $idSesi] = $this->panggilBukaSesi($d['idJadwal'], $d['idGuru']);
@@ -141,8 +127,8 @@ class PresensiBatasJamTest extends TestCase
 
     public function test_sesi_tidak_bisa_dibuka_lebih_dari_15_menit_sebelum_jam_mulai(): void
     {
-        // Jadwal 23:00-23:59, sekarang pasti jauh sebelum 22:45 (kecuali dijalankan
-        // antara 22:45-23:59, yang membuat test ini dilewati).
+
+
         if (now()->format('H:i') >= '22:45') {
             $this->markTestSkipped('Dijalankan terlalu dekat dengan 23:00.');
         }
@@ -157,7 +143,7 @@ class PresensiBatasJamTest extends TestCase
 
     public function test_sesi_bisa_dibuka_saat_jam_pelajaran_berlangsung(): void
     {
-        // Jadwal yang sedang berjalan: mulai 10 menit lalu, selesai 50 menit lagi.
+
         $d = $this->siapkanJadwal(
             now()->copy()->subMinutes(10)->format('H:i:s'),
             now()->copy()->addMinutes(50)->format('H:i:s')
@@ -171,7 +157,7 @@ class PresensiBatasJamTest extends TestCase
 
     public function test_sesi_bisa_dibuka_15_menit_sebelum_jam_mulai(): void
     {
-        // Jadwal mulai 10 menit lagi: masih di dalam jendela 15 menit.
+
         $d = $this->siapkanJadwal(
             now()->copy()->addMinutes(10)->format('H:i:s'),
             now()->copy()->addMinutes(70)->format('H:i:s')
@@ -183,14 +169,14 @@ class PresensiBatasJamTest extends TestCase
         $this->assertNotNull($idSesi);
     }
 
-    // ------------------------------------------------------------------
-    // Batas berlaku QR (siswa)
-    // ------------------------------------------------------------------
+
+
+
 
     public function test_qr_belum_berlaku_sebelum_jam_pelajaran(): void
     {
-        // Guru membuka lebih awal (dalam jendela 15 menit), jadi token sudah ada
-        // tetapi belum boleh dipakai siswa.
+
+
         $d = $this->siapkanJadwal(
             now()->copy()->addMinutes(10)->format('H:i:s'),
             now()->copy()->addMinutes(70)->format('H:i:s')
@@ -199,7 +185,7 @@ class PresensiBatasJamTest extends TestCase
         [$status, $idSesi] = $this->panggilBukaSesi($d['idJadwal'], $d['idGuru']);
         $this->assertSame('BERHASIL', $status);
 
-        // Token seperti yang dibuat pastikanToken: berlaku mulai jam_mulai.
+
         $kode = str_repeat('a', 64);
         DB::table('token_presensi')->insert([
             'id_sesi' => $idSesi,
@@ -234,10 +220,7 @@ class PresensiBatasJamTest extends TestCase
         $this->assertSame('BERHASIL', $this->panggilScan($kode, $d['idSiswa']));
     }
 
-    /**
-     * fn_token_valid dipakai halaman konfirmasi siswa. Fungsi ini harus ikut
-     * menghormati berlaku_mulai, bukan hanya kedaluwarsa_pada.
-     */
+
     public function test_fn_token_valid_menghormati_batas_bawah(): void
     {
         $d = $this->siapkanJadwal(
@@ -261,7 +244,7 @@ class PresensiBatasJamTest extends TestCase
         $sebelum = $k->selectOne('SELECT fn_token_valid(?) AS ok', [$kode]);
         $this->assertSame(0, (int) $sebelum->ok, 'Token belum boleh dianggap valid sebelum jam pelajaran.');
 
-        // Geser batas bawah ke masa lalu: sekarang harus valid.
+
         DB::table('token_presensi')->where('kode_token', $kode)
             ->update(['berlaku_mulai' => now()->subMinute()->format('Y-m-d H:i:s')]);
 
@@ -269,17 +252,11 @@ class PresensiBatasJamTest extends TestCase
         $this->assertSame(1, (int) $sesudah->ok);
     }
 
-    // ------------------------------------------------------------------
-    // Tampilan roster
-    // ------------------------------------------------------------------
 
-    /**
-     * Tombol "Buat Presensi" tidak boleh muncul bila di luar jendela buka,
-     * supaya guru tidak menekan aksi yang pasti ditolak database.
-     *
-     * Yang diperiksa elemen <button>, bukan teks: teks "Buat Presensi" juga
-     * muncul di paragraf penjelasan halaman.
-     */
+
+
+
+
     public function test_tombol_buat_presensi_tidak_muncul_di_luar_jam(): void
     {
         $d = $this->siapkanJadwal('00:01:00', '00:02:00');

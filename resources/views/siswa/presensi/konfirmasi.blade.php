@@ -26,9 +26,6 @@
             Presensi tetap tercatat, hanya kolom lokasi yang kosong.
         </div>
 
-        {{-- Jalan pulang disediakan komponen <x-tombol-kembali> di layout.
-             Tautan manual di sini dulu menunjuk route guru, sehingga siswa yang
-             menekannya mendapat 403. --}}
         <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f1f2f4">
             <a class="btn garis" href="{{ route('siswa.presensi.pindai') }}">Pindai QR Lain</a>
         </div>
@@ -36,15 +33,13 @@
 
     @push('skrip')
     <script>
-        // Lokasi hanya dicatat sebagai bukti untuk guru. Presensi tetap dikirim
-        // walau izin ditolak atau GPS tidak tersedia.
+
         const form = document.getElementById('form-presensi');
         const info = document.getElementById('status-lokasi');
         const tombol = document.getElementById('tombol-hadir');
 
         let batasTunggu = null;
 
-        // Browser memblokir geolocation pada http:// (kecuali localhost).
         const konteksAman = window.isSecureContext ||
             location.hostname === 'localhost' ||
             location.hostname === '127.0.0.1';
@@ -65,7 +60,6 @@
             tombol.disabled = true;
             tombol.textContent = 'Mengambil lokasi...';
 
-            // Jangan menunggu terlalu lama: 6 detik lalu kirim tanpa lokasi.
             batasTunggu = setTimeout(function () {
                 selesai('Lokasi tidak didapat dalam 6 detik. Presensi tetap dapat dikirim.');
             }, 6000);

@@ -6,7 +6,6 @@ use App\Enums\Role;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-// Disesuaikan dengan tabel `users` proyek (id_user, username, password_hash, role)
 class User extends Authenticatable
 {
     protected $table = 'users';
@@ -28,16 +27,13 @@ class User extends Authenticatable
         return $this->password_hash;
     }
 
-    /**
-     * Nama kolom password. Tanpa ini Laravel memakai 'password' saat perlu
-     * me-rehash (mis. cost bcrypt berubah) dan menulis ke kolom yang tidak ada.
-     */
+    
     public function getAuthPasswordName(): string
     {
         return 'password_hash';
     }
 
-    // Tabel users tidak punya kolom remember_token
+    
     public function getRememberTokenName(): string
     {
         return '';

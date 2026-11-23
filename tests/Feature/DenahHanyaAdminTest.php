@@ -10,18 +10,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\MembuatSekolah;
 use Tests\TestCase;
 
-/**
- * Denah hanya boleh diubah administrator.
- *
- * Sebelumnya ketua kelas juga boleh memindah, menukar, mengacak, dan
- * mengatur ukuran denah. Sekarang seluruh peran selain admin hanya-baca,
- * sementara halaman denah tetap dapat dilihat semua pihak terkait.
- */
 class DenahHanyaAdminTest extends TestCase
 {
     use MembuatSekolah, RefreshDatabase;
 
-    /** @var array<string, mixed> */
+
     private array $sekolah;
 
     protected function setUp(): void
@@ -31,7 +24,7 @@ class DenahHanyaAdminTest extends TestCase
         $this->sekolah = $this->buatSekolah();
     }
 
-    // ---- Yang boleh: administrator ----
+
 
     public function test_admin_dapat_mengacak_posisi(): void
     {
@@ -52,7 +45,7 @@ class DenahHanyaAdminTest extends TestCase
         $this->assertTrue($payload['bisa_kelola']);
     }
 
-    // ---- Yang tidak boleh: ketua kelas ----
+
 
     public function test_ketua_kelas_tidak_boleh_mengacak_posisi(): void
     {
@@ -128,11 +121,11 @@ class DenahHanyaAdminTest extends TestCase
             ->json();
 
         $this->assertFalse($payload['bisa_kelola']);
-        // Endpoint mengembalikan daftar MEJA, bukan murid: 4 murid di 2 meja.
+
         $this->assertCount(2, $payload['kursi']);
     }
 
-    // ---- Yang tidak boleh: siswa biasa & bendahara kas ----
+
 
     public function test_siswa_biasa_tidak_boleh_mengubah_denah(): void
     {
@@ -147,7 +140,7 @@ class DenahHanyaAdminTest extends TestCase
             ->assertOk();
     }
 
-    // ---- Ruangan: tetap hanya admin (sudah begitu sejak awal) ----
+
 
     public function test_ketua_kelas_tidak_boleh_menambah_ruangan(): void
     {
@@ -156,7 +149,7 @@ class DenahHanyaAdminTest extends TestCase
             ->assertForbidden();
     }
 
-    // ---- helper ----
+
 
     private function buatDenah(): DenahKelas
     {
@@ -186,7 +179,7 @@ class DenahHanyaAdminTest extends TestCase
         return $denah;
     }
 
-    /** @return array<string, mixed> */
+
     private function payloadRuangan(): array
     {
         return [

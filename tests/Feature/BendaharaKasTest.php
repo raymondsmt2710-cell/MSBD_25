@@ -15,16 +15,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\MembuatSekolah;
 use Tests\TestCase;
 
-/**
- * Peran `bendahara_kas`: akun yang profilnya tetap siswa, tetapi boleh
- * mengelola kas kelasnya sendiri setara bendahara — tanpa menjadi admin dan
- * tanpa bergantung pada nama jabatan.
- */
 class BendaharaKasTest extends TestCase
 {
     use MembuatSekolah, RefreshDatabase;
 
-    /** @var array<string, mixed> */
+
     private array $sekolah;
 
     protected function setUp(): void
@@ -131,8 +126,8 @@ class BendaharaKasTest extends TestCase
             ->assertOk()
             ->json();
 
-        // Null dari Akses::siswaTerlihat berarti seluruh anggota kelas.
-        // 4 siswa bawaan + akun bendahara_kas ini sendiri.
+
+
         $this->assertCount(5, $payload['matriks']['siswa']);
         $this->assertTrue($payload['bisaKelola']);
     }
@@ -172,7 +167,7 @@ class BendaharaKasTest extends TestCase
             ->assertForbidden();
     }
 
-    /** Akun berperan bendahara_kas yang profilnya terhubung ke kelas uji. */
+
     private function bendaharaKas(): User
     {
         $user = User::create([
@@ -182,7 +177,7 @@ class BendaharaKasTest extends TestCase
             'is_active' => true,
         ]);
 
-        // Profil siswa baru untuk akun ini, terhubung ke kelas yang sama.
+
         $profil = Siswa::create([
             'id_user' => $user->id_user,
             'nis' => '2026099',

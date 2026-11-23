@@ -21,7 +21,6 @@
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">
         <h2 style="margin:0">Susunan Pengurus</h2>
 
-        {{-- Pilih tahun ajaran: riwayat lama tetap tersimpan --}}
         <form method="GET" action="{{ route('perangkat.organisasi', $organisasi->id_organisasi) }}"
               style="display:flex;gap:8px;align-items:center">
             <label for="tahun" class="kecil" style="margin:0;white-space:nowrap">Tahun ajaran</label>

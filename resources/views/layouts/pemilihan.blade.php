@@ -26,8 +26,7 @@
         .nav-links a:hover{background:#f3f4f6;color:#09656F}
         .nav-links a.aktif{background:rgba(9,101,111,.06);color:#09656F}
         .nav-aksi{display:flex;align-items:center;gap:8px}
-        /* Tombol profil ke /akun. Layout ini tidak punya hamburger, jadi tombolnya
-           tampil di semua lebar; nama pengguna disembunyikan di ponsel agar muat. */
+
         .nav-profil{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:rgba(9,101,111,.08);color:#09656F;flex-shrink:0}
         .nav-profil:hover{background:rgba(9,101,111,.15)}
         .kembali-wrap{margin-bottom:14px}
@@ -58,8 +57,7 @@
         .badge.draf{background:#e5e7eb;color:#374151}
         .badge.berlangsung{background:#dcfce7;color:#166534}
         .badge.selesai{background:#dbeafe;color:#1e40af}
-        /* Status presensi — dipakai portal orang tua (fitur 7). Fitur pemilihan tidak
-           memakai kelas ini, jadi penambahannya tidak mengubah tampilan mana pun. */
+
         .badge.hadir{background:#dcfce7;color:#166534}
         .badge.izin,.badge.sakit{background:#fef9c3;color:#854d0e}
         .badge.alpa{background:#fee2e2;color:#991b1b}
@@ -71,11 +69,9 @@
         .kandidat-foto{height:170px;flex-shrink:0;background:linear-gradient(135deg,#043d44,#09656F);display:flex;align-items:center;justify-content:center;color:#fff;font-size:38px;font-weight:800;overflow:hidden}
         .kandidat-foto img{width:100%;height:100%;object-fit:cover}
         .kandidat-isi{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
-        /* Tombol aksi selalu menempel di dasar kartu, sehingga kartu dengan
-           teks lebih pendek tetap terlihat sejajar tanpa memaksa tinggi sama. */
+
         .kandidat-isi .btn{width:100%;justify-content:center;margin-top:auto}
-        /* Detail kandidat: ringkasan yang bisa dibuka, bukan <details> polos,
-           supaya teksnya tidak bertabrakan dengan visi di atasnya. */
+
         .detail-kandidat{margin-top:2px}
         .detail-kandidat summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#09656F;padding:4px 0;user-select:none}
         .detail-kandidat summary::-webkit-details-marker{display:none}
@@ -111,18 +107,16 @@
         .kecil{font-size:11px;color:#9ca3af}
         @media(max-width:640px){
             .nav-links{display:none}
-            /* Nama pengguna + peran memakan ruang; tombol profil & Keluar tetap. */
+
             .nav-aksi .pill{display:none}
             h1{font-size:19px}
             th,td{padding:8px 6px;font-size:12px}
             .nav-hamburger{display:inline-flex}
-            /* Sama seperti layout admin: tabel 10 kolom di /kelola/pemilihan
-               (601px) lebih lebar dari kartunya (358px) dan membuat seluruh
-               halaman bisa digeser. Hanya area kartu yang boleh digeser. */
+
             .kartu{overflow-x:auto;-webkit-overflow-scrolling:touch}
         }
 
-        /* ---------- Hamburger + drawer (ponsel) ---------- */
+
         .nav-hamburger{display:none;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:rgba(9,101,111,.08);color:#09656F;cursor:pointer;list-style:none;flex-shrink:0}
         .nav-hamburger::-webkit-details-marker{display:none}
         .nav-drawer{display:none}
@@ -140,7 +134,7 @@
     @include('partials.css-nav-tengah')
 </head>
 @php
-    // Admin memakai sidebar di SEMUA halaman, termasuk yang memakai layout ini.
+
     $peranAktif = auth()->user()?->role;
     $peranAktif = $peranAktif instanceof \App\Enums\Role ? $peranAktif->value : (string) $peranAktif;
     $pakaiSidebarAdmin = $peranAktif === 'admin';
@@ -174,9 +168,6 @@
 
 <header class="nav">
     <div class="nav-inner">
-        {{-- Logo mengarah ke BERANDA PERAN, sama seperti layout presensi. Dulu
-             menunjuk url('/') sehingga admin/guru/siswa yang menekannya keluar
-             dari area perannya (dan siswa mendarat di halaman tamu). --}}
         <a href="{{ auth()->check() ? route(auth()->user()->role->home()) : url('/') }}" class="brand">
             <x-logo mark tinggi="34" />
             <div>
@@ -185,21 +176,12 @@
             </div>
         </a>
 
-        {{-- Admin sudah punya sidebar berisi "Dasbor" dan menu lengkap. Tautan
-             di tengah bar hanya mengulang tujuan yang sama, jadi untuk admin
-             elemennya tidak dirender sama sekali (bukan sekadar dikosongkan).
-
-             partials.nav-utama SUDAH membungkus daftar tautan dengan
-             <nav class="nav-links">, jadi jangan menambah pembungkus kedua. --}}
         @unless ($pakaiSidebarAdmin)
             @auth
                 @include('partials.nav-utama', ['gaya' => 'nav'])
             @endauth
         @endunless
 
-        {{-- Hamburger: di ponsel tautan nav disembunyikan, jadi menu pindah ke sini.
-             Admin tidak memerlukannya: sidebar admin sudah berubah menjadi daftar
-             horizontal di layar sempit, dan isi drawer-nya hanya mengulang "Dasbor". --}}
         @auth
             @unless ($pakaiSidebarAdmin)
                 <details class="nav-drawer">
@@ -242,8 +224,8 @@
     @yield('isi')
 </main>
 @if ($pakaiSidebarAdmin)
-    </div>{{-- .isi-admin --}}
-</div>{{-- .kerangka-admin --}}
+    </div>
+</div>
 @endif
 @include('partials.script-sidebar-admin')
 </body>

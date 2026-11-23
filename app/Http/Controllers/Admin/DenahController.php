@@ -224,12 +224,12 @@ class DenahController extends AdminController
             return back()->with('error', 'Denah aktif tidak dapat dihapus. Aktifkan denah lain terlebih dahulu.');
         }
 
-        $denah->delete(); // posisi_duduk ikut terhapus (CASCADE)
+        $denah->delete();
 
         return redirect()->route('admin.denah.kelas', $denah->id_kelas)->with('success', 'Denah dihapus.');
     }
 
-    /** Urutan id siswa untuk pengisian otomatis. */
+
     private function urutanSiswa(Kelas $kelas, string $mode)
     {
         $q = DB::table('anggota_kelas as ak')

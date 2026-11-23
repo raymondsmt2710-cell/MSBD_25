@@ -7,13 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
-/**
- * Fitur 3 — Kelola data guru.
- *
- * Profil guru dibutuhkan agar guru bisa ditunjuk sebagai wali kelas, pengajar
- * di jadwal, atau pembina organisasi. Guru tidak dihapus (jadwal_pelajaran merujuknya
- * dengan RESTRICT); menonaktifkan akunnya sudah cukup untuk mencabut akses.
- */
 class GuruController extends AdminController
 {
     public function index(Request $request)
@@ -23,7 +16,7 @@ class GuruController extends AdminController
         $guru = DB::table('guru as g')
             ->join('users as u', 'u.id_user', '=', 'g.id_user')
             ->select('g.*', 'u.username', 'u.is_active')
-            // Ringkasan penugasan: berguna sebelum menonaktifkan seorang guru.
+
             ->selectSub(DB::table('kelas')->selectRaw("GROUP_CONCAT(nama_kelas SEPARATOR ', ')")
                 ->whereColumn('id_wali_kelas', 'g.id_guru')
                 ->whereIn('id_tahun_ajaran', DB::table('tahun_ajaran')->select('id_tahun_ajaran')->where('is_aktif', true)), 'wali_dari')
@@ -73,7 +66,7 @@ class GuruController extends AdminController
     private function validasi(Request $request, ?Guru $guru = null): array
     {
         return $request->validate([
-            // NIP PNS 18 digit; honorer kadang memakai NUPTK/nomor lain, jadi cukup angka ≤ 20.
+
             'nip' => ['required', 'regex:/^[0-9]{1,20}$/', Rule::unique('guru', 'nip')->ignore($guru?->id_guru, 'id_guru')],
             'nama_guru' => ['required', 'string', 'max:100'],
             'jenis_kelamin' => ['required', Rule::in(['L', 'P'])],

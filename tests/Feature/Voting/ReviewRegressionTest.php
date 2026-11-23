@@ -6,11 +6,6 @@ use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Regresi temuan review akhir: celah keabsahan suara yang bisa dieksploitasi
- * lewat kredensial database per role (guru_app), serta panitia yang tidak bisa
- * mengakses halaman kelola.
- */
 class ReviewRegressionTest extends TestCase
 {
     use DatabaseTruncation;
@@ -22,7 +17,7 @@ class ReviewRegressionTest extends TestCase
         $this->setUpVotingDatabase();
     }
 
-    // ---------- C1: panitia harus bisa mengakses halaman kelola ----------
+
 
     public function test_panitia_bisa_membuka_daftar_kelola(): void
     {
@@ -64,7 +59,7 @@ class ReviewRegressionTest extends TestCase
             ->get(route('kelola.pemilihan.index'))
             ->assertOk();
 
-        // Hanya pemilihan yang ditugaskan yang boleh muncul di daftar.
+
         $respons->assertSee(route('kelola.pemilihan.monitor', $d['id_pemilihan']), false);
         $respons->assertDontSee(route('kelola.pemilihan.monitor', $lain['id_pemilihan']), false);
     }
@@ -79,7 +74,7 @@ class ReviewRegressionTest extends TestCase
             ->assertForbidden();
     }
 
-    // ---------- C2: pemilihan bersuara tidak boleh dihapus ----------
+
 
     public function test_pemilihan_bersuara_tidak_bisa_dihapus(): void
     {
@@ -100,7 +95,7 @@ class ReviewRegressionTest extends TestCase
         $this->assertSame(0, DB::connection('mysql')->table('pemilihan')->count());
     }
 
-    // ---------- C3: pemilih yang sudah memilih tidak boleh di-reset ----------
+
 
     public function test_sudah_memilih_tidak_bisa_direset_ke_nol(): void
     {
@@ -153,15 +148,15 @@ class ReviewRegressionTest extends TestCase
         ]);
     }
 
-    // ---------- I1: batas waktu harus konsisten ----------
+
 
     public function test_suara_ditolak_tepat_pada_waktu_selesai(): void
     {
         $d = $this->seedPemilihanDraf();
 
-        // Pemilihan yang waktu selesainya persis "sekarang". Dibuat sebagai draf dulu
-        // (trigger menolak penambahan pemilih pada pemilihan yang sudah dibuka),
-        // lalu statusnya diubah ke berlangsung.
+
+
+
         $idBaru = DB::connection('mysql')->table('pemilihan')->insertGetId([
             'id_organisasi' => $d['id_organisasi'],
             'id_tahun_ajaran' => $d['id_tahun_ajaran'],
@@ -185,7 +180,7 @@ class ReviewRegressionTest extends TestCase
         $this->assertSame('SUDAH_DITUTUP', DB::selectOne('SELECT @s AS s')->s);
     }
 
-    // ---------- I2: admin harus bisa melihat hasil ----------
+
 
     public function test_admin_bisa_membuka_halaman_hasil(): void
     {
@@ -199,7 +194,7 @@ class ReviewRegressionTest extends TestCase
             ->assertSee('Perolehan Suara');
     }
 
-    // ---------- I6: nomor urut duplikat harus pesan jelas, bukan 500 ----------
+
 
     public function test_nomor_urut_duplikat_ditolak_dengan_pesan_validasi(): void
     {

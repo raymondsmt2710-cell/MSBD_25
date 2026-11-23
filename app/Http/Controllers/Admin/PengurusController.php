@@ -10,18 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Fitur 12 — Tetapkan pengurus kelas dan pengurus organisasi.
- *
- * Penetapan bendahara kelas menentukan siapa yang boleh mencatat kas kelas, jadi
- * aturan di sini dijaga ketat:
- *  - jabatan harus berlingkup sesuai (kelas / organisasi);
- *  - pengurus kelas harus anggota kelas tersebut;
- *  - jumlah pemegang tidak melebihi kuota jabatan;
- *  - satu siswa memegang paling banyak satu jabatan per kelas, atau per organisasi per tahun ajaran.
- * Pemeriksaan kuota dilakukan di dalam transaksi dengan lock agar dua penetapan
- * bersamaan tidak sama-sama lolos.
- */
 class PengurusController extends AdminController
 {
     public function index(Request $request)
@@ -51,7 +39,7 @@ class PengurusController extends AdminController
         return view('admin.pengurus.index', compact('kelas', 'organisasi', 'tahunAjaran', 'idTahun'));
     }
 
-    // ------------------------------------------------------------------ kelas
+
 
     public function kelas(Kelas $kelas)
     {
@@ -117,7 +105,7 @@ class PengurusController extends AdminController
         return back()->with('success', 'Jabatan dilepas.');
     }
 
-    // ------------------------------------------------------------------ organisasi
+
 
     public function organisasi(Request $request, Organisasi $organisasi)
     {

@@ -13,9 +13,7 @@ use App\Models\User;
 
 trait MembuatSekolah
 {
-    /**
-     * @return array<string, mixed>
-     */
+
     protected function buatSekolah(): array
     {
         $tahun = TahunAjaran::create([

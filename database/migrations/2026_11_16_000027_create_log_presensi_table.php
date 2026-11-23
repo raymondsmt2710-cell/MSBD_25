@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    // Tabel audit untuk Trigger (materi: Penerapan MSBD pada Laravel, bagian 4).
-    // Sengaja tanpa FOREIGN KEY agar log tetap ada walau data asal dihapus.
+
+
     public function up(): void
     {
         Schema::create('log_presensi', function (Blueprint $table) {

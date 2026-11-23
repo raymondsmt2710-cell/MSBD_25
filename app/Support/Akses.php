@@ -11,11 +11,7 @@ use Illuminate\Support\Collection;
 
 final class Akses
 {
-    /**
-     * Semua kelas yang boleh dilihat user pada tahun ajaran aktif.
-     *
-     * @return Collection<int, Kelas>
-     */
+
     public function daftarKelas(User $user): Collection
     {
         if ($user->role === Role::Admin) {
@@ -92,16 +88,11 @@ final class Akses
         return $daftar->first();
     }
 
-    /**
-     * ID siswa yang boleh dilihat pada matriks iuran.
-     * Null berarti seluruh anggota kelas boleh dilihat.
-     *
-     * @return Collection<int, int>|null
-     */
+
     public function siswaTerlihat(User $user, Kelas $kelas): ?Collection
     {
-        // Peran bendahara_kas boleh mengelola kas kelasnya, jadi harus melihat
-        // seluruh baris matriks iuran — sama seperti bendahara dan ketua kelas.
+
+
         if (
             $user->role === Role::BendaharaKas
             || $this->isBendahara($user, $kelas)
@@ -130,12 +121,7 @@ final class Akses
         return null;
     }
 
-    /**
-     * Orang tua boleh melaporkan pembayaran iuran HANYA untuk anaknya sendiri.
-     *
-     * Ini bukan hak kelola: laporan hanya mengubah status menjadi "menunggu"
-     * dan tidak dihitung sebagai pemasukan sampai bendahara memverifikasi.
-     */
+
     public function bisaLaporIuran(User $user, IuranKas $iuran): bool
     {
         if ($user->role !== Role::OrangTua) {
@@ -147,8 +133,8 @@ final class Akses
             return false;
         }
 
-        // Iuran harus milik anak kandung/wali dari akun ini, dan anak itu
-        // masih anggota kelas tersebut.
+
+
         return $orangTua->siswa()
             ->where('siswa.id_siswa', $iuran->id_siswa)
             ->whereHas('anggotaKelas', fn ($q) => $q->where('id_kelas', $iuran->id_kelas))
@@ -198,9 +184,9 @@ final class Akses
 
     public function bisaKelolaKas(User $user, Kelas $kelas): bool
     {
-        // Peran bendahara_kas: ditandai langsung di akunnya, tidak bergantung
-        // pada nama jabatan, tetapi tetap terbatas pada kelasnya sendiri
-        // (kelas diverifikasi lewat bisaLihatKelas).
+
+
+
         if ($user->role === Role::BendaharaKas) {
             return $this->bisaLihatKelas($user, $kelas);
         }
@@ -208,13 +194,7 @@ final class Akses
         return $user->role === Role::Admin || $this->isBendahara($user, $kelas);
     }
 
-    /**
-     * Denah kelas hanya boleh diubah administrator. Semua peran lain —
-     * termasuk ketua kelas dan bendahara kas — hanya dapat melihat.
-     * $kelas tetap diterima agar tanda tangan sama dengan gate lain dan
-     * pemanggil tidak perlu diubah; nilainya sengaja tidak dipakai karena
-     * wewenang ini tidak lagi bergantung pada jabatan di kelas.
-     */
+
     public function bisaKelolaKursi(User $user, Kelas $kelas): bool
     {
         return $user->role === Role::Admin;

@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Trigger (materi bagian 4): audit otomatis + penjaga token sekali pakai di level database.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -57,7 +56,7 @@ BEGIN
 END
 SQL);
 
-        // Token yang sudah dipakai tidak boleh dipakai ulang / dialihkan ke siswa lain
+
         DB::unprepared(<<<'SQL'
 CREATE TRIGGER trg_before_token_update
 BEFORE UPDATE ON token_presensi

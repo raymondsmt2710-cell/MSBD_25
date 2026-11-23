@@ -26,8 +26,7 @@
         .nav-links a:hover{background:#f3f4f6;color:#09656F}
         .nav-links a.aktif{background:rgba(9,101,111,.06);color:#09656F}
         .nav-aksi{display:flex;align-items:center;gap:8px}
-        /* Tombol profil ke /akun. Layout ini tidak punya hamburger, jadi tombolnya
-           tampil di semua lebar; nama pengguna disembunyikan di ponsel agar muat. */
+
         .nav-profil{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:rgba(9,101,111,.08);color:#09656F;flex-shrink:0}
         .nav-profil:hover{background:rgba(9,101,111,.15)}
         .kembali-wrap{margin-bottom:14px}
@@ -68,13 +67,13 @@
         .pill{display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;border-radius:999px;padding:4px 10px;font-size:11px;color:#4b5563;font-weight:600}
         .kosong{text-align:center;padding:34px 16px;color:#9ca3af;font-size:13px}
 
-        /* ---------- Tabel responsif ---------- */
-        /* Layar sedang: tabel boleh digulir mendatar, tidak memaksa halaman melebar. */
+
+
         .tabel-gulir{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
         .tabel-roster{min-width:560px}
         .tabel-roster thead th{white-space:nowrap}
 
-        /* Layar kecil: setiap baris jadi kartu bertumpuk, label di kiri. */
+
         @media(max-width:560px){
             .tabel-gulir{overflow-x:visible}
             .tabel-roster{min-width:0}
@@ -115,7 +114,7 @@
         .aksi-baris form{display:inline}
         .kecil{font-size:11px;color:#9ca3af}
 
-        /* ---------- Dua tombol pilihan di halaman presensi ---------- */
+
         .pilihan{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
         .pilihan-kartu{display:flex;flex-direction:column;gap:10px;padding:20px;border:1px solid #eef0f2;border-radius:16px;background:#fff;transition:transform .18s,box-shadow .18s,border-color .18s}
         .pilihan-kartu:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(16,24,40,.09);border-color:rgba(9,101,111,.28)}
@@ -124,7 +123,7 @@
         .pilihan-judul{font-size:15px;font-weight:800;margin:0}
         .pilihan-ket{font-size:12.5px;color:#6b7280;line-height:1.6;margin:0}
 
-        /* ---------- Area pemindai QR ---------- */
+
         .pemindai{position:relative;background:#043d44;border-radius:16px;overflow:hidden;min-height:280px;display:flex;align-items:center;justify-content:center}
         #pembaca{width:100%}
         #pembaca video{width:100%!important;height:auto!important;border-radius:16px;display:block}
@@ -141,14 +140,14 @@
 
         @media(max-width:640px){
             .nav-links{display:none}
-            /* Nama pengguna + peran memakan ruang; tombol profil & Keluar tetap. */
+
             .nav-aksi .pill{display:none}
             h1{font-size:19px}
             th,td{padding:8px 6px;font-size:12px}
             .nav-hamburger{display:inline-flex}
         }
 
-        /* ---------- Hamburger + drawer (ponsel) ---------- */
+
         .nav-hamburger{display:none;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:rgba(9,101,111,.08);color:#09656F;cursor:pointer;list-style:none;flex-shrink:0}
         .nav-hamburger::-webkit-details-marker{display:none}
         .nav-drawer{display:none}
@@ -176,11 +175,6 @@
 
 <header class="nav">
     <div class="nav-inner">
-        {{-- Logo mengarah ke BERANDA PERAN, bukan ke halaman fitur yang sedang
-             dibuka. Sebelumnya siswa yang membuka presensi lalu menekan logo
-             akan memuat ulang halaman presensi itu (terasa seperti tombol
-             refresh), sehingga tidak ada jalan pulang yang bisa ditebak.
-             Tamu (belum login) tetap diarahkan ke halaman depan. --}}
         <a href="{{ auth()->check() ? route(auth()->user()->role->home()) : url('/') }}" class="brand">
             <x-logo mark tinggi="34" />
             <div>
@@ -189,13 +183,10 @@
             </div>
         </a>
 
-        {{-- partials.nav-utama sudah membungkus daftar tautan dengan
-             <nav class="nav-links">. Jangan menambah pembungkus kedua di sini. --}}
         @auth
             @include('partials.nav-utama', ['gaya' => 'nav'])
         @endauth
 
-        {{-- Hamburger: di ponsel tautan nav disembunyikan, jadi menu pindah ke sini. --}}
         @auth
             <details class="nav-drawer">
                 <summary class="nav-hamburger" aria-label="Buka menu">

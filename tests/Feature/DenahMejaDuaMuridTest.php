@@ -8,14 +8,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\MembuatSekolah;
 use Tests\TestCase;
 
-/**
- * Aturan baru: satu meja menampung 2 murid (sisi kiri & kanan).
- */
 class DenahMejaDuaMuridTest extends TestCase
 {
     use MembuatSekolah, RefreshDatabase;
 
-    /** @var array<string, mixed> */
+
     private array $sekolah;
 
     protected function setUp(): void
@@ -54,7 +51,7 @@ class DenahMejaDuaMuridTest extends TestCase
         $this->tempatkan($denah, $this->sekolah['siswa'][0]->id_siswa, 1, 1, 'kiri')->assertOk();
         $this->tempatkan($denah, $this->sekolah['siswa'][1]->id_siswa, 1, 1, 'kanan')->assertOk();
 
-        // Tidak ada sisi tersisa -> ditolak
+
         $this->tempatkan($denah, $this->sekolah['siswa'][2]->id_siswa, 1, 1, 'kiri')
             ->assertStatus(422);
     }
@@ -67,7 +64,7 @@ class DenahMejaDuaMuridTest extends TestCase
             ->postJson('/denah/kelas/'.$this->sekolah['kelas']->id_kelas.'/acak')
             ->assertOk();
 
-        // 4 murid, 2 per meja -> 2 meja terisi
+
         $perMeja = PosisiDuduk::all()->groupBy(fn ($p) => $p->baris.'-'.$p->kolom);
 
         $this->assertCount(2, $perMeja);
@@ -82,10 +79,10 @@ class DenahMejaDuaMuridTest extends TestCase
     {
         $denah = $this->buatDenah();
 
-        // Perkecil grid: 1 baris x 2 kolom = 4 tempat (2 meja x 2 sisi).
+
         $denah->update(['jumlah_baris' => 1, 'jumlah_kolom' => 2]);
 
-        // 4 murid masih muat.
+
         $this->actingAs($this->sekolah['admin'])
             ->postJson('/denah/kelas/'.$this->sekolah['kelas']->id_kelas.'/acak')
             ->assertOk();

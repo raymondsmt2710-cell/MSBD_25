@@ -5,14 +5,6 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Melaporkan akun orang tua yang berperan ganda (ayah DAN ibu sekaligus).
- *
- * Sejak aturan "satu akun = satu peran" diberlakukan, data baru tidak bisa lagi
- * dibuat seperti ini. Tetapi data lama tetap ada, dan TIDAK diubah otomatis:
- * mana yang salah input hanya bisa diputuskan manusia. Perintah ini hanya
- * menunjukkan mana yang perlu diperiksa.
- */
 class PeriksaPeranOrangTua extends Command
 {
     protected $signature = 'orang-tua:periksa-peran';

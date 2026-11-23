@@ -10,7 +10,6 @@
 
     <div class="py-6" x-data="kasPage(@js($initial))" x-cloak>
         <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
-            {{-- Toolbar --}}
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-2">
                     <label class="text-sm text-gray-500">Kelas</label>
@@ -41,7 +40,6 @@
                 </div>
             </div>
 
-            {{-- Summary cards --}}
             <div class="grid gap-4 sm:grid-cols-3">
                 <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
                     <div class="flex items-center justify-between">
@@ -83,7 +81,6 @@
                 </div>
             </div>
 
-            {{-- Tabs --}}
             <div class="flex gap-2 rounded-xl bg-gray-100 p-1">
                 <button @click="tab = 'transaksi'"
                         :class="tab === 'transaksi' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
@@ -97,7 +94,6 @@
                 </button>
             </div>
 
-            {{-- Filter --}}
             <div x-show="tab === 'transaksi'" class="grid gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100 sm:grid-cols-2 lg:grid-cols-6">
                 <label class="block">
                     <span class="mb-1 block text-xs font-medium text-gray-500">Dari tanggal</span>
@@ -138,10 +134,6 @@
                 </div>
             </div>
 
-            {{-- Transactions --}}
-{{-- overflow-x-auto, bukan overflow-hidden: tabel transaksi lebih lebar dari
-     layar ponsel, dan overflow-hidden memotong kolom terakhir sehingga datanya
-     tidak bisa diakses sama sekali. --}}
             <div x-show="tab === 'transaksi'" class="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 p-4">
                     <p class="text-sm text-gray-500">
@@ -224,7 +216,6 @@
                 </div>
             </div>
 
-            {{-- Iuran matrix --}}
             <div x-show="tab === 'iuran'" class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
                 <div class="flex flex-wrap items-end justify-between gap-3">
                     <div>
@@ -271,7 +262,6 @@
                                                     :class="chipClass(row.iuran[bulan]?.status)"
                                                     class="w-full min-w-[3rem] rounded-md border px-1 py-1.5 text-[10px] font-medium transition hover:opacity-80 disabled:cursor-default">
                                                 <span x-text="statusLabel(row.iuran[bulan]?.status)"></span>
-                                                {{-- Penanda bukti: terlihat bila ada bukti terunggah. --}}
                                                 <template x-if="row.iuran[bulan]?.bukti_tampil">
                                                     <span @click.stop="lihatBukti(row.iuran[bulan])"
                                                           title="Lihat bukti pembayaran"
@@ -302,7 +292,6 @@
 
         @include('kas._modal-transaksi')
 
-        {{-- Toast --}}
         <div x-show="toast" x-transition x-cloak
              class="fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-xl px-4 py-3 text-sm font-medium text-white shadow-lg"
              :class="toast?.tipe === 'error' ? 'bg-rose-600' : 'bg-gray-900'">

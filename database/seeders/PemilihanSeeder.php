@@ -6,14 +6,6 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-/**
- * Data contoh fitur pemilihan.
- *
- * Idempoten: memakai pengecekan keberadaan, jadi aman dijalankan berulang
- * tanpa menggandakan data.
- *
- * Semua password akun contoh: "password"
- */
 class PemilihanSeeder extends Seeder
 {
     public function run(): void
@@ -21,7 +13,7 @@ class PemilihanSeeder extends Seeder
         $hash = Hash::make('password');
         $now = now();
 
-        // ---------- Akun dasar ----------
+
 
         $buatUser = function (string $username, string $role) use ($hash, $now): int {
             $ada = DB::table('users')->where('username', $username)->value('id_user');
@@ -39,7 +31,7 @@ class PemilihanSeeder extends Seeder
         $buatUser('admin', 'admin');
         $idGuruUser = $buatUser('guru1', 'guru');
 
-        // ---------- Tahun ajaran ----------
+
 
         $idTahunAjaran = DB::table('tahun_ajaran')->where('nama', '2026/2027')->value('id_tahun_ajaran')
             ?? DB::table('tahun_ajaran')->insertGetId([
@@ -49,7 +41,7 @@ class PemilihanSeeder extends Seeder
                 'is_aktif' => true,
             ]);
 
-        // ---------- Guru & organisasi ----------
+
 
         $idGuru = DB::table('guru')->where('id_user', $idGuruUser)->value('id_guru')
             ?? DB::table('guru')->insertGetId([
@@ -67,7 +59,7 @@ class PemilihanSeeder extends Seeder
                 'id_pembina' => $idGuru,
             ]);
 
-        // ---------- Kelas & siswa ----------
+
 
         $kelas = [
             ['nama_kelas' => 'X IPA 1', 'tingkat' => 10, 'jurusan' => 'IPA', 'ruangan' => 'R-101'],
@@ -115,7 +107,7 @@ class PemilihanSeeder extends Seeder
 
             $idSiswa[] = $id;
 
-            // Tiga siswa per kelas.
+
             $idKelasSiswa = $idKelas[intdiv($i, 3)];
 
             $sudahAnggota = DB::table('anggota_kelas')
@@ -130,15 +122,15 @@ class PemilihanSeeder extends Seeder
             }
         }
 
-        // ---------- Pemilihan contoh ----------
+
 
         $idPemilihan = DB::table('pemilihan')
             ->where('judul', 'Pemilihan Ketua OSIS 2026/2027')
             ->value('id_pemilihan');
 
         if (! $idPemilihan) {
-            // Dibuat sebagai draf dulu, karena trigger database menolak penambahan
-            // kandidat/pemilih pada pemilihan yang sudah dibuka.
+
+
             $idPemilihan = DB::table('pemilihan')->insertGetId([
                 'id_organisasi' => $idOrganisasi,
                 'id_tahun_ajaran' => $idTahunAjaran,
@@ -152,7 +144,7 @@ class PemilihanSeeder extends Seeder
             ]);
         }
 
-        // ---------- Kandidat ----------
+
 
         $kandidat = [
             ['nomor' => 1, 'ketua' => 0, 'wakil' => 1, 'visi' => 'OSIS yang aktif, kreatif, dan dekat dengan siswa.',
@@ -182,7 +174,7 @@ class PemilihanSeeder extends Seeder
             }
         }
 
-        // ---------- Daftar pemilih ----------
+
 
         foreach ($idSiswa as $id) {
             $terdaftar = DB::table('daftar_pemilih')
@@ -198,7 +190,7 @@ class PemilihanSeeder extends Seeder
             }
         }
 
-        // ---------- Panitia (guru1) ----------
+
 
         $idGuruUserSudah = DB::table('users')->where('username', 'guru1')->value('id_user');
 
@@ -212,8 +204,8 @@ class PemilihanSeeder extends Seeder
             ]);
         }
 
-        // Terakhir: buka pemilihan agar siap dicoba. Hanya transisi draf -> berlangsung
-        // yang diizinkan trigger, dan hanya jika belum pernah dibuka.
+
+
         $statusSekarang = DB::table('pemilihan')
             ->where('id_pemilihan', $idPemilihan)->value('status');
 

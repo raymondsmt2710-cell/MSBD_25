@@ -9,18 +9,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\MembuatSekolah;
 use Tests\TestCase;
 
-/**
- * Orang tua harus punya JALAN MASUK ke kas anaknya.
- *
- * Regresi: fitur lapor pembayaran sudah ada di /kas, tetapi menu orang tua
- * hanya berisi "Portal Anak", sehingga fitur itu tidak bisa ditemukan
- * penggunanya.
- */
 class NavigasiKasOrangTuaTest extends TestCase
 {
     use MembuatSekolah, RefreshDatabase;
 
-    /** @var array<string, mixed> */
+
     private array $sekolah;
 
     private User $orangTua;
@@ -60,8 +53,8 @@ class NavigasiKasOrangTuaTest extends TestCase
 
     public function test_orang_tua_tidak_melihat_menu_kas_milik_peran_lain(): void
     {
-        // Menu guru/siswa memakai label berbeda; pastikan portal orang tua
-        // tidak menampilkan pintasan pengelolaan.
+
+
         $this->actingAs($this->orangTua)
             ->get(route('ortu.index'))
             ->assertOk()

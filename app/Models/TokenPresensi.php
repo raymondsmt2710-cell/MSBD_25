@@ -12,9 +12,7 @@ class TokenPresensi extends Model
     public $timestamps = false;
     protected $guarded = [];
 
-    /**
-     * Memanggil Stored Function fn_token_valid (belum dipakai, belum kedaluwarsa, sesi masih dibuka).
-     */
+
     public static function masihValid(string $kode): bool
     {
         $hasil = DB::selectOne('SELECT fn_token_valid(?) AS ok', [$kode]);

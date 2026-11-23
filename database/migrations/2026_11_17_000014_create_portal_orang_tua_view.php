@@ -3,17 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// View (materi View & Query Kompleks) + DCL (materi Manajemen User & Hak Akses).
-//
-// Fitur 7: portal pemantauan orang tua/wali.
-//
-// Orang tua cukup diberi SELECT pada SATU view ini, bukan pada tabel kelas /
-// anggota_kelas / tahun_ajaran. View berjalan dengan SQL SECURITY DEFINER (default
-// MySQL), sehingga ortu_app tidak perlu GRANT pada tabel dasar yang di-JOIN di dalamnya.
-//
-// Nomor 000014 dipakai karena 000001-000013 sudah dipakai migrasi fitur pemilihan.
-// Versi asli migrasi ini memakai nomor 000001 dan bertabrakan dengan
-// 2026_11_17_000001_create_log_pemilihan_table.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -41,9 +30,9 @@ return new class extends Migration
 
         DB::unprepared("DROP VIEW IF EXISTS `{$view}`");
 
-        // Satu baris per (orang_tua, siswa). Kelas diambil lewat subquery MAX(id_anggota)
-        // pada tahun ajaran aktif, sehingga siswa dengan riwayat beberapa kelas
-        // (atau beberapa baris anggota_kelas) tidak muncul ganda.
+
+
+
         DB::unprepared(<<<SQL
 CREATE VIEW `{$view}` AS
 SELECT
@@ -76,9 +65,9 @@ LEFT JOIN kelas k ON k.id_kelas = ak.id_kelas
 LEFT JOIN tahun_ajaran ta ON ta.id_tahun_ajaran = k.id_tahun_ajaran
 SQL);
 
-        // GRANT bersifat idempoten di MySQL (mengulang GRANT yang sama tidak error),
-        // jadi aman dijalankan berkali-kali. FLUSH PRIVILEGES tidak diperlukan karena
-        // GRANT langsung berlaku; memanggilnya hanya menambah beban.
+
+
+
         $db = config('database.connections.mysql.database');
         $ortu = $this->namaUserOrtu();
 
@@ -95,12 +84,12 @@ SQL);
         $db = config('database.connections.mysql.database');
         $ortu = $this->namaUserOrtu();
 
-        // REVOKE bisa gagal bila grant sudah tidak ada (mis. user MySQL-nya dihapus),
-        // dan kegagalan itu tidak boleh menggagalkan rollback migrasi.
+
+
         try {
             DB::unprepared("REVOKE SELECT ON `{$db}`.`{$view}` FROM '{$ortu}'@'localhost'");
         } catch (\Throwable $e) {
-            // diabaikan: grant memang sudah tidak ada
+
         }
 
         DB::unprepared("DROP VIEW IF EXISTS `{$view}`");

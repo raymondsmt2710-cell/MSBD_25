@@ -4,10 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-// Karena SESSION_DRIVER=database dan DBDynamicConnection mengganti koneksi default
-// ke user MySQL per-role, setiap role butuh hak tulis ke tabel `sessions`.
-// Tanpa grant ini, request pertama setelah login bisa gagal (HTTP 500) saat
-// session hendak disimpan.
 return new class extends Migration
 {
     private function mysql(): bool
@@ -15,7 +11,7 @@ return new class extends Migration
         return in_array(DB::getDriverName(), ['mysql', 'mariadb'], true);
     }
 
-    /** @return array<int, string> */
+
     private function accounts(): array
     {
         return [
@@ -34,7 +30,7 @@ return new class extends Migration
 
         $db = config('database.connections.mysql.database');
 
-        // Lewati bila tabel sessions belum ada (mis. urutan migrasi berbeda).
+
         if (! Schema::hasTable('sessions')) {
             return;
         }

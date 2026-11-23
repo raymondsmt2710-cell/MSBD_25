@@ -8,14 +8,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
-/**
- * Fitur 18 — Lihat presensi semua kelas (hanya-baca).
- *
- * Admin memantau lintas kelas untuk evaluasi. Aksi operasional (membuka sesi,
- * koreksi manual, verifikasi izin) tetap milik guru karena kolom dibuka_oleh,
- * diubah_oleh, dan diverifikasi_oleh merujuk tabel guru — itu sebabnya controller
- * ini sengaja tidak punya satu pun aksi tulis.
- */
 class PresensiController extends AdminController
 {
     public function index(Request $request)
@@ -28,7 +20,7 @@ class PresensiController extends AdminController
             ->paginate(30)
             ->withQueryString();
 
-        // Rekap per kelas dalam rentang tanggal: persentase hadir dari presensi yang tercatat.
+
         $rekapKelas = DB::table('presensi as p')
             ->join('sesi_presensi as sp', 'sp.id_sesi', '=', 'p.id_sesi')
             ->join('jadwal_pelajaran as j', 'j.id_jadwal', '=', 'sp.id_jadwal')
@@ -59,7 +51,7 @@ class PresensiController extends AdminController
         $info = $this->querySesi(null, null, null, null)->where('sp.id_sesi', $sesi)->first();
         abort_if($info === null, 404);
 
-        // Seluruh roster kelas, termasuk siswa yang belum punya baris presensi pada sesi ini.
+
         $siswa = DB::table('anggota_kelas as ak')
             ->join('siswa as s', 's.id_siswa', '=', 'ak.id_siswa')
             ->leftJoin('presensi as p', fn ($j) => $j->on('p.id_siswa', '=', 's.id_siswa')->where('p.id_sesi', $sesi))
@@ -81,7 +73,7 @@ class PresensiController extends AdminController
             ->leftJoin('anggota_kelas as ak', 'ak.id_siswa', '=', 's.id_siswa')
             ->leftJoin('kelas as k', fn ($j) => $j->on('k.id_kelas', '=', 'ak.id_kelas')->where('k.id_tahun_ajaran', $idTahun ?? 0))
             ->leftJoin('guru as g', 'g.id_guru', '=', 'pi.diverifikasi_oleh')
-            // Pengajuan yang rentangnya beririsan dengan rentang filter.
+
             ->where('pi.tanggal_mulai', '<=', $sampai)
             ->where('pi.tanggal_selesai', '>=', $dari)
             ->whereNotNull('k.id_kelas')
@@ -103,7 +95,7 @@ class PresensiController extends AdminController
         ]);
     }
 
-    /** Sesi presensi beserta jumlah per status. Semua parameter null = tanpa filter. */
+
     private function querySesi(?int $idTahun, ?string $dari, ?string $sampai, ?int $idKelas)
     {
         return DB::table('sesi_presensi as sp')
@@ -124,7 +116,7 @@ class PresensiController extends AdminController
             ->selectSub(DB::table('anggota_kelas')->selectRaw('COUNT(*)')->whereColumn('id_kelas', 'k.id_kelas'), 'jumlah_siswa');
     }
 
-    /** @return array{0: array, 1: ?int, 2: string, 3: string} */
+
     private function filter(Request $request, array $tambahan = []): array
     {
         $filter = $request->validate($tambahan + [

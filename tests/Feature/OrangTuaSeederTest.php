@@ -8,16 +8,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-// Memastikan OrangTuaSeeder benar-benar membuat akun orang tua, menghubungkannya ke
-// anak, dan aman dijalankan berulang (idempoten).
-//
-// Ini penting karena seeder adalah SATU-SATUNYA sumber akun berperan orang_tua:
-// DatabaseSeeder tidak membuatnya, sehingga tanpa seeder ini portal tidak bisa dipakai.
 class OrangTuaSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** Menyiapkan rantai FK minimal: guru -> kelas -> mapel -> jadwal, lalu 2 siswa. */
+
     private function siapkanDataDasar(): array
     {
         $idGuruUser = DB::table('users')->insertGetId([
@@ -82,7 +77,7 @@ class OrangTuaSeederTest extends TestCase
         $this->assertSame('orang_tua', $user->role);
         $this->assertTrue((bool) $user->is_active);
 
-        // Password harus benar-benar bisa dipakai login.
+
         $this->assertTrue(Hash::check('password', $user->password_hash));
 
         $orangTua = DB::table('orang_tua')->where('id_user', $user->id_user)->first();
@@ -115,7 +110,7 @@ class OrangTuaSeederTest extends TestCase
 
         (new OrangTuaSeeder())->run();
 
-        // Pola: anak 1 -> hadir,hadir,izin (2/3); anak 2 -> hadir,alpa,sakit (1/3).
+
         $hadir1 = DB::table('presensi')
             ->where('id_siswa', $idSiswa[0])->where('status', 'hadir')->count();
         $hadir2 = DB::table('presensi')
@@ -129,7 +124,7 @@ class OrangTuaSeederTest extends TestCase
     {
         $idSiswa = $this->siapkanDataDasar();
 
-        // Anggap fitur presensi sudah punya data sendiri.
+
         $idSesi = DB::table('sesi_presensi')->insertGetId([
             'id_jadwal' => DB::table('jadwal_pelajaran')->value('id_jadwal'),
             'tanggal' => '2026-11-01', 'status' => 'ditutup',
@@ -141,7 +136,7 @@ class OrangTuaSeederTest extends TestCase
 
         (new OrangTuaSeeder())->run();
 
-        // Presensi contoh tidak boleh ditambahkan karena sudah ada data.
+
         $this->assertSame(1, DB::table('presensi')->count());
         $this->assertSame(1, DB::table('sesi_presensi')->count());
     }

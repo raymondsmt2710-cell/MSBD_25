@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-// Tabel `kandidat` tidak punya created_at/updated_at.
 class Kandidat extends Model
 {
     protected $table = 'kandidat';
@@ -27,7 +26,7 @@ class Kandidat extends Model
         return $this->belongsTo(Siswa::class, 'id_siswa_wakil', 'id_siswa');
     }
 
-    /** Nama pasangan, mis. "Budi & Ani" atau "Budi" bila tanpa wakil. */
+
     public function getNamaPasanganAttribute(): string
     {
         return $this->wakil

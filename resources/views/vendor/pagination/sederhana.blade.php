@@ -1,5 +1,3 @@
-{{-- Paginasi tanpa Tailwind: layout aplikasi ini memakai CSS sendiri, bukan Tailwind,
-     sehingga markup bawaan Laravel (kelas flex/px-4/border-gray-*) tampil tanpa gaya. --}}
 @if ($paginator->hasPages())
     <nav style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px">
         @if ($paginator->onFirstPage())

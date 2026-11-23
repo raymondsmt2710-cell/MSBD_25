@@ -56,7 +56,7 @@ class MonitorTest extends TestCase
 
     public function test_peringatan_muncul_bila_waktu_sudah_lewat(): void
     {
-        // Waktu tidak bisa diubah saat berlangsung, jadi dibuat pemilihan baru yang sudah lewat.
+
         $d = $this->seedPemilihanBerlangsung();
 
         $idBaru = DB::connection('mysql')->table('pemilihan')->insertGetId([

@@ -19,8 +19,8 @@ class DashboardSiswaTest extends TestCase
 
     public function test_view_perangkat_kelas_siswa_ada_dan_terbaca(): void
     {
-        // View harus ada dan bisa di-query. Bila migrasi belum jalan, ini gagal
-        // dengan "table doesn't exist" — persis kegagalan yang ingin dicegah.
+
+
         $this->assertSame(0, DB::table('v_perangkat_kelas_siswa')->count());
     }
 
@@ -29,7 +29,7 @@ class DashboardSiswaTest extends TestCase
         $this->assertSame(0, DB::table('v_perangkat_organisasi_siswa')->count());
     }
 
-    /** Membuat satu siswa lengkap dengan akun login. Mengembalikan objek User. */
+
     private function buatSiswa(string $nama = 'Siswa Uji', string $nis = '20260099'): \App\Models\User
     {
         $idUser = DB::table('users')->insertGetId([
@@ -64,8 +64,8 @@ class DashboardSiswaTest extends TestCase
 
     public function test_dashboard_tidak_lagi_memuat_menu_cepat(): void
     {
-        // Menu Cepat kini hanya hidup di dalam drawer. Merendernya juga di halaman
-        // berarti isi yang sama dua kali dan dashboard jadi panjang di ponsel.
+
+
         $user = $this->buatSiswa();
 
         $this->actingAs($user)
@@ -77,7 +77,7 @@ class DashboardSiswaTest extends TestCase
 
     public function test_data_diri_tidak_lagi_di_dashboard(): void
     {
-        // Data Diri pindah ke /akun.
+
         $user = $this->buatSiswa();
 
         $this->actingAs($user)
@@ -88,7 +88,7 @@ class DashboardSiswaTest extends TestCase
 
     public function test_drawer_tanpa_baris_keterangan(): void
     {
-        // Kartu drawer setinggi satu baris: ikon + judul, tanpa keterangan.
+
         $user = $this->buatSiswa();
 
         $html = $this->actingAs($user)
@@ -144,8 +144,8 @@ class DashboardSiswaTest extends TestCase
 
     public function test_kartu_kehadiran_mendatar_dan_bisa_digeser(): void
     {
-        // Permintaan: kelima kartu dalam satu baris ke samping, tidak turun ke
-        // baris kedua, supaya mudah dilihat di ponsel.
+
+
         $user = $this->buatSiswa();
 
         $html = $this->actingAs($user)
@@ -155,11 +155,11 @@ class DashboardSiswaTest extends TestCase
 
         $this->assertStringContainsString('scroll-snap-type:x mandatory', $html);
         $this->assertStringContainsString('overflow-x:auto', $html);
-        // Lebar tetap: tanpa ini kartu menyusut dan angka "100.00%" terpotong.
+
         $this->assertStringContainsString('flex:0 0 120px', $html);
-        // Angka terpanjang tidak boleh pecah ke baris kedua.
+
         $this->assertStringContainsString('white-space:nowrap', $html);
-        // Desktop harus kembali jadi grid, bukan ikut mendatar.
+
         $this->assertStringContainsString('@media(min-width:641px)', $html);
     }
 
@@ -172,11 +172,11 @@ class DashboardSiswaTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        // Drawer memakai <details> agar bekerja tanpa JavaScript.
+
         $this->assertStringContainsString('<details class="nav-drawer">', $html);
         $this->assertStringContainsString('<summary class="nav-hamburger"', $html);
 
-        // Panel drawer memuat keempat tujuan Menu Cepat.
+
         $panel = $this->panelDrawer($html);
         $this->assertStringContainsString(route('siswa.presensi.riwayat'), $panel);
         $this->assertStringContainsString(route('siswa.perangkat'), $panel);
@@ -194,9 +194,9 @@ class DashboardSiswaTest extends TestCase
             ->assertSee(route('akun.profil'), false)
             ->getContent();
 
-        // Tombol profil ponsel (.nav-profil) disembunyikan di desktop, jadi harus
-        // ada varian yang tampil di dalam .nav-aksi — kalau tidak, /akun tidak
-        // bisa dijangkau sama sekali dari layar lebar.
+
+
+
         $this->assertMatchesRegularExpression(
             '/<div class="nav-aksi">[\s\S]{0,600}?class="nav-profil-dalam"/',
             $html,
@@ -204,7 +204,7 @@ class DashboardSiswaTest extends TestCase
         );
     }
 
-    /** Isi elemen .drawer-panel, dipakai untuk memeriksa isi hamburger. */
+
     private function panelDrawer(string $html): string
     {
         $mulai = strpos($html, '<div class="drawer-panel">');
@@ -227,7 +227,7 @@ class DashboardSiswaTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        // Palet dan font yang sama dengan halaman beranda.
+
         $this->assertStringContainsString('#09656F', $html);
         $this->assertStringContainsString('Figtree', $html);
         $this->assertStringContainsString('SakuSaka', $html);
@@ -250,8 +250,8 @@ class DashboardSiswaTest extends TestCase
 
     public function test_siswa_tanpa_kelas_tetap_tampil(): void
     {
-        // Review Focus #1: siswa yang belum punya baris anggota_kelas tidak boleh
-        // membuat halaman 500 karena nama kelas tidak ditemukan.
+
+
         $user = $this->buatSiswa('Tanpa Kelas', '20260098');
 
         $this->actingAs($user)
@@ -262,8 +262,8 @@ class DashboardSiswaTest extends TestCase
 
     public function test_alamat_panjang_dan_khusus_ter_escape(): void
     {
-        // Review Focus #5: alamat berisi karakter HTML tidak boleh dieksekusi.
-        // Alamat kini tampil di halaman /akun (data diri pindah dari dashboard).
+
+
         $user = $this->buatSiswa('Uji Escape', '20260097');
 
         DB::table('siswa')->where('id_user', $user->id_user)->update([
@@ -279,8 +279,8 @@ class DashboardSiswaTest extends TestCase
 
     public function test_siswa_tanpa_presensi_menampilkan_nol_bukan_error(): void
     {
-        // Review Focus #3: siswa baru tanpa satu pun baris presensi. Stored function
-        // mengembalikan 0/null; dashboard harus menampilkan 0, bukan halaman error.
+
+
         $user = $this->buatSiswa('Tanpa Presensi', '20260095');
 
         $html = $this->actingAs($user)
@@ -294,7 +294,7 @@ class DashboardSiswaTest extends TestCase
 
     public function test_halaman_perangkat_tampil_dengan_keadaan_kosong(): void
     {
-        // Review Focus #4: tabel pengurus kosong harus memberi pesan jelas.
+
         $user = $this->buatSiswa();
 
         $this->actingAs($user)
@@ -334,8 +334,8 @@ class DashboardSiswaTest extends TestCase
             'jurusan' => 'IPA',
         ]);
 
-        // Siswa yang menjadi pengurus WAJIB anggota kelas tersebut
-        // (dijaga trigger trg_pengurus_kelas_insert).
+
+
         DB::table('anggota_kelas')->insert([
             ['id_kelas' => $idKelas, 'id_siswa' => $idSiswaA, 'no_absen' => 1],
             ['id_kelas' => $idKelas, 'id_siswa' => $idSiswaB, 'no_absen' => 2],
@@ -346,7 +346,7 @@ class DashboardSiswaTest extends TestCase
             ['id_kelas' => $idKelas, 'id_siswa' => $idSiswaB, 'id_jabatan' => $idJabatan],
         ]);
 
-        // Siswa A melihat dirinya, bukan siswa B.
+
         $this->actingAs($userA)
             ->get(route('siswa.perangkat'))
             ->assertOk()
@@ -375,12 +375,12 @@ class DashboardSiswaTest extends TestCase
             ->assertSee('id="roster"', false);
     }
 
-    // ---------- Pengisi beranda: jadwal, riwayat, pemilihan ----------
+
 
     public function test_beranda_menampilkan_jadwal_hari_ini(): void
     {
-        // Roster disimpan per nama hari, jadi jadwal harus memakai hari ini
-        // (bukan tanggal) supaya cocok dengan query di controller.
+
+
         $user = $this->buatSiswa('Siswa Jadwal', '20260101');
         $idSiswa = $user->siswa->id_siswa;
 
@@ -406,7 +406,7 @@ class DashboardSiswaTest extends TestCase
 
     public function test_beranda_menampilkan_pesan_bila_tidak_ada_jadwal(): void
     {
-        // Hari tanpa jadwal tetap harus punya isi, bukan kartu kosong.
+
         $user = $this->buatSiswa('Siswa Kosong', '20260102');
 
         $this->actingAs($user)
@@ -467,16 +467,16 @@ class DashboardSiswaTest extends TestCase
             ->assertOk()
             ->assertSee('Pemilihan Uji')
             ->assertSee('Pilih Sekarang')
-            // isoFormat() memakai token moment.js: menit = mm, bukan i.
-            // Tanpa ini "18:i" lolos ke halaman tanpa terdeteksi.
+
+
             ->assertSee('24 Nov 2026, 18:00')
             ->assertDontSee('18:i');
     }
 
     public function test_beranda_tidak_menampilkan_kartu_pemilihan_bila_tidak_ada(): void
     {
-        // Tanpa pemilihan aktif, bagian ini dilewati agar tidak menambah
-        // ruang kosong di beranda.
+
+
         $user = $this->buatSiswa('Siswa Tanpa Pil', '20260105');
 
         $this->actingAs($user)
@@ -501,9 +501,9 @@ class DashboardSiswaTest extends TestCase
 
     public function test_tabel_presensi_bertumpuk_di_ponsel_sempit(): void
     {
-        // Tiga kolom pada layar 320px hanya menyisakan ~80px per kolom. Pola
-        // proyek ini: tiap baris jadi kartu, label kolom lewat data-label.
-        // Tabel hanya terender kalau ada data, jadi presensi disemai dulu.
+
+
+
         $user = $this->buatSiswa('Siswa Tabel', '20260107');
         $this->siapkanPresensi($user->siswa->id_siswa);
 
@@ -515,9 +515,9 @@ class DashboardSiswaTest extends TestCase
         $this->assertStringContainsString('data-label="Mata Pelajaran"', $html);
         $this->assertStringContainsString('@media(max-width:560px)', $html);
         $this->assertStringContainsString('content:attr(data-label)', $html);
-        // Aturan bertumpuk harus dibatasi ke .tabel-bertumpuk. Kalau memakai
-        // .tabel polos, tabel di guru/beranda dan siswa/perangkat ikut berubah
-        // tanpa data-label sehingga label kolomnya kosong.
+
+
+
         $this->assertStringContainsString('.tabel-bertumpuk tbody td::before', $html);
         $this->assertStringContainsString('class="tabel tabel-bertumpuk"', $html);
         $this->assertStringNotContainsString('.tabel tbody td::before', $html);
@@ -525,7 +525,7 @@ class DashboardSiswaTest extends TestCase
 
     public function test_tiga_bagian_beranda_berurutan(): void
     {
-        // Penanda bahwa bagian baru benar-benar dirender berurutan.
+
         $user = $this->buatSiswa('Siswa Urut', '20260108');
 
         $this->actingAs($user)
@@ -534,7 +534,7 @@ class DashboardSiswaTest extends TestCase
             ->assertSeeInOrder(['Jadwal Pelajaran', 'Presensi Terakhir']);
     }
 
-    /** Kelas + guru + mapel minimal agar v_roster_presensi_siswa terisi. */
+
     private function siapkanKelas(int $idSiswa, string $namaKelas): array
     {
         $idTahun = DB::table('tahun_ajaran')->insertGetId([
@@ -566,7 +566,7 @@ class DashboardSiswaTest extends TestCase
         $idKelas = DB::table('kelas')->insertGetId([
             'id_tahun_ajaran' => $idTahun,
             'nama_kelas' => $namaKelas,
-            // tingkat bertipe tinyint unsigned, bukan huruf.
+
             'tingkat' => 10,
             'jurusan' => 'IPA',
         ]);
@@ -580,15 +580,7 @@ class DashboardSiswaTest extends TestCase
         return [$idKelas, $idGuru, $idMapel];
     }
 
-    /**
-     * Pemilihan minimal satu organisasi + tahun ajaran, lengkap dengan siswa
-     * sebagai pemilih.
-     *
-     * Urutan penting: trigger trg_before_daftar_pemilih_insert menolak
-     * penambahan pemilih bila status pemilihan sudah 'berlangsung'. Jadi
-     * pemilihan dibuat sebagai draf dulu, pemilih didaftarkan, baru statusnya
-     * diubah — persis alur yang dipakai panitia sungguhan.
-     */
+
     private function siapkanPemilihan(int $idSiswa, string $status = 'berlangsung', bool $sudahMemilih = false): int
     {
         $idTahun = DB::table('tahun_ajaran')->insertGetId([
@@ -639,7 +631,7 @@ class DashboardSiswaTest extends TestCase
         return $idPemilihan;
     }
 
-    /** Satu jadwal + sesi + presensi, agar tabel riwayat terender. */
+
     private function siapkanPresensi(int $idSiswa, string $status = 'hadir'): void
     {
         [$idKelas, $idGuru, $idMapel] = $this->siapkanKelas($idSiswa, 'X UJI T');

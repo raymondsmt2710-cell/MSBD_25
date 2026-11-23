@@ -5,12 +5,6 @@ namespace Tests\Feature\Organisasi;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Data uji untuk fitur perangkat organisasi & kelas.
- *
- * Bentuk array kembalian dipakai oleh SEMUA test fitur ini, jadi
- * kunci-kuncinya tidak boleh berubah.
- */
 trait OrganisasiTestSupport
 {
     protected static int $organisasiSeedCounter = 0;
@@ -33,11 +27,7 @@ trait OrganisasiTestSupport
         return User::findOrFail($idUser);
     }
 
-    /**
-     * Siapkan: 1 tahun ajaran, 2 guru (wali kelas & guru lain), 1 organisasi
-     * (pembina = wali kelas), 1 kelas, 4 siswa anggota kelas, jabatan standar,
-     * dan pengurus awal (ketua + wakil) untuk kelas maupun organisasi.
-     */
+
     protected function seedPerangkat(): array
     {
         $cap = ++self::$organisasiSeedCounter;
@@ -114,7 +104,7 @@ trait OrganisasiTestSupport
             ]);
         }
 
-        // ---------- Jabatan standar ----------
+
         $jabatanKelas = [
             ['nama_jabatan' => 'Ketua Kelas', 'urutan' => 1],
             ['nama_jabatan' => 'Wakil Ketua', 'urutan' => 2],
@@ -151,7 +141,7 @@ trait OrganisasiTestSupport
             ]);
         }
 
-        // ---------- Pengurus awal ----------
+
         DB::connection('mysql')->table('pengurus_kelas')->insert([
             ['id_kelas' => $idKelas, 'id_siswa' => $idSiswa[0], 'id_jabatan' => $idJabatanKelas[0]],
             ['id_kelas' => $idKelas, 'id_siswa' => $idSiswa[1], 'id_jabatan' => $idJabatanKelas[1]],

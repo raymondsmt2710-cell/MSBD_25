@@ -28,7 +28,7 @@ class PresensiSiswaController extends Controller
         return Auth::user()->siswa?->id_siswa ?? abort(403, 'Akun ini belum terhubung ke data siswa.');
     }
 
-    /** Halaman masuk fitur presensi: dua pilihan (riwayat atau pindai QR). */
+
     public function menu()
     {
         $idSiswa = $this->idSiswa();
@@ -44,26 +44,21 @@ class PresensiSiswaController extends Controller
         return view('siswa.presensi.menu', compact('ringkasan'));
     }
 
-    /** Halaman pemindai QR: kamera langsung atau pilih foto dari galeri. */
+
     public function pindai()
     {
         return view('siswa.presensi.pindai');
     }
 
-    /** GET tidak mengubah data: hanya menampilkan tombol konfirmasi. */
+
     public function konfirmasi(string $kode)
     {
-        $valid = TokenPresensi::masihValid($kode); // Stored Function
+        $valid = TokenPresensi::masihValid($kode);
 
         return view('siswa.presensi.konfirmasi', compact('kode', 'valid'));
     }
 
-    /**
-     * Memanggil sp_scan_presensi di dalam transaksi (materi Transaction: COMMIT / ROLLBACK).
-     *
-     * Lokasi bersifat informasi saja: kalau siswa menolak izin lokasi atau browser tidak
-     * mendukung, presensi tetap dicatat dengan kolom lokasi NULL.
-     */
+
     public function scan(Request $request, string $kode)
     {
         $idSiswa = $this->idSiswa();
@@ -85,7 +80,7 @@ class PresensiSiswaController extends Controller
             DB::commit();
         } catch (QueryException $e) {
             DB::rollBack();
-            // 1062 = duplikat (siswa menekan tombol dua kali bersamaan)
+
             $status = ($e->errorInfo[1] ?? null) === 1062 ? 'SUDAH_PRESENSI' : null;
 
             if ($status === null) {
@@ -100,15 +95,7 @@ class PresensiSiswaController extends Controller
         return redirect()->route('siswa.presensi.riwayat')->with($status === 'BERHASIL' ? 'success' : 'error', $pesan);
     }
 
-    /**
-     * Roster presensi siswa: seluruh jadwal kelasnya pada satu pekan (Senin-Sabtu),
-     * lengkap dengan status kehadiran per tanggal.
-     *
-     * Status:
-     *   -            = guru belum membuka sesi pada tanggal itu
-     *   belum        = sesi dibuka, siswa belum memindai
-     *   hadir/izin/sakit/alpa = sudah tercatat
-     */
+
     public function riwayat(Request $request)
     {
         $idSiswa = $this->idSiswa();
@@ -121,7 +108,7 @@ class PresensiSiswaController extends Controller
             ->orderBy('jam_mulai')
             ->get();
 
-        // Sesi milik siswa pada pekan ini, dipetakan per (id_jadwal, tanggal).
+
         $sesi = DB::table('v_sesi_presensi_siswa')
             ->where('id_siswa', $idSiswa)
             ->whereBetween('tanggal', [$pekan->toDateString(), $pekan->copy()->addDays(5)->toDateString()])
@@ -171,7 +158,7 @@ class PresensiSiswaController extends Controller
         ));
     }
 
-    /** Senin sebagai awal pekan. Tanpa parameter berarti pekan berjalan. */
+
     private function awalPekan(?string $tanggal): Carbon
     {
         try {

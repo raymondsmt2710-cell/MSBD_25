@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-/** Fitur 1–7. */
 class AkunDanMasterTest extends AdminTestCase
 {
     public function test_buat_akun_siswa_tanpa_password_menampilkan_sandi_sekali_dan_mengarah_ke_profil(): void
@@ -52,7 +51,7 @@ class AkunDanMasterTest extends AdminTestCase
         $this->sebagaiAdmin()->post(route('admin.akun.status', $idUser))->assertSessionHas('success');
         $this->assertFalse(User::find($idUser)->is_active);
 
-        // Kembali sebagai session orang tua tadi: middleware PastikanAkunAktif harus memutusnya.
+
         Auth::forgetGuards();
         $this->actingAs(User::find($idUser))->get('/ortu')->assertRedirect(route('login'));
         $this->assertGuest();
@@ -81,7 +80,7 @@ class AkunDanMasterTest extends AdminTestCase
         $this->sebagaiAdmin()->post(route('admin.siswa.store'), $data + ['id_user' => $idSiswaUser])->assertSessionHasNoErrors();
         $this->assertDatabaseHas('siswa', ['id_user' => $idSiswaUser, 'nis' => '2001']);
 
-        // NISN wajib 10 digit dan unik.
+
         $this->sebagaiAdmin()->post(route('admin.siswa.store'), ['nisn' => '123'] + $data + ['id_user' => $this->buatUser('x', 'siswa')])
             ->assertSessionHasErrors(['nisn']);
     }
@@ -114,17 +113,17 @@ class AkunDanMasterTest extends AdminTestCase
 
     public function test_akun_orang_tua_tidak_boleh_ayah_dan_ibu_sekaligus(): void
     {
-        // Satu orang tidak mungkin menjadi ayah bagi satu anak dan ibu bagi anak
-        // lain. Aturan lama hanya memeriksa per SISWA, sehingga akun yang sudah
-        // 'ayah' di anak A bisa ditambahkan 'ibu' di anak B — dan data seperti itu
-        // benar-benar ada (Dani Sigalingging: ayah 2 anak, ibu 1 anak).
-        //
-        // Fixture: $this->d['id_ortu'] sudah 'ayah' untuk id_siswa1.
+
+
+
+
+
+
         $this->sebagaiAdmin()->post(route('admin.orang-tua.anak.simpan', $this->d['id_ortu']), [
             'id_siswa' => $this->d['id_siswa2'], 'hubungan' => 'ibu',
         ])->assertSessionHas('error');
 
-        // Tidak ada baris baru yang tercipta.
+
         $this->assertSame(
             0,
             DB::table('orang_tua_siswa')
@@ -133,7 +132,7 @@ class AkunDanMasterTest extends AdminTestCase
                 ->count()
         );
 
-        // Peran yang sama untuk anak lain tetap boleh (ayah juga untuk Budi).
+
         $this->sebagaiAdmin()->post(route('admin.orang-tua.anak.simpan', $this->d['id_ortu']), [
             'id_siswa' => $this->d['id_siswa2'], 'hubungan' => 'ayah',
         ])->assertSessionHas('success');
@@ -141,8 +140,8 @@ class AkunDanMasterTest extends AdminTestCase
 
     public function test_akun_orang_tua_boleh_wali_walau_sudah_ayah(): void
     {
-        // 'wali' tidak menyatakan jenis kelamin, jadi tidak bertentangan dengan
-        // peran ayah/ibu yang sudah ada.
+
+
         $this->sebagaiAdmin()->post(route('admin.orang-tua.anak.simpan', $this->d['id_ortu']), [
             'id_siswa' => $this->d['id_siswa3'], 'hubungan' => 'wali',
         ])->assertSessionHas('success');
@@ -150,15 +149,15 @@ class AkunDanMasterTest extends AdminTestCase
 
     public function test_mengubah_hubungan_ke_peran_yang_bertentangan_ditolak(): void
     {
-        // Jalur ubah (PUT) harus memakai aturan yang sama, kalau tidak aturan ini
-        // bisa dilewati lewat tombol "Ubah hubungan".
+
+
         $idOrtu3 = DB::table('orang_tua')->insertGetId(['id_user' => $this->buatUser('ortu3', 'orang_tua'), 'nama' => 'Ibu Budi']);
         DB::table('orang_tua_siswa')->insert([
             'id_orang_tua' => $idOrtu3, 'id_siswa' => $this->d['id_siswa2'],
             'hubungan' => 'ibu', 'is_kontak_utama' => false,
         ]);
 
-        // ortu3 sudah 'ibu' di Budi; ubah menjadi 'ayah' harus ditolak.
+
         $this->sebagaiAdmin()->put(route('admin.orang-tua.anak.ubah', [$idOrtu3, $this->d['id_siswa2']]), [
             'hubungan' => 'ayah',
         ])->assertSessionHas('error');
@@ -174,13 +173,13 @@ class AkunDanMasterTest extends AdminTestCase
 
     public function test_perintah_laporan_menampilkan_akun_orang_tua_berperan_ganda(): void
     {
-        // Data lama bisa berisi akun yang 'ayah' di satu anak dan 'ibu' di anak
-        // lain (terbukti ada di data nyata). Aturan baru tidak mengubah data lama,
-        // jadi sediakan perintah untuk MELAPORKANNYA agar bisa diperbaiki manual.
+
+
+
         DB::table('orang_tua_siswa')->insert([
             'id_orang_tua' => $this->d['id_ortu'],
             'id_siswa' => $this->d['id_siswa2'],
-            'hubungan' => 'ibu', // sengaja campur: id_ortu sudah 'ayah' di siswa1
+            'hubungan' => 'ibu',
             'is_kontak_utama' => false,
         ]);
 
@@ -191,12 +190,12 @@ class AkunDanMasterTest extends AdminTestCase
 
     public function test_daftar_orang_tua_menandai_akun_berperan_ganda(): void
     {
-        // Data lama berperan ganda tidak diubah otomatis, jadi admin harus bisa
-        // MELIHAT mana yang perlu dirapikan tanpa menjalankan perintah artisan.
+
+
         DB::table('orang_tua_siswa')->insert([
             'id_orang_tua' => $this->d['id_ortu'],
             'id_siswa' => $this->d['id_siswa2'],
-            'hubungan' => 'ibu', // id_ortu sudah 'ayah' di siswa1
+            'hubungan' => 'ibu',
             'is_kontak_utama' => false,
         ]);
 
@@ -207,7 +206,7 @@ class AkunDanMasterTest extends AdminTestCase
 
     public function test_daftar_orang_tua_tidak_menandai_akun_dengan_satu_peran(): void
     {
-        // Tanpa data campuran, tidak boleh ada penanda palsu.
+
         $this->sebagaiAdmin()->get(route('admin.orang-tua.index'))
             ->assertOk()
             ->assertDontSee('peran ganda');

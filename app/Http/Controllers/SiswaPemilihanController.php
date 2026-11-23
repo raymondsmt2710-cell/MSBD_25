@@ -26,7 +26,7 @@ class SiswaPemilihanController extends Controller
             ?? abort(403, 'Akun ini belum terhubung ke data siswa.');
     }
 
-    /** Pemilihan yang diikuti siswa ini (terdaftar di daftar_pemilih). */
+
     public function index()
     {
         $idSiswa = $this->idSiswa();
@@ -54,7 +54,7 @@ class SiswaPemilihanController extends Controller
         return view('siswa.pemilihan.index', compact('pemilihan', 'partisipasi'));
     }
 
-    /** Halaman memilih: daftar kartu kandidat. */
+
     public function pilih(int $id)
     {
         $idSiswa = $this->idSiswa();
@@ -76,7 +76,7 @@ class SiswaPemilihanController extends Controller
         return view('siswa.pemilihan.pilih', compact('pemilihan', 'kandidat'));
     }
 
-    /** Memanggil sp_rekam_suara di dalam transaksi (materi Transaction: COMMIT/ROLLBACK). */
+
     public function simpan(Request $request, int $id)
     {
         $idSiswa = $this->idSiswa();
@@ -104,7 +104,7 @@ class SiswaPemilihanController extends Controller
             ->with($status === 'BERHASIL' ? 'success' : 'error', $pesan);
     }
 
-    /** Hasil hanya terbuka setelah pemilihan selesai. */
+
     public function hasil(int $id)
     {
         $this->idSiswa();

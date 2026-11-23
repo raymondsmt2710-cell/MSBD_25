@@ -6,11 +6,6 @@ use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Penjagaan di level database: siswa yang sama tidak boleh muncul dua kali
- * dalam satu pemilihan. Ini lapis kedua setelah validasi controller, agar
- * aturan tetap berlaku walaupun ada jalur tulis lain (procedure, seeder, dll).
- */
 class KandidatGandaDatabaseTest extends TestCase
 {
     use DatabaseTruncation;
@@ -31,7 +26,7 @@ class KandidatGandaDatabaseTest extends TestCase
         DB::connection('mysql')->table('kandidat')->insert([
             'id_pemilihan' => $d['id_pemilihan'],
             'nomor_urut' => 9,
-            'id_siswa_ketua' => $d['id_siswa'][0],   // sudah dipakai kandidat No.1
+            'id_siswa_ketua' => $d['id_siswa'][0],
         ]);
     }
 

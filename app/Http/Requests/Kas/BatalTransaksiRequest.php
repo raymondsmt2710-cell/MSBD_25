@@ -14,7 +14,7 @@ class BatalTransaksiRequest extends FormRequest
         return $transaksi ? Gate::allows('kas.kelola', $transaksi->kelas) : false;
     }
 
-    /** @return array<string, mixed> */
+
     public function rules(): array
     {
         return [

@@ -15,7 +15,7 @@ class StoreRuanganRequest extends FormRequest
         return Gate::allows('denah.kelola-ruangan');
     }
 
-    /** @return array<string, mixed> */
+
     public function rules(): array
     {
         return [

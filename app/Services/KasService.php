@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 class KasService
 {
-    /** @return array<string, mixed> */
+
     public function filter(Request $request): array
     {
         return [
@@ -26,7 +26,7 @@ class KasService
         ];
     }
 
-    /** @param array<string, mixed> $filter */
+
     public function query(Kelas $kelas, array $filter): Builder
     {
         return TransaksiKas::query()
@@ -45,7 +45,7 @@ class KasService
             });
     }
 
-    /** @return array<string, float> */
+
     public function ringkasan(Kelas $kelas): array
     {
         $base = TransaksiKas::query()
@@ -77,10 +77,7 @@ class KasService
         ];
     }
 
-    /**
-     * @param  Collection<int, int>|null  $idSiswaTerlihat
-     * @return array<string, mixed>
-     */
+
     public function matriks(Kelas $kelas, int $tahun, ?Collection $idSiswaTerlihat = null): array
     {
         $anggota = $kelas->anggotaKelas()
@@ -127,8 +124,8 @@ class KasService
                             'status' => $item->status->value,
                             'nominal' => (float) $item->nominal,
                             'catatan' => $item->catatan,
-                            // Bukti yang diunggah orang tua harus bisa diperiksa
-                            // bendahara sebelum memverifikasi.
+
+
                             'bukti_url' => $item->bukti_url,
                             'bukti_tampil' => $item->bukti_url
                                 ? (str_starts_with($item->bukti_url, 'http')

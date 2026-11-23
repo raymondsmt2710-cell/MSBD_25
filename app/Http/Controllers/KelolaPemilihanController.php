@@ -13,7 +13,7 @@ use Illuminate\Validation\Rule;
 
 class KelolaPemilihanController extends Controller
 {
-    /** Pastikan user boleh mengelola pemilihan ini (admin, atau panitia-nya). */
+
     private function pastikanBoleh(int $idPemilihan): Pemilihan
     {
         $pemilihan = Pemilihan::findOrFail($idPemilihan);
@@ -22,11 +22,7 @@ class KelolaPemilihanController extends Controller
         return $pemilihan;
     }
 
-    /**
-     * Apakah siswa ini sudah dipakai sebagai ketua atau wakil pada pemilihan ini?
-     * $abaikanIdKandidat dipakai saat mengedit, agar kandidat yang sedang diubah
-     * tidak dianggap "bentrok dengan dirinya sendiri".
-     */
+
     private function sudahJadiKandidat(int $idPemilihan, int $idSiswa, $abaikanIdKandidat = null): bool
     {
         $query = DB::table('kandidat')
@@ -43,7 +39,7 @@ class KelolaPemilihanController extends Controller
         return $query->exists();
     }
 
-    /** Pemanggil procedure kelola: mengembalikan nilai @status. */
+
     private function call(string $sql, array $params): string
     {
         DB::statement($sql, $params);
@@ -74,7 +70,7 @@ class KelolaPemilihanController extends Controller
             : back()->with('error', $this->pesan($status));
     }
 
-    // ---------------- Daftar & form ----------------
+
 
     public function index()
     {
@@ -84,7 +80,7 @@ class KelolaPemilihanController extends Controller
             ->orderByRaw("FIELD(status, 'berlangsung', 'draf', 'selesai')")
             ->orderByDesc('waktu_mulai');
 
-        // Panitia hanya melihat pemilihan yang ditugaskan kepadanya.
+
         $idBoleh = (new \App\Policies\PemilihanPolicy)->idYangBoleh(Auth::user());
 
         if ($idBoleh !== null) {
@@ -145,7 +141,7 @@ class KelolaPemilihanController extends Controller
         return $this->hasilAksi($status, 'Pemilihan berhasil disimpan.');
     }
 
-    // ---------------- Kandidat ----------------
+
 
     public function kandidat(int $id)
     {
@@ -162,8 +158,8 @@ class KelolaPemilihanController extends Controller
             ->select('id_siswa', 'nis', 'nama_siswa')
             ->get();
 
-        // Nomor urut berikutnya: angka terkecil yang belum terpakai, bukan count()+1.
-        // count()+1 menghasilkan tabrakan bila ada nomor yang dihapus di tengah.
+
+
         $terpakai = $kandidat->pluck('nomor_urut')->map(fn ($n) => (int) $n)->all();
         $nomorBerikutnya = 1;
         while (in_array($nomorBerikutnya, $terpakai, true)) {
@@ -181,16 +177,16 @@ class KelolaPemilihanController extends Controller
             'id_kandidat'    => 'nullable|integer',
             'nomor_urut'     => [
                 'required', 'integer', 'min:1', 'max:99',
-                // Unik per pemilihan; tanpa ini pelanggaran unique index menjadi HTTP 500.
+
                 Rule::unique('kandidat', 'nomor_urut')
                     ->where('id_pemilihan', $id)
                     ->ignore($request->input('id_kandidat'), 'id_kandidat'),
             ],
             'id_siswa_ketua' => [
                 'required', 'integer', 'exists:siswa,id_siswa',
-                // Satu siswa hanya boleh muncul sekali dalam satu pemilihan,
-                // baik sebagai ketua maupun wakil. Tanpa ini, orang yang sama bisa
-                // "mencalonkan diri" di dua nomor urut sekaligus.
+
+
+
                 function ($attribute, $value, $fail) use ($id, $request) {
                     if ($this->sudahJadiKandidat($id, (int) $value, $request->input('id_kandidat'))) {
                         $fail('Siswa ini sudah terdaftar sebagai ketua atau wakil pada kandidat lain.');
@@ -238,7 +234,7 @@ class KelolaPemilihanController extends Controller
             ]
         );
 
-        // Jangan tinggalkan file yatim bila penyimpanan ditolak database.
+
         if ($status !== 'BERHASIL' && $fileBaru) {
             Storage::disk('public')->delete($fileBaru);
         }
@@ -255,7 +251,7 @@ class KelolaPemilihanController extends Controller
         return $this->hasilAksi($status, 'Kandidat berhasil dihapus.');
     }
 
-    // ---------------- Pemilih ----------------
+
 
     public function pemilih(Request $request, int $id)
     {
@@ -309,7 +305,7 @@ class KelolaPemilihanController extends Controller
         return $this->hasilAksi($status, 'Pemilih berhasil dihapus.');
     }
 
-    // ---------------- Panitia (admin saja) ----------------
+
 
     public function panitia(int $id)
     {
@@ -346,7 +342,7 @@ class KelolaPemilihanController extends Controller
         return $this->hasilAksi($status, 'Daftar panitia diperbarui.');
     }
 
-    // ---------------- Monitor, status, log ----------------
+
 
     public function monitor(int $id)
     {
@@ -412,7 +408,7 @@ class KelolaPemilihanController extends Controller
         return view('kelola.pemilihan.log', compact('pemilihan', 'log'));
     }
 
-    /** Halaman hasil resmi untuk admin/panitia (siswa punya halamannya sendiri). */
+
     public function hasil(int $id)
     {
         $pemilihan = $this->pastikanBoleh($id);

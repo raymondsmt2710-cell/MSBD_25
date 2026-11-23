@@ -34,7 +34,6 @@
         @if ($anggota->isEmpty())
             <div class="kosong">Belum ada siswa di kelas ini.</div>
         @else
-            {{-- Form nomor absen dipisah dari tombol keluarkan (form tidak boleh bersarang). --}}
             <form id="form-absen" method="POST" action="{{ route('admin.kelas.anggota.absen', $kelas->id_kelas) }}">
                 @csrf @method('PUT')
             </form>

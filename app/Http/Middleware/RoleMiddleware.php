@@ -7,7 +7,6 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-// Lapis pengamanan aplikasi: ->middleware('role:guru')
 class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, string ...$roles): Response

@@ -16,6 +16,7 @@ class PresensiSiswaController extends Controller
     private const PESAN = [
         'BERHASIL'                        => 'Presensi berhasil dicatat. Selamat belajar!',
         'TOKEN_TIDAK_VALID'               => 'QR tidak dikenali.',
+        'TOKEN_BELUM_BERLAKU'             => 'Jam pelajaran belum dimulai. Pindai lagi setelah pelajaran dimulai.',
         'TOKEN_KEDALUWARSA_ATAU_TERPAKAI' => 'QR sudah kedaluwarsa. Pindai QR yang ditampilkan guru.',
         'SESI_DITUTUP'                    => 'Sesi presensi sudah ditutup.',
         'BUKAN_ANGGOTA_KELAS'             => 'Anda bukan anggota kelas ini.',

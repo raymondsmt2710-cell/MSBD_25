@@ -60,7 +60,36 @@ class PresensiGuruController extends Controller
 
         $hariIni = $this->hariIni();
 
+        // Apakah jadwal ini sedang berada di jendela buka sesi?
+        //
+        // Jendelanya: 15 menit sebelum jam_mulai s/d jam_selesai. Aturan yang sama
+        // dipakai sp_buka_sesi; dihitung juga di sini supaya tombol yang tampil
+        // tidak menawarkan aksi yang pasti ditolak database.
+        $roster->each(function ($baris) use ($hariIni) {
+            $baris->bisa_dibuka = $baris->hari === $hariIni
+                && $this->dalamJendelaBuka($baris->jam_mulai, $baris->jam_selesai);
+        });
+
         return view('guru.presensi.index', compact('roster', 'hariIni'));
+    }
+
+    /** Kelonggaran membuka sesi sebelum jam pelajaran, dalam menit. */
+    private const MENIT_SEBELUM = 15;
+
+    /**
+     * Apakah jam sekarang berada dalam jendela buka sesi untuk jadwal ini?
+     *
+     * Rentangnya jam_mulai - 15 menit s/d jam_selesai. Jadwal yang melewati
+     * tengah malam tidak didukung (jadwal sekolah tidak melewati tengah malam).
+     */
+    private function dalamJendelaBuka(string $jamMulai, string $jamSelesai): bool
+    {
+        $sekarang = now()->format('H:i:s');
+        $buka = \Carbon\Carbon::parse($jamMulai)
+            ->subMinutes(self::MENIT_SEBELUM)
+            ->format('H:i:s');
+
+        return $sekarang >= $buka && $sekarang <= $jamSelesai;
     }
 
     /**
@@ -96,9 +125,12 @@ class PresensiGuruController extends Controller
             if (! in_array($hasil->status, ['BERHASIL', 'SESI_SUDAH_ADA'], true)) {
                 DB::rollBack();
 
-                $pesan = $hasil->status === 'BUKAN_HARI_JADWAL'
-                    ? 'Sesi hanya bisa dibuka pada hari jadwal.'
-                    : 'Jadwal tidak valid untuk akun Anda.';
+                $pesan = match ($hasil->status) {
+                    'BUKAN_HARI_JADWAL' => 'Sesi hanya bisa dibuka pada hari jadwal.',
+                    'TERLALU_AWAL' => 'Sesi belum bisa dibuka. Tunggu sampai 15 menit sebelum jam pelajaran.',
+                    'DI_LUAR_JAM' => 'Jam pelajaran sudah berakhir. Sesi tidak bisa dibuka lagi.',
+                    default => 'Jadwal tidak valid untuk akun Anda.',
+                };
 
                 return back()->with('error', $pesan);
             }
@@ -179,30 +211,30 @@ class PresensiGuruController extends Controller
 
         $kode = bin2hex(random_bytes(32)); // 64 karakter hex
 
-        // Hitung batas berlaku dari JAM sekarang, bukan dari tanggal sesi.
-        // Alasannya: sesi bisa dibuka setelah tengah malam (mis. jadwal 23:32-04:02
-        // dibuka pukul 00:02), sehingga tanggal sesi sudah berganti hari dan
-        // perhitungan bisa meleset sehari.
+        // Batas berlaku token dihitung dari TANGGAL SESI, bukan dari jam sekarang.
         //
-        // Aturan:
-        //   - jam selesai > jam mulai  -> berakhir hari ini
-        //   - jam selesai <= jam mulai -> sesi melewati tengah malam, berakhir besok
-        $sekarang = \Carbon\Carbon::now();
+        // Dua batas yang berbeda, dan perbedaannya disengaja:
+        //   - berlaku_mulai = jam_mulai pelajaran. Guru boleh membuka 15 menit
+        //     lebih awal untuk menyiapkan layar, tetapi siswa belum bisa memindai
+        //     sampai jam pelajaran benar-benar dimulai.
+        //   - kedaluwarsa_pada = jam_selesai pelajaran.
+        //
+        // Memakai tanggal sesi (bukan Carbon::now()) membuat hasilnya sama
+        // berapa pun lama sesi dibuka sebelum jam mulai.
+        $tanggal = \Carbon\Carbon::parse($sesi->tanggal)->toDateString();
+        $berlakuMulai = \Carbon\Carbon::parse($tanggal.' '.$sesi->jam_mulai);
+        $kedaluwarsa = \Carbon\Carbon::parse($tanggal.' '.$sesi->jam_selesai);
 
-        if ($sesi->jam_selesai > $sesi->jam_mulai) {
-            $kedaluwarsa = $sekarang->copy()->setTimeFromTimeString($sesi->jam_selesai);
-
-            // Kalau jam selesai sudah lewat hari ini, berarti jadwalnya untuk besok.
-            if ($kedaluwarsa->lessThan($sekarang)) {
-                $kedaluwarsa->addDay();
-            }
-        } else {
-            $kedaluwarsa = $sekarang->copy()->setTimeFromTimeString($sesi->jam_selesai)->addDay();
+        // Jadwal yang melewati tengah malam (jam_selesai <= jam_mulai): berakhir
+        // pada hari berikutnya.
+        if ($kedaluwarsa->lessThanOrEqualTo($berlakuMulai)) {
+            $kedaluwarsa->addDay();
         }
 
         DB::table('token_presensi')->insert([
             'id_sesi'          => $idSesi,
             'kode_token'       => $kode,
+            'berlaku_mulai'    => $berlakuMulai->format('Y-m-d H:i:s'),
             'dibuat_pada'      => DB::raw('NOW()'),
             'kedaluwarsa_pada' => $kedaluwarsa->format('Y-m-d H:i:s'),
         ]);

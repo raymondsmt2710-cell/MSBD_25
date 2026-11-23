@@ -346,5 +346,38 @@ class TampilanNavigasiTest extends TestCase
         $this->assertStringNotContainsString('min-width:max-content', $htmlAdmin);
         $this->assertStringNotContainsString('min-width:max-content', $htmlPemilihan);
     }
+
+    public function test_layout_admin_punya_kelas_grid_dua_yang_responsif(): void
+    {
+        // Grid dua kolom dulu ditulis inline di setiap view, dan style inline
+        // mengalahkan media query sehingga kolom tidak pernah menjadi satu di
+        // layar sempit. Aturannya sekarang harus ada di layout.
+        $admin = $this->buatAkun('admin', 'nav_admin_grid');
+
+        $html = $this->actingAs($admin)
+            ->get(route('admin.kelas.index'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/\.grid-dua\{[^}]*grid-template-columns:minmax\(0,2fr\) minmax\(280px,1fr\)/',
+            $html,
+            'Kelas .grid-dua harus mendefinisikan dua kolom di desktop.'
+        );
+
+        // Di layar sempit grid menjadi SATU kolom yang boleh menyusut.
+        $this->assertMatchesRegularExpression(
+            '/@media\s*\(max-width:\s*860px\)[\s\S]*?\.grid-dua\{[^}]*grid-template-columns:minmax\(0,1fr\)/',
+            $html,
+            '.grid-dua harus menjadi satu kolom di <=860px.'
+        );
+
+        // Filter: tiga dropdown tidak boleh memaksa scroll horizontal di ponsel.
+        $this->assertMatchesRegularExpression(
+            '/@media\s*\(max-width:\s*860px\)[\s\S]*?\.filter\s*>\s*\*\s*\{[^}]*width\s*:\s*100%/',
+            $html,
+            'Dropdown filter harus selebar penuh di <=860px.'
+        );
+    }
 }
 

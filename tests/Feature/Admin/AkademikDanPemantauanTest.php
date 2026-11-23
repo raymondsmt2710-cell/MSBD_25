@@ -139,25 +139,38 @@ class AkademikDanPemantauanTest extends AdminTestCase
         $baru = DB::table('denah_kelas')->where('id_kelas', $this->d['id_kelas'])->orderByDesc('id_denah')->first();
         $this->assertTrue((bool) $baru->is_aktif);
         $this->assertSame(1, DB::table('denah_kelas')->where('id_kelas', $this->d['id_kelas'])->where('is_aktif', true)->count());
-        $this->assertDatabaseHas('posisi_duduk', ['id_denah' => $baru->id_denah, 'id_siswa' => $this->d['id_siswa1'], 'baris' => 1, 'kolom' => 1]);
-        $this->assertDatabaseHas('posisi_duduk', ['id_denah' => $baru->id_denah, 'id_siswa' => $this->d['id_siswa2'], 'baris' => 1, 'kolom' => 2]);
+
+        // Satu meja menampung 2 murid: siswa1 di sisi kiri meja 1·1, siswa2 di sisi kanan meja 1·1.
+        $this->assertDatabaseHas('posisi_duduk', [
+            'id_denah' => $baru->id_denah, 'id_siswa' => $this->d['id_siswa1'],
+            'baris' => 1, 'kolom' => 1, 'sisi' => 'kiri',
+        ]);
+        $this->assertDatabaseHas('posisi_duduk', [
+            'id_denah' => $baru->id_denah, 'id_siswa' => $this->d['id_siswa2'],
+            'baris' => 1, 'kolom' => 1, 'sisi' => 'kanan',
+        ]);
     }
 
     public function test_posisi_duduk_menolak_siswa_ganda_dan_bukan_anggota(): void
     {
         $url = route('admin.denah.posisi', $this->d['id_denah']);
 
-        $this->sebagaiAdmin()->put($url, ['kursi' => [1 => [1 => $this->d['id_siswa1'], 2 => $this->d['id_siswa1']]]])
+        // Siswa yang sama dipilih di dua kursi.
+        $this->sebagaiAdmin()->put($url, ['kursi' => [1 => [1 => [
+            'kiri' => $this->d['id_siswa1'], 'kanan' => $this->d['id_siswa1'],
+        ]]]])->assertSessionHasErrors('kursi');
+
+        // Bukan anggota kelas.
+        $this->sebagaiAdmin()->put($url, ['kursi' => [1 => [1 => ['kiri' => $this->d['id_siswa3']]]]])
             ->assertSessionHasErrors('kursi');
 
-        $this->sebagaiAdmin()->put($url, ['kursi' => [1 => [1 => $this->d['id_siswa3']]]])
+        // Di luar ukuran denah 2×2.
+        $this->sebagaiAdmin()->put($url, ['kursi' => [3 => [1 => ['kiri' => $this->d['id_siswa1']]]]])
             ->assertSessionHasErrors('kursi');
 
-        $this->sebagaiAdmin()->put($url, ['kursi' => [3 => [1 => $this->d['id_siswa1']]]]) // di luar 2×2
-            ->assertSessionHasErrors('kursi');
-
-        $this->sebagaiAdmin()->put($url, ['kursi' => [2 => [2 => $this->d['id_siswa1'], 1 => $this->d['id_siswa2']]]])
-            ->assertSessionHasNoErrors();
+        $this->sebagaiAdmin()->put($url, ['kursi' => [2 => [2 => [
+            'kiri' => $this->d['id_siswa1'], 'kanan' => $this->d['id_siswa2'],
+        ]]]])->assertSessionHasNoErrors();
         $this->assertSame(2, DB::table('posisi_duduk')->where('id_denah', $this->d['id_denah'])->count());
     }
 

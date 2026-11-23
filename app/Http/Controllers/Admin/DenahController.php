@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\DenahKelas;
 use App\Models\Kelas;
+use App\Models\PosisiDuduk;
 use App\Models\TahunAjaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,13 +15,17 @@ use Illuminate\Validation\ValidationException;
  * Fitur 20 — Kelola denah tempat duduk semua kelas.
  *
  * Satu kelas boleh punya beberapa versi denah (riwayat rotasi tempat duduk),
- * tetapi hanya satu yang aktif. posisi_duduk menjamin satu kursi satu siswa
- * (unique id_denah+baris+kolom) dan satu siswa satu kursi (unique id_denah+id_siswa);
- * aplikasi menambah syarat bahwa siswa harus anggota kelas tersebut.
+ * tetapi hanya satu yang aktif. Satu meja menampung 2 murid (sisi kiri & kanan),
+ * sama seperti tampilan sisi siswa: posisi_duduk menjamin satu kursi-sisi satu
+ * siswa (unique id_denah+baris+kolom+sisi) dan satu siswa satu kursi
+ * (unique id_denah+id_siswa); aplikasi menambah syarat bahwa siswa harus
+ * anggota kelas tersebut.
  */
 class DenahController extends AdminController
 {
     private const MEJA_GURU = ['depan_kiri', 'depan_tengah', 'depan_kanan'];
+
+    private const PINTU = ['kiri', 'kanan', 'belakang'];
 
     public function index(Request $request)
     {
@@ -64,13 +69,16 @@ class DenahController extends AdminController
             'jumlah_baris' => ['required', 'integer', 'min:1', 'max:15'],
             'jumlah_kolom' => ['required', 'integer', 'min:1', 'max:15'],
             'posisi_meja_guru' => ['required', Rule::in(self::MEJA_GURU)],
+            'posisi_pintu' => ['nullable', Rule::in(self::PINTU)],
             'berlaku_mulai' => ['required', 'date'],
             'isi' => ['required', Rule::in(['kosong', 'absen', 'acak', 'salin'])],
             'aktifkan' => ['sometimes', 'boolean'],
         ]);
 
         $siswa = $this->urutanSiswa($kelas, $data['isi']);
-        $kursi = $data['jumlah_baris'] * $data['jumlah_kolom'];
+
+        // Satu meja = 2 murid (sisi kiri & kanan), jadi kapasitas = baris × kolom × 2.
+        $kursi = $data['jumlah_baris'] * $data['jumlah_kolom'] * count(PosisiDuduk::SISI);
 
         if ($data['isi'] !== 'kosong' && $data['isi'] !== 'salin' && $siswa->count() > $kursi) {
             throw ValidationException::withMessages([
@@ -93,25 +101,23 @@ class DenahController extends AdminController
                 'jumlah_baris' => $data['jumlah_baris'],
                 'jumlah_kolom' => $data['jumlah_kolom'],
                 'posisi_meja_guru' => $data['posisi_meja_guru'],
+                'posisi_pintu' => $data['posisi_pintu'] ?? 'kanan',
                 'berlaku_mulai' => $data['berlaku_mulai'],
                 'dibuat_oleh' => $request->user()->id_user,
                 'is_aktif' => $aktifkan,
             ]);
 
             if ($data['isi'] === 'salin' && $lama) {
-                // Salin kursi dari denah aktif sebelumnya; kursi di luar ukuran baru diabaikan.
+                // Salin kursi dari denah aktif sebelumnya, termasuk sisinya;
+                // kursi di luar ukuran baru diabaikan.
                 $baris = DB::table('posisi_duduk')->where('id_denah', $lama->id_denah)
                     ->where('baris', '<=', $data['jumlah_baris'])->where('kolom', '<=', $data['jumlah_kolom'])
                     ->whereIn('id_siswa', DB::table('anggota_kelas')->select('id_siswa')->where('id_kelas', $kelas->id_kelas))
-                    ->get(['id_siswa', 'baris', 'kolom']);
+                    ->get(['id_siswa', 'baris', 'kolom', 'sisi']);
                 $this->simpanKursi($denah->id_denah, $baris->map(fn ($p) => (array) $p)->all());
             } elseif (in_array($data['isi'], ['absen', 'acak'], true)) {
-                // Diisi baris demi baris dari depan, kiri ke kanan.
-                $this->simpanKursi($denah->id_denah, $siswa->values()->map(fn ($id, $i) => [
-                    'id_siswa' => $id,
-                    'baris' => intdiv($i, $data['jumlah_kolom']) + 1,
-                    'kolom' => $i % $data['jumlah_kolom'] + 1,
-                ])->all());
+                // Diisi meja demi meja dari depan: sisi kiri dulu, lalu sisi kanan.
+                $this->simpanKursi($denah->id_denah, $this->kursiBerurutan($siswa->values()->all(), $data['jumlah_baris'], $data['jumlah_kolom']));
             }
 
             return $denah;
@@ -130,12 +136,21 @@ class DenahController extends AdminController
             ->orderByRaw('ak.no_absen IS NULL, ak.no_absen')->orderBy('s.nama_siswa')
             ->get(['s.id_siswa', 's.nama_siswa', 'ak.no_absen']);
 
+        // Satu meja punya dua sisi, jadi kuncinya WAJIB menyertakan sisi.
+        // Tanpa sisi, murid kedua di meja yang sama akan menimpa yang pertama.
         $posisi = DB::table('posisi_duduk')->where('id_denah', $denah->id_denah)->get()
-            ->mapWithKeys(fn ($p) => ["{$p->baris}-{$p->kolom}" => $p->id_siswa]);
+            ->mapWithKeys(fn ($p) => ["{$p->baris}-{$p->kolom}-".($p->sisi ?: 'kiri') => $p->id_siswa]);
 
         $belumDuduk = $siswa->whereNotIn('id_siswa', $posisi->values()->all());
 
-        return view('admin.denah.edit', compact('denah', 'kelas', 'siswa', 'posisi', 'belumDuduk'));
+        return view('admin.denah.edit', [
+            'denah' => $denah,
+            'kelas' => $kelas,
+            'siswa' => $siswa,
+            'posisi' => $posisi,
+            'belumDuduk' => $belumDuduk,
+            'sisi' => PosisiDuduk::SISI,
+        ]);
     }
 
     public function simpanPosisi(Request $request, DenahKelas $denah)
@@ -143,28 +158,32 @@ class DenahController extends AdminController
         $data = $request->validate([
             'kursi' => ['nullable', 'array'],
             'kursi.*' => ['nullable', 'array'],
-            'kursi.*.*' => ['nullable', 'integer'],
+            'kursi.*.*' => ['nullable', 'array'],
+            'kursi.*.*.*' => ['nullable', 'integer'],
         ]);
 
         $anggota = DB::table('anggota_kelas')->where('id_kelas', $denah->id_kelas)->pluck('id_siswa')->map(fn ($id) => (int) $id)->all();
         $baris = [];
 
         foreach ($data['kursi'] ?? [] as $b => $kolom) {
-            foreach ($kolom as $k => $idSiswa) {
-                if ($idSiswa === null) {
-                    continue;
-                }
+            foreach ($kolom as $k => $sisiMeja) {
+                foreach ($sisiMeja as $sisi => $idSiswa) {
+                    if ($idSiswa === null) {
+                        continue;
+                    }
 
-                [$b, $k, $idSiswa] = [(int) $b, (int) $k, (int) $idSiswa];
+                    [$b, $k, $idSiswa] = [(int) $b, (int) $k, (int) $idSiswa];
+                    $sisi = in_array($sisi, PosisiDuduk::SISI, true) ? $sisi : 'kiri';
 
-                if ($b < 1 || $b > $denah->jumlah_baris || $k < 1 || $k > $denah->jumlah_kolom) {
-                    throw ValidationException::withMessages(['kursi' => 'Ada kursi di luar ukuran denah.']);
-                }
-                if (! in_array($idSiswa, $anggota, true)) {
-                    throw ValidationException::withMessages(['kursi' => 'Ada siswa yang bukan anggota kelas ini.']);
-                }
+                    if ($b < 1 || $b > $denah->jumlah_baris || $k < 1 || $k > $denah->jumlah_kolom) {
+                        throw ValidationException::withMessages(['kursi' => 'Ada kursi di luar ukuran denah.']);
+                    }
+                    if (! in_array($idSiswa, $anggota, true)) {
+                        throw ValidationException::withMessages(['kursi' => 'Ada siswa yang bukan anggota kelas ini.']);
+                    }
 
-                $baris[] = ['id_siswa' => $idSiswa, 'baris' => $b, 'kolom' => $k];
+                    $baris[] = ['id_siswa' => $idSiswa, 'baris' => $b, 'kolom' => $k, 'sisi' => $sisi];
+                }
             }
         }
 
@@ -174,9 +193,16 @@ class DenahController extends AdminController
             throw ValidationException::withMessages(['kursi' => "Satu siswa hanya boleh menempati satu kursi: {$nama}."]);
         }
 
+        $gandaSisi = collect($baris)
+            ->countBy(fn ($p) => "{$p['baris']}-{$p['kolom']}-{$p['sisi']}")
+            ->filter(fn ($n) => $n > 1)
+            ->keys();
+        if ($gandaSisi->isNotEmpty()) {
+            throw ValidationException::withMessages(['kursi' => 'Ada sisi meja yang diisi lebih dari satu siswa.']);
+        }
+
         DB::transaction(function () use ($denah, $baris) {
-            DB::table('posisi_duduk')->where('id_denah', $denah->id_denah)->delete();
-            $this->simpanKursi($denah->id_denah, $baris);
+            $this->terapkanPosisi($denah->id_denah, $baris);
         });
 
         return back()->with('success', 'Posisi duduk disimpan ('.count($baris).' kursi terisi).');
@@ -221,5 +247,116 @@ class DenahController extends AdminController
         if ($baris) {
             DB::table('posisi_duduk')->insert(array_map(fn ($p) => $p + ['id_denah' => $idDenah], $baris));
         }
+    }
+
+    /**
+     * Terapkan susunan kursi TANPA menghapus lalu menulis ulang semuanya.
+     *
+     * `id_posisi` dipakai sebagai rujukan oleh fitur pindah & tukar posisi di
+     * sisi siswa, jadi baris yang tidak berubah harus mempertahankan id-nya.
+     * Yang dilakukan:
+     *   1. Kursi yang dikosongkan -> dihapus.
+     *   2. Siswa yang sudah punya kursi -> dipindahkan (id tetap).
+     *   3. Siswa yang belum punya kursi -> ditambahkan.
+     *
+     * Urutan langkah penting: kursi yang akan ditempati dikosongkan lebih dulu
+     * agar tidak menabrak unique (id_denah, baris, kolom, sisi).
+     *
+     * @param  array<int, array<string, mixed>>  $baris
+     */
+    private function terapkanPosisi(int $idDenah, array $baris): void
+    {
+        $lama = DB::table('posisi_duduk')->where('id_denah', $idDenah)->get();
+        $idSiswaBaru = collect($baris)->pluck('id_siswa')->map(fn ($id) => (int) $id)->all();
+
+        // 1. Kursi yang dikosongkan.
+        $hapus = $lama->pluck('id_siswa')->map(fn ($id) => (int) $id)
+            ->reject(fn ($id) => in_array($id, $idSiswaBaru, true))->all();
+
+        if ($hapus) {
+            DB::table('posisi_duduk')->where('id_denah', $idDenah)->whereIn('id_siswa', $hapus)->delete();
+        }
+
+        $perSiswa = $lama->keyBy(fn ($p) => (int) $p->id_siswa);
+
+        // 2a. Tentukan baris yang benar-benar berpindah.
+        $pindah = [];
+
+        foreach ($baris as $p) {
+            $idSiswa = (int) $p['id_siswa'];
+            $sekarang = $perSiswa->get($idSiswa);
+
+            if (! $sekarang) {
+                continue; // siswa baru, ditangani di langkah 3
+            }
+
+            if ((int) $sekarang->baris === (int) $p['baris']
+                && (int) $sekarang->kolom === (int) $p['kolom']
+                && $sekarang->sisi === $p['sisi']) {
+                continue; // tidak berubah, id_posisi tetap
+            }
+
+            $pindah[] = ['id_posisi' => $sekarang->id_posisi, 'tujuan' => $p];
+        }
+
+        // 2b. Parkir dulu di luar grid agar tidak menabrak unique
+        // (id_denah, baris, kolom, sisi) saat dua murid bertukar tempat.
+        // baris/kolom bertipe tinyint unsigned, jadi parkir memakai baris 0
+        // dan kolom yang berbeda-beda (0, 1, 2, ...) supaya tidak saling bentrok.
+        foreach ($pindah as $i => $item) {
+            DB::table('posisi_duduk')->where('id_posisi', $item['id_posisi'])
+                ->update(['baris' => 0, 'kolom' => $i]);
+        }
+
+        // 2c. Baru pindahkan ke posisi akhir.
+        foreach ($pindah as $item) {
+            DB::table('posisi_duduk')->where('id_posisi', $item['id_posisi'])->update([
+                'baris' => $item['tujuan']['baris'],
+                'kolom' => $item['tujuan']['kolom'],
+                'sisi' => $item['tujuan']['sisi'],
+            ]);
+        }
+
+        // 3. Siswa yang belum punya kursi.
+        $baru = array_values(array_filter(
+            $baris,
+            fn ($p) => ! $perSiswa->has((int) $p['id_siswa']),
+        ));
+
+        $this->simpanKursi($idDenah, $baru);
+    }
+
+    /**
+     * Susun id siswa ke kursi meja demi meja: sisi kiri dulu, lalu sisi kanan.
+     * Satu meja menampung 2 murid, sama seperti tampilan sisi siswa.
+     *
+     * @param  array<int, int>  $idSiswa
+     * @return array<int, array<string, mixed>>
+     */
+    private function kursiBerurutan(array $idSiswa, int $jumlahBaris, int $jumlahKolom): array
+    {
+        $baris = [];
+        $index = 0;
+
+        for ($b = 1; $b <= $jumlahBaris; $b++) {
+            for ($k = 1; $k <= $jumlahKolom; $k++) {
+                foreach (PosisiDuduk::SISI as $sisi) {
+                    if (! isset($idSiswa[$index])) {
+                        return $baris;
+                    }
+
+                    $baris[] = [
+                        'id_siswa' => $idSiswa[$index],
+                        'baris' => $b,
+                        'kolom' => $k,
+                        'sisi' => $sisi,
+                    ];
+
+                    $index++;
+                }
+            }
+        }
+
+        return $baris;
     }
 }

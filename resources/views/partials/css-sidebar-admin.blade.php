@@ -17,19 +17,42 @@
        (disimpan di sessionStorage) supaya menu yang sedang dibuka tidak
        melompat kembali ke atas saat berpindah halaman. */
     .kerangka-admin > aside{background:#043d44;color:#d7eef0;padding:18px 12px;position:sticky;top:0;height:100vh;overflow-y:auto;scroll-behavior:auto}
-    .kerangka-admin > aside .brand{display:flex;align-items:center;gap:10px;padding:0 8px 16px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:10px}
+    .kerangka-admin .sidebar-kepala{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .kerangka-admin > aside .brand{display:flex;align-items:center;gap:10px;padding:0 8px 16px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:10px;flex:1;min-width:0}
     .kerangka-admin > aside .brand .nama{font-size:13px;font-weight:800;color:#fff;line-height:1.1}
     .kerangka-admin > aside .brand .sub{font-size:11px;color:#8fc3c8}
     .kerangka-admin .logo-sidebar{display:inline-flex;align-items:center;justify-content:center;background:#F9F5E9;border-radius:9px;padding:4px 6px;flex-shrink:0}
     .kerangka-admin .grup{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#7fb1b6;font-weight:700;padding:14px 10px 6px}
-    .kerangka-admin aside a.menu{display:block;padding:7px 10px;border-radius:9px;font-size:13px;color:#d7eef0}
+    /* Ikon + label sejajar. Ikon memakai currentColor dari komponen ikon, jadi
+       warnanya otomatis mengikuti .menu (dan .aktif). */
+    .kerangka-admin aside a.menu{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:9px;font-size:13px;color:#d7eef0}
     .kerangka-admin aside a.menu:hover{background:rgba(255,255,255,.07);color:#fff}
     .kerangka-admin aside a.menu.aktif{background:#09656F;color:#fff;font-weight:600}
+    /* Tombol hamburger: hanya tampil di layar sempit (lihat media query). */
+    .kerangka-admin .sidebar-toggle{display:none;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;border:0;cursor:pointer;flex-shrink:0}
+    .kerangka-admin .sidebar-toggle:hover{background:rgba(255,255,255,.18)}
+    .kerangka-admin .sidebar-toggle:focus-visible{outline:2px solid #f0b25e;outline-offset:2px}
     .kerangka-admin .isi-admin{min-width:0}
-    @media(max-width:900px){
-        .kerangka-admin{grid-template-columns:1fr}
-        .kerangka-admin > aside{position:static;height:auto;max-height:none}
-        .kerangka-admin > aside nav{display:flex;flex-wrap:wrap;gap:2px}
-        .kerangka-admin .grup{display:none}
+
+    /* Layar sempit: sidebar menjadi bar tipis; menu turun sebagai panel di
+       bawahnya dan TIDAK menggeser konten. Aturan flex-wrap lama dihapus karena
+       itulah yang membuat 16 menu berdesakan memenuhi layar. */
+    @media(max-width:860px){
+        /* minmax(0,1fr), BUKAN 1fr: 1fr sama dengan minmax(auto,1fr) sehingga
+           kolom tidak bisa menyusut di bawah min-content isi halaman (tabel
+           lebar). Akibatnya seluruh grid melebar melewati viewport dan sidebar
+           ikut membengkak. */
+        .kerangka-admin{grid-template-columns:minmax(0,1fr)}
+        /* position:relative menjadi acuan panel mengambang di bawah.
+           overflow:visible WAJIB: aturan desktop memberi aside overflow-y:auto,
+           yang akan memotong panel absolute sehingga menu tidak terlihat. */
+        .kerangka-admin > aside{position:relative;height:auto;max-height:none;overflow:visible;padding:10px 12px}
+        .kerangka-admin > aside .brand{padding:0;border-bottom:0;margin-bottom:0}
+        .kerangka-admin .sidebar-toggle{display:inline-flex}
+        .kerangka-admin > aside nav{display:none;flex-direction:column;gap:2px;margin-top:10px;max-height:calc(100vh - 120px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+        /* Panel MENGAMBANG di bawah bar: absolute, bukan static. Dengan static,
+           membuka 16 menu mendorong seluruh konten ke bawah (~665px) sehingga
+           pengguna kehilangan tempatnya — spec meminta konten tidak bergeser. */
+        .kerangka-admin > aside.sidebar-terbuka nav{display:flex;position:absolute;left:0;right:0;top:100%;z-index:60;margin-top:0;padding:10px 12px 14px;background:#043d44;box-shadow:0 14px 26px rgba(16,24,40,.35)}
     }
 </style>

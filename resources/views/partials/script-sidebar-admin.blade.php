@@ -46,5 +46,32 @@
         aside.addEventListener('scroll', function () {
             try { sessionStorage.setItem(kunci, String(aside.scrollTop)); } catch (e) { /* abaikan */ }
         }, { passive: true });
+
+        // ---- Buka-tutup panel menu di layar sempit ----
+        // Panel TIDAK diingat antar halaman: state terbuka sengaja tidak
+        // disimpan, supaya setelah berpindah halaman menu kembali tertutup dan
+        // konten tidak tertutup panel yang tidak diminta.
+        var toggle = document.querySelector('.kerangka-admin .sidebar-toggle, .kerangka .sidebar-toggle');
+        var nav = document.getElementById('menu-admin');
+
+        if (toggle && nav && aside) {
+            function setTerbuka(terbuka) {
+                aside.classList.toggle('sidebar-terbuka', terbuka);
+                toggle.setAttribute('aria-expanded', terbuka ? 'true' : 'false');
+            }
+
+            toggle.addEventListener('click', function () {
+                setTerbuka(! aside.classList.contains('sidebar-terbuka'));
+            });
+
+            // Escape menutup panel dan mengembalikan fokus ke tombolnya, supaya
+            // pengguna keyboard tidak "tersesat" di dalam panel yang tersembunyi.
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && aside.classList.contains('sidebar-terbuka')) {
+                    setTerbuka(false);
+                    toggle.focus();
+                }
+            });
+        }
     })();
 </script>

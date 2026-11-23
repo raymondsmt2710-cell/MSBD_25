@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Presensi;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -66,7 +67,65 @@ class DashboardSiswaController extends Controller
         $kelas = $this->namaKelas($idSiswa);
         $ringkasan = $this->ringkasan($idSiswa);
 
-        return view('siswa.beranda', compact('siswa', 'kelas', 'ringkasan'));
+        // Tiga bagian pengisi beranda. Semuanya hanya-baca dan dibatasi id_siswa
+        // milik akun yang login, sama seperti bagian statistik di atas.
+        $jadwalHariIni = $this->jadwalHariIni($idSiswa);
+        $riwayatTerakhir = $this->riwayatTerakhir($idSiswa);
+        $pemilihanAktif = $this->pemilihanAktif($idSiswa);
+
+        return view('siswa.beranda', compact(
+            'siswa', 'kelas', 'ringkasan',
+            'jadwalHariIni', 'riwayatTerakhir', 'pemilihanAktif'
+        ));
+    }
+
+    /**
+     * Jadwal pelajaran kelas siswa pada hari ini.
+     *
+     * Roster disimpan per nama hari (senin..sabtu), bukan per tanggal, jadi
+     * pencocokannya memakai nama hari dari tanggal hari ini.
+     */
+    private function jadwalHariIni(int $idSiswa)
+    {
+        $hari = Carbon::today()->locale('id')->isoFormat('dddd');
+
+        return DB::table('v_roster_presensi_siswa')
+            ->where('id_siswa', $idSiswa)
+            ->where('hari', strtolower($hari))
+            ->orderBy('jam_mulai')
+            ->get();
+    }
+
+    /** Lima presensi terakhir milik siswa, terbaru lebih dulu. */
+    private function riwayatTerakhir(int $idSiswa, int $batas = 5)
+    {
+        return DB::table('v_rekap_presensi_siswa')
+            ->where('id_siswa', $idSiswa)
+            ->orderByDesc('tanggal')
+            ->orderByDesc('jam_mulai')
+            ->limit($batas)
+            ->get();
+    }
+
+    /**
+     * Pemilihan yang sedang berlangsung atau masih draf dan diikuti siswa ini.
+     *
+     * Dipakai untuk memberi tahu siswa bahwa ada pemilihan yang menunggu,
+     * sekaligus menampilkan apakah suaranya sudah tercatat. Hanya satu yang
+     * ditampilkan karena itu yang paling perlu ditindaklanjuti.
+     */
+    private function pemilihanAktif(int $idSiswa): ?object
+    {
+        return DB::table('pemilihan as p')
+            ->join('daftar_pemilih as dp', function ($j) use ($idSiswa) {
+                $j->on('dp.id_pemilihan', '=', 'p.id_pemilihan')
+                    ->where('dp.id_siswa', '=', $idSiswa);
+            })
+            ->whereIn('p.status', ['berlangsung', 'draf'])
+            ->orderByRaw("FIELD(p.status, 'berlangsung', 'draf')")
+            ->orderByDesc('p.waktu_mulai')
+            ->select('p.id_pemilihan', 'p.judul', 'p.status', 'p.waktu_selesai', 'dp.sudah_memilih')
+            ->first();
     }
 
     public function perangkat()

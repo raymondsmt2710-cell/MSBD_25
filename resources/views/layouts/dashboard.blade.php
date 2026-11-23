@@ -118,6 +118,16 @@
         .data-item .nilai{font-size:13px;color:#1f2937;font-weight:500;word-break:break-word}
         .pill{display:inline-block;background:rgba(9,101,111,.08);color:#09656F;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700}
 
+        /* ---------- Lencana status presensi ----------
+           Warna mengikuti makna: hijau = hadir, kuning = izin/sakit,
+           merah = alpa, abu = belum ada sesi. */
+        .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:capitalize}
+        .badge.hadir{background:#dcfce7;color:#166534}
+        .badge.izin,.badge.sakit{background:#fef9c3;color:#854d0e}
+        .badge.alpa{background:#fee2e2;color:#991b1b}
+        .badge.belum{background:#e5e7eb;color:#374151}
+        .kecil{font-size:11px;color:#9ca3af}
+
         /* ---------- Tabel ---------- */
         .tabel{width:100%;border-collapse:collapse}
         .tabel th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#9ca3af;font-weight:700;padding:9px 8px;border-bottom:1px solid #eef0f2}
@@ -200,6 +210,46 @@
             .statistik{margin-top:-42px}
             section{padding:32px 16px}
             .footer-inner{flex-direction:column}
+        }
+
+        /* ---------- Tabel bertumpuk di ponsel sempit ----------
+           Pola yang sama dipakai layouts/presensi: tiap baris jadi kartu, label
+           kolom dipindah ke kiri lewat data-label. Tanpa ini tabel tiga kolom
+           hanya menyisakan ~80px per kolom pada layar 320px.
+
+           Sengaja dibatasi ke .tabel-bertumpuk, bukan .tabel, supaya tabel lain
+           yang memakai layout ini (guru/beranda, siswa/perangkat) tidak ikut
+           berubah. Halaman yang memakainya wajib mengisi data-label pada tiap
+           sel, kalau tidak labelnya akan kosong. */
+        @media(max-width:560px){
+            .tabel-bertumpuk thead{display:none}
+            .tabel-bertumpuk tbody tr{
+                display:block;
+                border:1px solid #eef0f2;
+                border-radius:12px;
+                padding:10px 12px;
+                margin-bottom:10px;
+            }
+            .tabel-bertumpuk tbody tr:last-child{margin-bottom:0}
+            .tabel-bertumpuk tbody td{
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:12px;
+                border:0;
+                padding:5px 0;
+                text-align:right;
+            }
+            .tabel-bertumpuk tbody td::before{
+                content:attr(data-label);
+                font-size:11px;
+                font-weight:700;
+                text-transform:uppercase;
+                letter-spacing:.06em;
+                color:#9ca3af;
+                text-align:left;
+                flex-shrink:0;
+            }
         }
     </style>
     @include('partials.css-nav-tengah')

@@ -54,13 +54,4 @@
         <div class="kosong">Belum ada pemilihan yang Anda ikuti.</div>
     </div>
 @endforelse
-
-{{-- Jalan pulang yang pasti. Tombol kembali di atas mengikuti riwayat browser,
-     sehingga setelah mengirim suara ia bisa menunjuk ke halaman pilih yang
-     sudah tidak boleh dibuka lagi. Tombol ini selalu ke beranda siswa. --}}
-<div class="kartu">
-    <a class="btn garis" href="{{ route('siswa.beranda') }}">
-        <x-ikon nama="arrow-left" ukuran="15" /> Kembali ke Dashboard
-    </a>
-</div>
 @endsection

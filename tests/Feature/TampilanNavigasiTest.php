@@ -155,4 +155,63 @@ class TampilanNavigasiTest extends TestCase
             ->assertSee(route('admin.dashboard'), false)
             ->assertSee('Akun Pengguna');
     }
+
+    public function test_sidebar_admin_punya_tombol_hamburger_dan_ikon_menu(): void
+    {
+        $admin = $this->buatAkun('admin', 'nav_admin_hamburger');
+
+        $html = $this->actingAs($admin)
+            ->get(route('admin.kelas.index'))
+            ->assertOk()
+            ->getContent();
+
+        // Tombol hamburger: <button>, bukan <div>, supaya bisa difokus & diaktifkan
+        // dengan keyboard. aria-controls menunjuk nav yang dikendalikannya.
+        $this->assertMatchesRegularExpression(
+            '/<button[^>]*class="sidebar-toggle"[^>]*aria-expanded="false"[^>]*aria-controls="menu-admin"/',
+            $html,
+            'Sidebar admin butuh tombol hamburger yang bisa diakses keyboard.'
+        );
+
+        $this->assertStringContainsString('id="menu-admin"', $html);
+
+        // Setiap item menu harus punya ikon SVG dan label terbungkus <span>.
+        $this->assertMatchesRegularExpression(
+            '/<a class="menu[^"]*"[^>]*>\s*<svg[^>]*>.*?<\/svg>\s*<span>[^<]+<\/span>/s',
+            $html,
+            'Item menu sidebar harus memuat ikon SVG diikuti label.'
+        );
+
+        // Enam belas item menu => minimal enam belas ikon di dalam nav.
+        $this->assertGreaterThanOrEqual(
+            16,
+            substr_count($html, '<svg'),
+            'Setiap item menu admin seharusnya punya ikon.'
+        );
+
+        // Menambah ikon tidak boleh menghilangkan tujuan lama: 16 rute menu harus
+        // tetap ada, dan item yang sedang dibuka tetap ditandai .aktif.
+        $rute = [
+            'admin.dashboard', 'admin.akun.index', 'admin.siswa.index', 'admin.guru.index',
+            'admin.orang-tua.index', 'admin.tahun-ajaran.index', 'admin.mapel.index',
+            'admin.jabatan.index', 'admin.kelas.index', 'admin.jadwal.index',
+            'admin.organisasi.index', 'admin.pengurus.index', 'kelola.pemilihan.index',
+            'admin.presensi.index', 'admin.kas.index', 'admin.denah.index',
+        ];
+
+        foreach ($rute as $nama) {
+            $this->assertStringContainsString(
+                'href="'.route($nama).'"',
+                $html,
+                "Menu admin kehilangan tautan ke rute {$nama}."
+            );
+        }
+
+        // Halaman yang sedang dibuka adalah admin.kelas.index.
+        $this->assertMatchesRegularExpression(
+            '/<a class="menu\s+aktif"[^>]*href="'.preg_quote(route('admin.kelas.index'), '/').'"/',
+            $html,
+            'Item menu yang sedang dibuka harus tetap ditandai .aktif.'
+        );
+    }
 }

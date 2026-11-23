@@ -13,7 +13,7 @@
     <div class="kartu">@include('admin._pilih_tahun')</div>
 @endif
 
-<div class="grid" style="grid-template-columns:minmax(0,3fr) minmax(260px,2fr);align-items:start">
+<div class="grid grid-dua">
     <div class="kartu">
         <h2>Susunan pengurus</h2>
         @if ($jabatan->isEmpty())

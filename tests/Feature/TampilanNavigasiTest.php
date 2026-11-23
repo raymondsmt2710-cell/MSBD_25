@@ -379,5 +379,47 @@ class TampilanNavigasiTest extends TestCase
             'Dropdown filter harus selebar penuh di <=860px.'
         );
     }
+
+    public function test_tujuh_halaman_admin_tidak_lagi_memakai_grid_inline(): void
+    {
+        // style inline mengalahkan media query. Selama masih ada di view, perbaikan
+        // CSS di layout tidak akan berpengaruh apa pun pada halaman itu.
+        //
+        // Sengaja membaca berkas view langsung (bukan HTTP), karena rute detail
+        // seperti admin.kelas.show butuh baris kelas di database yang tidak ada
+        // pada tes ber-DatabaseTruncation. Yang diuji adalah markah view-nya.
+        $admin = $this->buatAkun('admin', 'nav_admin_grid7');
+        $this->actingAs($admin);
+
+        $view = [
+            'admin.jadwal.index',
+            'admin.kelas.show',
+            'admin.jabatan.index',
+            'admin.mapel.index',
+            'admin.tahun-ajaran.index',
+            'admin.pengurus.form',
+            'admin.denah.kelas',
+        ];
+
+        foreach ($view as $nama) {
+            $path = resource_path('views/'.str_replace('.', '/', $nama).'.blade.php');
+            $this->assertFileExists($path, "View {$nama} tidak ditemukan.");
+
+            $isi = file_get_contents($path);
+
+            $this->assertStringNotContainsString(
+                'style="grid-template-columns',
+                $isi,
+                "View {$nama} masih memakai grid inline; media query tidak akan berlaku."
+            );
+
+            // Ketujuh view harus benar-benar memakai kelas bersama itu.
+            $this->assertStringContainsString(
+                'class="grid grid-dua"',
+                $isi,
+                "View {$nama} harus memakai class=\"grid grid-dua\"."
+            );
+        }
+    }
 }
 

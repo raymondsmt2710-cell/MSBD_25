@@ -18,7 +18,7 @@
     </div>
 </div>
 
-<div class="grid" style="grid-template-columns:minmax(0,3fr) minmax(260px,2fr);align-items:start">
+<div class="grid grid-dua">
     <div class="kartu">
         <div class="kepala">
             <h2>Roster ({{ $anggota->count() }} siswa)</h2>

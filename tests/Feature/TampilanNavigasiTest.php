@@ -311,4 +311,40 @@ class TampilanNavigasiTest extends TestCase
         $this->assertStringNotContainsString('sidebar-terbuka-terakhir', $html);
         $this->assertStringNotContainsString("setItem('sidebar-panel", $html);
     }
+
+    public function test_kartu_bisa_digeser_di_layout_ber_tabel(): void
+    {
+        // Tabel admin/pemilihan lebih lebar dari kartunya (mis. /kelola/pemilihan
+        // 601px dalam kartu 358px). Tanpa wadah geser, tabel menembus keluar kartu
+        // dan seluruh halaman ikut melebar sehingga bisa digeser ke samping.
+        $admin = $this->buatAkun('admin', 'nav_admin_tabel');
+
+        $htmlAdmin = $this->actingAs($admin)
+            ->get(route('admin.kas.index'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/@media\s*\(max-width:\s*860px\)[\s\S]*?\.kartu\{[^}]*overflow-x\s*:\s*auto/',
+            $htmlAdmin,
+            'Kartu di layout admin harus menjadi wadah geser horizontal di <=860px.'
+        );
+
+        $htmlPemilihan = $this->actingAs($admin)
+            ->get(route('kelola.pemilihan.index'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/\.kartu\{[^}]*overflow-x\s*:\s*auto/',
+            $htmlPemilihan,
+            'Kartu di layout pemilihan harus menjadi wadah geser horizontal.'
+        );
+
+        // Jangan tambahkan min-width:max-content / nowrap: keduanya memaksa teks
+        // satu baris sehingga tabel justru lebih lebar dari perlu.
+        $this->assertStringNotContainsString('min-width:max-content', $htmlAdmin);
+        $this->assertStringNotContainsString('min-width:max-content', $htmlPemilihan);
+    }
 }
+

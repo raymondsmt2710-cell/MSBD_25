@@ -116,6 +116,10 @@
             h1{font-size:19px}
             th,td{padding:8px 6px;font-size:12px}
             .nav-hamburger{display:inline-flex}
+            /* Sama seperti layout admin: tabel 10 kolom di /kelola/pemilihan
+               (601px) lebih lebar dari kartunya (358px) dan membuat seluruh
+               halaman bisa digeser. Hanya area kartu yang boleh digeser. */
+            .kartu{overflow-x:auto;-webkit-overflow-scrolling:touch}
         }
 
         /* ---------- Hamburger + drawer (ponsel) ---------- */

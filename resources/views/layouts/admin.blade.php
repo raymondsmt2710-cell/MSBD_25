@@ -91,6 +91,12 @@
             .kerangka{grid-template-columns:1fr}
             aside{position:static;height:auto}
             main{padding:16px}
+            /* Tabel admin lebih lebar dari kartunya (min-content tabel bisa
+               >500px). Tanpa wadah geser, tabel menembus keluar kartu dan
+               seluruh halaman ikut melebar. overflow-x:auto membuat HANYA area
+               kartu yang bisa digeser. Tinggi sengaja tidak dibatasi agar isi
+               tidak terpotong (overflow-x:auto memaksa overflow-y ikut auto). */
+            .kartu{overflow-x:auto;-webkit-overflow-scrolling:touch}
         }
         @media(max-width:640px){
             /* Nama pengguna memakan ruang di bar atas; profil & Keluar tetap. */

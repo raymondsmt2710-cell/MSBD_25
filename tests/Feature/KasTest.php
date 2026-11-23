@@ -38,6 +38,28 @@ class KasTest extends TestCase
             ->assertSee('Kas Kelas');
     }
 
+    public function test_wadah_tabel_transaksi_bisa_digeser_bukan_memotong(): void
+    {
+        // overflow-hidden memotong kolom terakhir tabel transaksi sehingga datanya
+        // tidak bisa diakses sama sekali di layar sempit. Harus bisa digeser.
+        $html = $this->actingAs($this->sekolah['admin'])
+            ->get('/kas')
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString(
+            'class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100"',
+            $html,
+            'Wadah tabel transaksi harus bisa digeser, bukan memotong isi.'
+        );
+
+        $this->assertStringContainsString(
+            'class="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-gray-100"',
+            $html,
+            'Wadah tabel transaksi harus memakai overflow-x-auto.'
+        );
+    }
+
     public function test_siswa_biasa_hanya_bisa_melihat(): void
     {
         $this->actingAs($this->sekolah['anggota'])

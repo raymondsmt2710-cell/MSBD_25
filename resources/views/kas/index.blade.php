@@ -139,7 +139,10 @@
             </div>
 
             {{-- Transactions --}}
-            <div x-show="tab === 'transaksi'" class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
+{{-- overflow-x-auto, bukan overflow-hidden: tabel transaksi lebih lebar dari
+     layar ponsel, dan overflow-hidden memotong kolom terakhir sehingga datanya
+     tidak bisa diakses sama sekali. --}}
+            <div x-show="tab === 'transaksi'" class="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 p-4">
                     <p class="text-sm text-gray-500">
                         <span class="font-semibold text-gray-800" x-text="pagination.total"></span> transaksi ditemukan

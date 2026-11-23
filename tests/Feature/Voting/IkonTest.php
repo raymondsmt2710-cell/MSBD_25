@@ -85,4 +85,16 @@ class IkonTest extends TestCase
             $this->assertStringContainsString('<path', $html, "Ikon {$nama} tidak punya path");
         }
     }
+
+    public function test_ikon_menu_admin_tersedia(): void
+    {
+        // Enam ikon ini dipakai sidebar admin. Tanpa path, <x-ikon> tetap
+        // merender <svg> kosong sehingga ikonnya hilang tanpa error apa pun.
+        $dipakai = ['person-badge', 'calendar-check', 'book', 'award', 'clipboard-check', 'map'];
+
+        foreach ($dipakai as $nama) {
+            $html = $this->blade('<x-ikon nama="'.$nama.'" />');
+            $this->assertStringContainsString('<path', $html, "Ikon {$nama} tidak punya path");
+        }
+    }
 }

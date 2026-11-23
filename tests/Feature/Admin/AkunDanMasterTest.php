@@ -189,6 +189,53 @@ class AkunDanMasterTest extends AdminTestCase
             ->assertExitCode(0);
     }
 
+    public function test_daftar_orang_tua_menandai_akun_berperan_ganda(): void
+    {
+        // Data lama berperan ganda tidak diubah otomatis, jadi admin harus bisa
+        // MELIHAT mana yang perlu dirapikan tanpa menjalankan perintah artisan.
+        DB::table('orang_tua_siswa')->insert([
+            'id_orang_tua' => $this->d['id_ortu'],
+            'id_siswa' => $this->d['id_siswa2'],
+            'hubungan' => 'ibu', // id_ortu sudah 'ayah' di siswa1
+            'is_kontak_utama' => false,
+        ]);
+
+        $this->sebagaiAdmin()->get(route('admin.orang-tua.index'))
+            ->assertOk()
+            ->assertSee('peran ganda');
+    }
+
+    public function test_daftar_orang_tua_tidak_menandai_akun_dengan_satu_peran(): void
+    {
+        // Tanpa data campuran, tidak boleh ada penanda palsu.
+        $this->sebagaiAdmin()->get(route('admin.orang-tua.index'))
+            ->assertOk()
+            ->assertDontSee('peran ganda');
+    }
+
+    public function test_halaman_kelola_menampilkan_peringatan_peran_ganda(): void
+    {
+        DB::table('orang_tua_siswa')->insert([
+            'id_orang_tua' => $this->d['id_ortu'],
+            'id_siswa' => $this->d['id_siswa2'],
+            'hubungan' => 'ibu',
+            'is_kontak_utama' => false,
+        ]);
+
+        $this->sebagaiAdmin()->get(route('admin.orang-tua.show', $this->d['id_ortu']))
+            ->assertOk()
+            ->assertSee('Peran ganda')
+            ->assertSee('ayah')
+            ->assertSee('ibu');
+    }
+
+    public function test_halaman_kelola_tanpa_peringatan_bila_peran_tunggal(): void
+    {
+        $this->sebagaiAdmin()->get(route('admin.orang-tua.show', $this->d['id_ortu']))
+            ->assertOk()
+            ->assertDontSee('Peran ganda');
+    }
+
     public function test_hanya_satu_tahun_ajaran_aktif_dan_periode_tidak_tumpang_tindih(): void    {
         $this->sebagaiAdmin()->post(route('admin.tahun-ajaran.store'), [
             'nama' => '2027/2028', 'tanggal_mulai' => '2027-01-01', 'tanggal_selesai' => '2027-12-31',

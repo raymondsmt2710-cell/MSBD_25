@@ -6,7 +6,7 @@
 <h1>Tahun Ajaran</h1>
 <p class="subjudul">Tepat satu tahun ajaran aktif. Kelas, pemilihan, dan kepengurusan mengikuti tahun ajaran aktif.</p>
 
-<div class="grid" style="grid-template-columns:minmax(0,2fr) minmax(260px,1fr);align-items:start">
+<div class="grid grid-dua">
     <div class="kartu">
         @if ($tahunAjaran->isEmpty())
             <div class="kosong">Belum ada tahun ajaran.</div>

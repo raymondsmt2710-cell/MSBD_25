@@ -32,6 +32,10 @@ class OrangTuaController extends AdminController
             ->leftJoin('siswa as s', 's.id_siswa', '=', 'os.id_siswa')
             ->select('o.id_orang_tua', 'o.nama', 'o.no_hp', 'o.email', 'u.username', 'u.is_active')
             ->selectRaw("GROUP_CONCAT(CONCAT(s.nama_siswa, ' (', os.hubungan, ')') ORDER BY s.nama_siswa SEPARATOR ', ') AS anak")
+            // Peran ganda = akun ini tercatat sebagai ayah DAN ibu sekaligus.
+            // Dihitung sebagai agregat pada query yang sama, supaya tidak ada
+            // query tambahan per baris (N+1).
+            ->selectRaw("(SUM(os.hubungan = 'ayah') > 0 AND SUM(os.hubungan = 'ibu') > 0) AS peran_ganda")
             ->when($cari, fn ($q) => $q->where(fn ($w) => $w->where('o.nama', 'like', "%{$cari}%")
                 ->orWhere('s.nama_siswa', 'like', "%{$cari}%")
                 ->orWhere('s.nis', 'like', "%{$cari}%")))
@@ -79,7 +83,13 @@ class OrangTuaController extends AdminController
 
         $username = DB::table('users')->where('id_user', $orangTua->id_user)->value('username');
 
-        return view('admin.orang-tua.show', compact('orangTua', 'anak', 'siswa', 'username') + ['hubunganList' => self::HUBUNGAN]);
+        // Akun berperan ganda: tercatat sebagai ayah DAN ibu sekaligus. Data
+        // seperti ini tidak bisa dibuat lagi, tetapi data lama tetap ada dan
+        // perlu ditandai agar admin tahu mana yang harus dirapikan.
+        $peran = $anak->pluck('hubungan')->unique();
+        $peranGanda = $peran->contains('ayah') && $peran->contains('ibu');
+
+        return view('admin.orang-tua.show', compact('orangTua', 'anak', 'siswa', 'username', 'peranGanda') + ['hubunganList' => self::HUBUNGAN]);
     }
 
     public function edit(OrangTua $orangTua)

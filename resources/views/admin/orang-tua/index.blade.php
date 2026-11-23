@@ -29,6 +29,9 @@
                     <td>
                         @if ($o->anak)
                             {{ $o->anak }}
+                            @if ($o->peran_ganda)
+                                <br><span class="badge merah">peran ganda</span>
+                            @endif
                         @else
                             <span class="badge kuning">belum terhubung</span>
                         @endif

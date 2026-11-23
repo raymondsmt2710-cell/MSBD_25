@@ -33,7 +33,7 @@
 </div>
 
 @if ($kelas)
-<div class="grid" style="grid-template-columns:minmax(0,2fr) minmax(280px,1fr);align-items:start">
+<div class="grid grid-dua">
     <div>
         @foreach ($hariList as $h)
             <div class="kartu">

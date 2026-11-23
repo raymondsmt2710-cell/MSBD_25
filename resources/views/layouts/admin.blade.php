@@ -74,6 +74,10 @@
         .grid{display:grid;gap:14px}
         .grid-4{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
         .grid-2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+        /* Grid dua kolom (konten utama + panel samping). Dulu ditulis inline di
+           tiap view sehingga media query tidak bisa menimpanya; di layar sempit
+           kolom kiri terjepit sampai ~64px dan teks patah per kata. */
+        .grid-dua{grid-template-columns:minmax(0,2fr) minmax(280px,1fr);align-items:start}
         .stat{display:flex;flex-direction:column;gap:2px}
         .stat .angka{font-size:22px;font-weight:800;color:#09656F;line-height:1.1}
         .stat .label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;font-weight:700}
@@ -97,6 +101,12 @@
                kartu yang bisa digeser. Tinggi sengaja tidak dibatasi agar isi
                tidak terpotong (overflow-x:auto memaksa overflow-y ikut auto). */
             .kartu{overflow-x:auto;-webkit-overflow-scrolling:touch}
+            /* Satu kolom: konten utama di atas, panel samping di bawah. */
+            .grid-dua{grid-template-columns:minmax(0,1fr)}
+            /* Tiga dropdown filter tidak muat berdampingan; bertumpuk selebar
+               layar agar tidak memaksa scroll horizontal. */
+            .filter{flex-direction:column;align-items:stretch}
+            .filter > *{width:100%}
         }
         @media(max-width:640px){
             /* Nama pengguna memakan ruang di bar atas; profil & Keluar tetap. */

@@ -6,7 +6,7 @@
 <h1>Master Jabatan</h1>
 <p class="subjudul">Jabatan berlingkup <strong>kelas</strong> dipakai pengurus kelas (mis. bendahara); berlingkup <strong>organisasi</strong> dipakai pengurus organisasi. Kuota = jumlah pemegang maksimum.</p>
 
-<div class="grid" style="grid-template-columns:minmax(0,2fr) minmax(260px,1fr);align-items:start">
+<div class="grid grid-dua">
     <div class="kartu">
         @if ($jabatan->isEmpty())
             <div class="kosong">Belum ada jabatan.</div>

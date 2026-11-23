@@ -9,7 +9,7 @@
     </div>
 </div>
 
-<div class="grid" style="grid-template-columns:minmax(0,3fr) minmax(260px,2fr);align-items:start">
+<div class="grid grid-dua">
     <div class="kartu">
         <h2>Versi denah</h2>
         @if ($denah->isEmpty())

@@ -6,7 +6,7 @@
 <h1>Mata Pelajaran</h1>
 <p class="subjudul">Daftar mapel yang dipakai di jadwal pelajaran.</p>
 
-<div class="grid" style="grid-template-columns:minmax(0,2fr) minmax(260px,1fr);align-items:start">
+<div class="grid grid-dua">
     <div class="kartu">
         @if ($mapel->isEmpty())
             <div class="kosong">Belum ada mata pelajaran.</div>

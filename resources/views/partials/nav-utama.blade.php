@@ -45,6 +45,9 @@
         // ditampilkan terpisah oleh halaman pemilihan itu sendiri.
         'orang_tua' => [
             ['label' => 'Portal Anak', 'route' => 'ortu.index', 'aktif' => 'ortu.*', 'ikon' => 'person-circle'],
+            // Orang tua melihat kas anaknya dan mengunggah bukti pembayaran;
+            // halaman /kas sudah membatasi isinya ke anaknya sendiri.
+            ['label' => 'Keuangan Anak', 'route' => 'kas.index', 'aktif' => 'kas.*', 'ikon' => 'cash-coin'],
         ],
         // Admin: sengaja ringkas. Halaman /perangkat, /kelola/pemilihan, /kas dan
         // /denah sudah tersedia lewat sidebar admin, jadi tidak diulang di sini

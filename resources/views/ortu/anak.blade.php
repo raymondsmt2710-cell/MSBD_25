@@ -44,6 +44,17 @@
 </div>
 
 <div class="kartu">
+    <h2>Keuangan Kelas</h2>
+    <p style="margin:0 0 12px;font-size:13px">
+        Lihat status iuran {{ $anak->nama_siswa }} dan unggah bukti pembayaran.
+        Bendahara akan memverifikasi bukti tersebut.
+    </p>
+    <a class="btn" href="{{ route('kas.index', ['id_kelas' => $anak->id_kelas]) }}">
+        Buka Keuangan Anak
+    </a>
+</div>
+
+<div class="kartu">
     <h2>Ringkasan Kehadiran</h2>
     <p style="margin:0;font-size:13px">
         Hadir <strong>{{ $ringkasan['hadir'] }}</strong> &middot;

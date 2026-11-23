@@ -38,7 +38,11 @@
        bawahnya dan TIDAK menggeser konten. Aturan flex-wrap lama dihapus karena
        itulah yang membuat 16 menu berdesakan memenuhi layar. */
     @media(max-width:860px){
-        .kerangka-admin{grid-template-columns:1fr}
+        /* minmax(0,1fr), BUKAN 1fr: 1fr sama dengan minmax(auto,1fr) sehingga
+           kolom tidak bisa menyusut di bawah min-content isi halaman (tabel
+           lebar). Akibatnya seluruh grid melebar melewati viewport dan sidebar
+           ikut membengkak. */
+        .kerangka-admin{grid-template-columns:minmax(0,1fr)}
         .kerangka-admin > aside{position:static;height:auto;max-height:none;padding:10px 12px}
         .kerangka-admin > aside .brand{padding:0;border-bottom:0;margin-bottom:0}
         .kerangka-admin .sidebar-toggle{display:inline-flex}

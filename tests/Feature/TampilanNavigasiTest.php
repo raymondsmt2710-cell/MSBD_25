@@ -253,6 +253,16 @@ class TampilanNavigasiTest extends TestCase
             $html,
             'Perilaku ponsel harus dibatasi media query 860px.'
         );
+
+        // 1fr = minmax(auto,1fr): kolom TIDAK bisa menyusut di bawah min-content
+        // isi halaman (mis. tabel lebar), sehingga seluruh grid melebar melewati
+        // viewport dan sidebar ikut membengkak. minmax(0,1fr) mengizinkannya
+        // menyusut sehingga tidak ada scroll horizontal.
+        $this->assertMatchesRegularExpression(
+            '/@media\s*\(max-width:\s*860px\)[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/',
+            $html,
+            'Kolom grid di layar sempit harus minmax(0,1fr) agar bisa menyusut.'
+        );
     }
 
     public function test_skrip_sidebar_admin_mengatur_buka_tutup_panel(): void

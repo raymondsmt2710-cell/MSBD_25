@@ -254,4 +254,27 @@ class TampilanNavigasiTest extends TestCase
             'Perilaku ponsel harus dibatasi media query 860px.'
         );
     }
+
+    public function test_skrip_sidebar_admin_mengatur_buka_tutup_panel(): void
+    {
+        // Skrip ini yang membuat tombol hamburger berfungsi. Tanpa toggle kelas
+        // .sidebar-terbuka dan pembaruan aria-expanded, tombolnya hanya hiasan.
+        $admin = $this->buatAkun('admin', 'nav_admin_skrip');
+
+        $html = $this->actingAs($admin)
+            ->get(route('admin.kelas.index'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('sidebar-terbuka', $html);
+        $this->assertStringContainsString("setAttribute('aria-expanded'", $html);
+        $this->assertStringContainsString("'Escape'", $html);
+        $this->assertStringContainsString('toggle.focus()', $html);
+
+        // Panel tidak boleh mengingat state terbuka antar halaman: tidak ada
+        // sessionStorage/localStorage untuk state panel (yang disimpan hanya posisi
+        // gulir sidebar). Tanpa ini, menu bisa "menempel" terbuka setelah navigasi.
+        $this->assertStringNotContainsString('sidebar-terbuka-terakhir', $html);
+        $this->assertStringNotContainsString("setItem('sidebar-panel", $html);
+    }
 }

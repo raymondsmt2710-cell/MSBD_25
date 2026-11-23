@@ -10,8 +10,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-// Tombol "kembali" mengikuti riwayat browser, tetapi tidak boleh mengarahkan
-// pengguna ke URL yang tidak bisa dibuka dengan GET (405) atau ke domain lain.
+// Tombol "kembali" selalu menuju dashboard peran pengguna. Dulu tujuannya
+// ditebak dari referer dan peta hierarki halaman, sehingga tidak bisa ditebak
+// pengguna dan menimbulkan deretan kasus tepi (URL POST, domain lain, referer
+// sama dengan halaman ini, tombol bolak-balik).
 class TombolKembaliTest extends TestCase
 {
     use DatabaseTruncation;
@@ -59,49 +61,47 @@ class TombolKembaliTest extends TestCase
         return TujuanKembali::untuk($request, $user);
     }
 
-    public function test_tanpa_referer_tetap_ada_jalan_pulang_satu_tingkat(): void
+    public function test_tanpa_referer_tetap_ada_jalan_pulang(): void
     {
-        // Perilaku berubah: dulu tanpa referer tombolnya dihilangkan, sehingga
-        // pengguna yang membuka halaman dari bookmark tidak punya jalan pulang.
-        // Sekarang tombolnya tetap ada dan menunjuk induk halaman (beranda peran
-        // untuk /akun).
+        // Pengguna yang membuka halaman dari bookmark tidak punya referer.
+        // Tombolnya tetap ada dan menunjuk dashboard.
         $user = $this->buatAkun();
 
         $this->assertSame(route('siswa.beranda'), $this->untuk($user, ''));
     }
 
-    public function test_referer_sah_dipakai_apa_adanya(): void
+    public function test_referer_tidak_lagi_mempengaruhi_tujuan(): void
     {
+        // Aturan baru: tujuan SELALU dashboard, apa pun referer-nya. Dulu referer
+        // sah dipakai apa adanya sehingga tombol kembali berpindah-pindah tujuan.
         $user = $this->buatAkun();
-        $asal = route('siswa.perangkat');
 
-        $this->assertSame($asal, $this->untuk($user, $asal));
+        foreach ([
+            route('siswa.perangkat'),
+            route('siswa.pemilihan.index'),
+            route('siswa.presensi.riwayat'),
+            'https://situs-lain.example/halaman',
+            route('akun.sandi.simpan'),
+        ] as $referer) {
+            $this->assertSame(
+                route('siswa.beranda'),
+                $this->untuk($user, $referer),
+                "Referer {$referer} seharusnya tetap menuju dashboard."
+            );
+        }
     }
 
-    public function test_referer_halaman_login_diarahkan_ke_beranda_peran(): void
+    public function test_referer_halaman_login_tetap_menuju_dashboard(): void
     {
         $user = $this->buatAkun('siswa');
 
         $this->assertSame(route('siswa.beranda'), $this->untuk($user, url('/login')));
     }
 
-    public function test_referer_login_di_halaman_beranda_tidak_menampilkan_tombol(): void
+    public function test_referer_url_post_tidak_membuat_tombol_menunjuk_url_post(): void
     {
-        // Kasus nyata setelah login: referer /login, dan halaman yang sedang
-        // dibuka ADALAH beranda. Tujuan pengganti = beranda itu sendiri, jadi
-        // tombolnya harus hilang, bukan menunjuk ke halaman yang sama.
-        $user = $this->buatAkun('siswa');
-
-        $request = Request::create(route('siswa.beranda'), 'GET');
-        $request->headers->set('referer', url('/login'));
-
-        $this->assertNull(TujuanKembali::untuk($request, $user));
-    }
-
-    public function test_referer_url_post_diarahkan_ke_beranda_peran(): void
-    {
-        // Setelah menyimpan form, url()->previous() menunjuk URL POST.
-        // Tanpa pengaman ini, tombol kembali menghasilkan 405.
+        // Setelah menyimpan form, referer bisa berupa URL POST. Karena referer
+        // tidak dipakai lagi, tombol tidak mungkin menghasilkan 405.
         $user = $this->buatAkun('siswa');
 
         $this->assertSame(route('siswa.beranda'), $this->untuk($user, route('akun.sandi.simpan')));
@@ -109,8 +109,6 @@ class TombolKembaliTest extends TestCase
 
     public function test_referer_host_asing_tidak_dipakai(): void
     {
-        // Referer dari domain lain tidak boleh dipakai sebagai tujuan, tetapi
-        // tombolnya tetap ada dan menunjuk induk halaman - bukan hilang.
         $user = $this->buatAkun();
 
         $this->assertSame(
@@ -119,27 +117,32 @@ class TombolKembaliTest extends TestCase
         );
     }
 
-    public function test_referer_dari_host_yang_sama_dengan_request_tetap_dipakai(): void
+    public function test_dashboard_tidak_menampilkan_tombol_kembali(): void
     {
-        // Kasus nyata: aplikasi dibuka lewat 127.0.0.1 padahal APP_URL=localhost.
-        // Perbandingan harus memakai host request, bukan APP_URL, supaya tombol
-        // kembali tidak hilang begitu saja.
-        $user = $this->buatAkun();
+        // Dashboard adalah puncak navigasi; tombol kembali ke dirinya sendiri
+        // tidak ada gunanya. Ini ditentukan TujuanKembali (null), bukan hanya
+        // oleh @unless di layout.
+        $user = $this->buatAkun('siswa');
 
-        $request = Request::create('http://127.0.0.1:8000/akun/profil', 'GET');
-        $request->headers->set('referer', 'http://127.0.0.1:8000/siswa/beranda/presensi');
+        $request = Request::create(route('siswa.beranda'), 'GET');
+        $request->headers->set('referer', route('siswa.perangkat'));
 
-        $this->assertSame(
-            'http://127.0.0.1:8000/siswa/beranda/presensi',
-            TujuanKembali::untuk($request, $user)
-        );
+        $this->assertNull(TujuanKembali::untuk($request, $user));
     }
 
-    public function test_halaman_riwayat_presensi_selalu_kembali_ke_dashboard_presensi(): void
+    public function test_dashboard_dengan_query_tetap_tanpa_tombol_kembali(): void
     {
-        // Riwayat memakai navigasi ?pekan=... pada halaman yang sama. Kalau tombol
-        // kembali mengikuti referer, hasilnya bolak-balik antara dua pekan tanpa
-        // pernah keluar dari halaman itu.
+        // Query string tidak boleh membuat dashboard dianggap "halaman lain".
+        $user = $this->buatAkun('siswa', 'kb_dash_query');
+
+        $request = Request::create(route('siswa.beranda').'?tab=1', 'GET');
+
+        $this->assertNull(TujuanKembali::untuk($request, $user));
+    }
+
+    public function test_halaman_riwayat_presensi_kembali_ke_dashboard(): void
+    {
+        // Dulu halaman ini menuju menu presensi. Sekarang semuanya ke dashboard.
         $user = $this->buatAkun('siswa', 'kb_riwayat');
 
         $this->actingAs($user)
@@ -147,25 +150,7 @@ class TombolKembaliTest extends TestCase
             ->get(route('siswa.presensi.riwayat'))
             ->assertOk()
             ->assertSee('class="tombol-kembali"', false)
-            ->assertSee('href="'.route('siswa.presensi.index').'"', false);
-    }
-
-    public function test_referer_sama_dengan_halaman_ini_naik_satu_tingkat(): void
-    {
-        // Dua kasus nyata yang harus tertangani:
-        //   1. Pengguna mengklik menu halaman yang sedang dibuka (mis. menekan
-        //      "Presensi" dua kali di navbar).
-        //   2. Form disimpan: back() mengembalikan ke halaman yang sama sehingga
-        //      browser mengirim referer = URL halaman ini.
-        // Keduanya tidak boleh membuat tombol hilang, dan tujuannya tidak boleh
-        // halaman yang sedang dibuka.
-        $user = $this->buatAkun();
-
-        $tujuan = $this->untuk($user, route('akun.profil'));
-
-        $this->assertNotNull($tujuan, 'Tombol Kembali tidak boleh hilang setelah simpan.');
-        $this->assertNotSame(route('akun.profil'), $tujuan);
-        $this->assertSame(route('siswa.beranda'), $tujuan);
+            ->assertSee('href="'.route('siswa.beranda').'"', false);
     }
 
     public function test_tamu_tidak_punya_tujuan(): void
@@ -175,8 +160,6 @@ class TombolKembaliTest extends TestCase
 
     public function test_beranda_tidak_menampilkan_tombol_kembali(): void
     {
-        // Setelah login, referer beranda adalah /login -> jatuh ke beranda itu
-        // sendiri, jadi tombolnya tidak dirender.
         $user = $this->buatAkun('siswa');
 
         $this->actingAs($user)
@@ -194,14 +177,13 @@ class TombolKembaliTest extends TestCase
             ->get(route('siswa.perangkat'))
             ->assertOk()
             ->assertSee('class="tombol-kembali"', false)
-            ->assertSee('Kembali');
+            ->assertSee('Kembali ke Dashboard');
     }
 
     public function test_tombol_kembali_ada_di_semua_layout(): void
     {
         // Satu komponen dipasang di tiap layout; kalau salah satu terlewat,
         // halaman di layout itu kehilangan tombolnya.
-        // Halaman presensi guru memakai akun guru, karena route-nya sudah dipisah per peran.
         $guru = $this->buatAkun('guru', 'kb_guru');
         $this->actingAs($guru)
             ->withHeader('referer', route('guru.beranda'))
@@ -232,7 +214,8 @@ class TombolKembaliTest extends TestCase
 
     public function test_tidak_ada_dua_tombol_kembali_di_satu_halaman(): void
     {
-        // Tombol lama buatan tangan harus hilang; satu halaman satu tombol.
+        // Komponen layout sudah menyediakan tombolnya. Tautan manual di view
+        // (dulu ada di halaman pemilihan) harus dihapus agar tidak dobel.
         $siswa = $this->buatAkun('siswa', 'kb_ganda');
 
         $html = $this->actingAs($siswa)
@@ -250,9 +233,8 @@ class TombolKembaliTest extends TestCase
 
     public function test_beranda_tidak_menampilkan_tombol_kembali_meski_ada_referer(): void
     {
-        // Beranda adalah puncak navigasi, jadi tombol kembali tidak dipasang di
-        // sana. Diuji dengan referer sah supaya yang gagal benar-benar
-        // pengecualian beranda, bukan sekadar TujuanKembali mengembalikan null.
+        // Diuji dengan referer sah supaya yang gagal benar-benar pengecualian
+        // beranda, bukan sekadar TujuanKembali mengembalikan null.
         $siswa = $this->buatAkun('siswa', 'kb_beranda_siswa');
         $this->actingAs($siswa)
             ->withHeader('referer', route('siswa.perangkat'))
@@ -289,8 +271,7 @@ class TombolKembaliTest extends TestCase
 
     public function test_pemilihan_punya_jalan_pasti_ke_dashboard(): void
     {
-        // Tombol kembali berbasis riwayat bisa menunjuk halaman pilih yang sudah
-        // tidak boleh dibuka setelah suara terkirim. Tautan ini selalu ke beranda.
+        // Halaman pemilihan punya satu tombol kembali, dan tujuannya dashboard.
         $siswa = $this->buatAkun('siswa', 'kb_pemilihan');
 
         $this->actingAs($siswa)
@@ -298,6 +279,27 @@ class TombolKembaliTest extends TestCase
             ->assertOk()
             ->assertSee('Kembali ke Dashboard')
             ->assertSee('href="'.route('siswa.beranda').'"', false);
+    }
+
+    public function test_tombol_kembali_selalu_menuju_dashboard_peran(): void
+    {
+        // Inti aturan baru: dari halaman mana pun, tombol kembali menuju
+        // dashboard peran pengguna - bukan halaman induk fitur.
+        $guru = $this->buatAkun('guru', 'kb_dash_guru');
+
+        $this->actingAs($guru)
+            ->withHeader('referer', route('guru.presensi.index'))
+            ->get(route('guru.presensi.index'))
+            ->assertOk()
+            ->assertSee('href="'.route('guru.beranda').'"', false);
+
+        $admin = $this->buatAkun('admin', 'kb_dash_admin');
+
+        $this->actingAs($admin)
+            ->withHeader('referer', route('admin.siswa.index'))
+            ->get(route('admin.kelas.index'))
+            ->assertOk()
+            ->assertSee('href="'.route('admin.dashboard').'"', false);
     }
 
     public function test_footer_menempel_di_dasar_halaman(): void

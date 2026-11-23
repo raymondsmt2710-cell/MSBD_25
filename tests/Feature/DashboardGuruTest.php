@@ -296,8 +296,7 @@ class DashboardGuruTest extends TestCase
     public function test_guru_punya_hamburger_dengan_kartu_presensi(): void
     {
         // Guru harus mendapat perlakuan yang sama persis dengan siswa di ponsel:
-        // hamburger di kiri, logo tengah, tombol profil di kanan. Bedanya hanya isi
-        // drawer, karena guru memang hanya punya satu tujuan Menu Cepat.
+        // hamburger di kiri, logo tengah, tombol profil di kanan.
         $user = $this->buatGuru();
 
         $html = $this->actingAs($user)
@@ -311,6 +310,40 @@ class DashboardGuruTest extends TestCase
         $panel = $this->panelDrawer($html);
         $this->assertStringContainsString(route('guru.presensi.index'), $panel);
         $this->assertStringContainsString('Presensi', $panel);
+    }
+
+    public function test_drawer_guru_memuat_seluruh_tujuan_nav_desktop(): void
+    {
+        // Nav desktop guru punya empat tujuan selain Beranda. Semuanya harus ikut
+        // masuk hamburger; dulu hanya "Presensi" yang pindah ke panel sehingga
+        // Perangkat, Kas Kelas, dan Denah hilang di ponsel.
+        $user = $this->buatGuru();
+
+        $html = $this->actingAs($user)
+            ->get(route('guru.beranda'))
+            ->assertOk()
+            ->getContent();
+
+        $panel = $this->panelDrawer($html);
+        $this->assertNotSame('', $panel, 'Panel drawer guru tidak ditemukan.');
+
+        $tujuan = [
+            'Presensi'  => route('guru.presensi.index'),
+            'Perangkat' => route('perangkat.index'),
+            'Kas Kelas' => route('kas.index'),
+            'Denah'     => route('denah.index'),
+        ];
+
+        foreach ($tujuan as $label => $url) {
+            $this->assertStringContainsString($url, $panel, "Tujuan {$label} tidak ada di drawer guru.");
+            $this->assertStringContainsString($label, $panel, "Label {$label} tidak ada di drawer guru.");
+        }
+
+        $this->assertSame(
+            count($tujuan),
+            substr_count($panel, 'class="drawer-item"'),
+            'Jumlah kartu drawer guru harus sama dengan jumlah tujuan nav desktop.'
+        );
     }
 
     public function test_drawer_guru_tanpa_baris_keterangan(): void

@@ -124,11 +124,11 @@ class PresensiRegresiTest extends TestCase
     }
 
     /**
-     * Referer berupa URL POST (koreksi manual, tutup sesi) harus mengarah ke
-     * halaman INDUK, bukan beranda peran. Dulu guru terlempar keluar dari fitur
-     * presensi setelah menyimpan koreksi.
+     * Referer tidak lagi dipakai: tombol kembali SELALU menuju dashboard, dari
+     * halaman mana pun. Dulu setelah menyimpan koreksi guru diarahkan ke roster
+     * presensi; sekarang aturannya seragam untuk semua halaman.
      */
-    public function test_referer_url_post_mengarah_ke_induk_halaman_bukan_beranda(): void
+    public function test_referer_url_post_tetap_menuju_dashboard(): void
     {
         $guru = $this->buatGuru('pr_induk');
 
@@ -136,9 +136,9 @@ class PresensiRegresiTest extends TestCase
         $request->headers->set('referer', route('guru.presensi.manual', 5));
 
         $this->assertSame(
-            route('guru.presensi.index'),
+            route('guru.beranda'),
             \App\Support\TujuanKembali::untuk($request, $guru),
-            'Setelah menyimpan koreksi, guru harus kembali ke roster presensi, bukan ke beranda.'
+            'Tombol kembali harus menuju dashboard peran, apa pun referer-nya.'
         );
     }
 
@@ -248,17 +248,17 @@ class PresensiRegresiTest extends TestCase
     }
 
     /**
-     * Halaman sesi guru harus naik ke roster presensi, bukan ke beranda.
-     * Tanpa entri hierarki, guru terlempar keluar dari fitur presensi.
+     * Halaman sesi guru juga menuju dashboard: aturan tombol kembali sekarang
+     * seragam untuk semua halaman, bukan lagi anak -> induk fitur.
      */
-    public function test_halaman_sesi_guru_kembali_ke_roster_presensi(): void
+    public function test_halaman_sesi_guru_kembali_ke_dashboard(): void
     {
         $guru = $this->buatGuru('pr_sesi_induk');
 
         $request = \Illuminate\Http\Request::create(route('guru.presensi.sesi', 5), 'GET');
 
         $this->assertSame(
-            route('guru.presensi.index'),
+            route('guru.beranda'),
             \App\Support\TujuanKembali::untuk($request, $guru)
         );
     }

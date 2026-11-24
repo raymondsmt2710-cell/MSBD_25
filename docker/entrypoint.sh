@@ -61,5 +61,13 @@ echo "== Menyesuaikan port Apache =="
 sed -ri -e "s/^Listen 80$/Listen ${PORT}/" /etc/apache2/ports.conf
 sed -ri -e "s/:80>/:${PORT}>/" /etc/apache2/sites-available/*.conf
 
+echo "== DIAG MODS-ENABLED =="
+ls -1 /etc/apache2/mods-enabled/ | grep -i mpm || echo "  (tidak ada berkas mpm di mods-enabled)"
+echo "== DIAG LoadModule mpm =="
+grep -rn "LoadModule.*mpm" /etc/apache2/ 2>/dev/null || echo "  (tidak ada LoadModule mpm)"
+echo "== DIAG apache2ctl -M =="
+apache2ctl -M 2>&1 | grep -i mpm || echo "  (apache2ctl gagal / tidak ada mpm)"
+echo "== DIAG selesai =="
+
 echo "== Apache mulai di port ${PORT} =="
 exec apache2-foreground

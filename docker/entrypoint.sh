@@ -33,6 +33,9 @@ php artisan migrate --force
 echo "== Membuat symlink storage =="
 # HARUS di sini, bukan di Dockerfile: symlink harus menunjuk ke volume yang
 # baru ter-mount saat container berjalan.
+# Hapus dulu: symlink sisa build bisa menunjuk path lama sehingga
+# `storage:link` menolak ("The [public/storage] link already exists").
+rm -f public/storage
 php artisan storage:link || true
 
 echo "== Cache konfigurasi, route, view =="

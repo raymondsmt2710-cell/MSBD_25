@@ -49,6 +49,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
     && docker-php-ext-install pdo_mysql mbstring dom fileinfo iconv gd zip \
     && a2enmod rewrite \
+    && a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork \
     && rm -rf /var/lib/apt/lists/*
 
 # DocumentRoot -> public/

@@ -39,6 +39,7 @@ SQL);
 
 
         $db = config('database.connections.mysql.database');
+        $host = env('DB_USER_HOST', 'localhost');
 
         foreach ([
             env('DB_USERNAME_ADMIN', 'admin_app'),
@@ -46,7 +47,7 @@ SQL);
             env('DB_USERNAME_SISWA', 'siswa_app'),
             env('DB_USERNAME_ORTU', 'ortu_app'),
         ] as $user) {
-            DB::unprepared("GRANT EXECUTE ON FUNCTION `{$db}`.`fn_jumlah_presensi` TO '{$user}'@'localhost'");
+            DB::unprepared("GRANT EXECUTE ON FUNCTION `{$db}`.`fn_jumlah_presensi` TO '{$user}'@'{$host}'");
         }
 
         DB::unprepared('FLUSH PRIVILEGES');

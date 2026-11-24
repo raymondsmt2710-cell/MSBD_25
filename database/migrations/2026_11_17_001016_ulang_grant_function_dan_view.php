@@ -50,7 +50,7 @@ return new class extends Migration
         }
 
         $db = config('database.connections.mysql.database');
-        $host = 'localhost';
+        $host = env('DB_USER_HOST', 'localhost');
 
         foreach ($this->accounts() as $user) {
             foreach ($this->functions() as $fn) {

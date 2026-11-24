@@ -1,0 +1,38 @@
+.git
+.gitignore
+.gitattributes
+.env
+.env.*
+!.env.example
+
+# Dependensi dibangun ulang di dalam image
+vendor
+node_modules
+
+# Isi runtime
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*.php
+
+# Hasil build lokal (dibangun ulang saat deploy)
+public/build
+public/hot
+public/storage
+
+# Catatan internal & konfigurasi editor
+materi
+docs
+.superpowers
+asset
+.vscode
+.idea
+.zed
+.codex
+.cursor
+
+*.log
+.DS_Store
+Thumbs.db
+.phpunit.result.cache

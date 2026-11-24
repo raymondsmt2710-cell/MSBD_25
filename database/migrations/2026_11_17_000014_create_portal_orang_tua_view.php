@@ -20,6 +20,15 @@ return new class extends Migration
         return env('DB_USERNAME_ORTU', 'ortu_app');
     }
 
+    /**
+     * Host akun MySQL per peran. Harus mengikuti DB_USER_HOST supaya GRANT
+     * berlaku saat database berada di container/host terpisah (mis. Railway).
+     */
+    private function userHost(): string
+    {
+        return env('DB_USER_HOST', 'localhost');
+    }
+
     public function up(): void
     {
         if (! $this->mysql()) {
@@ -70,8 +79,9 @@ SQL);
 
         $db = config('database.connections.mysql.database');
         $ortu = $this->namaUserOrtu();
+        $host = $this->userHost();
 
-        DB::unprepared("GRANT SELECT ON `{$db}`.`{$view}` TO '{$ortu}'@'localhost'");
+        DB::unprepared("GRANT SELECT ON `{$db}`.`{$view}` TO '{$ortu}'@'{$host}'");
     }
 
     public function down(): void
@@ -83,11 +93,10 @@ SQL);
         $view = $this->namaView();
         $db = config('database.connections.mysql.database');
         $ortu = $this->namaUserOrtu();
-
-
+        $host = $this->userHost();
 
         try {
-            DB::unprepared("REVOKE SELECT ON `{$db}`.`{$view}` FROM '{$ortu}'@'localhost'");
+            DB::unprepared("REVOKE SELECT ON `{$db}`.`{$view}` FROM '{$ortu}'@'{$host}'");
         } catch (\Throwable $e) {
 
         }

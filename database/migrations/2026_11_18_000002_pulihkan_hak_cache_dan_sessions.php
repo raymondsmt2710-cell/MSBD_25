@@ -57,8 +57,11 @@ return new class extends Migration
             }
         }
 
+        // Orang tua tetap butuh hak tulis pada `sessions` bila SESSION_DRIVER=database:
+        // tanpa itu login orang tua gagal dengan "INSERT command denied".
+        // Yang dicabut hanya hak tulis cache, karena ortu tidak memakai cache.
         $ortu = env('DB_USERNAME_ORTU', 'ortu_app');
-        foreach (self::TABEL as $tabel) {
+        foreach (['cache', 'cache_locks'] as $tabel) {
             try {
                 DB::unprepared("REVOKE INSERT, UPDATE, DELETE ON `{$db}`.`{$tabel}` FROM '{$ortu}'@'{$host}'");
             } catch (QueryException $e) {

@@ -20,6 +20,15 @@ return new class extends Migration
         ];
     }
 
+    /**
+     * Host akun MySQL per peran. Harus mengikuti DB_USER_HOST supaya GRANT
+     * berlaku saat database berada di container/host terpisah (mis. Railway).
+     */
+    private function userHost(): string
+    {
+        return env('DB_USER_HOST', 'localhost');
+    }
+
     public function up(): void
     {
         if (! $this->mysql()) {
@@ -28,18 +37,19 @@ return new class extends Migration
 
         $db = config('database.connections.mysql.database');
         $a = $this->accounts();
+        $host = $this->userHost();
 
         foreach ($a as [$user, $pass]) {
-            DB::unprepared("CREATE USER IF NOT EXISTS '{$user}'@'localhost' IDENTIFIED BY '{$pass}'");
+            DB::unprepared("CREATE USER IF NOT EXISTS '{$user}'@'{$host}' IDENTIFIED BY '{$pass}'");
         }
 
         $t = fn (string $name) => "`{$db}`.`{$name}`";
         $proc = fn (string $name) => "PROCEDURE `{$db}`.`{$name}`";
         $func = fn (string $name) => "FUNCTION `{$db}`.`{$name}`";
 
-        $grant = function (string $user, array $map) {
+        $grant = function (string $user, array $map) use ($host) {
             foreach ($map as $object => $privileges) {
-                DB::unprepared("GRANT {$privileges} ON {$object} TO '{$user}'@'localhost'");
+                DB::unprepared("GRANT {$privileges} ON {$object} TO '{$user}'@'{$host}'");
             }
         };
 
@@ -153,6 +163,7 @@ return new class extends Migration
         }
 
         $db = config('database.connections.mysql.database');
+        $host = $this->userHost();
 
         $objek = [
             'pemilihan', 'kandidat', 'daftar_pemilih', 'panitia_pemilihan',
@@ -172,13 +183,13 @@ return new class extends Migration
 
         foreach ($this->accounts() as [$user]) {
             foreach ($objek as $o) {
-                DB::unprepared("REVOKE ALL PRIVILEGES ON `{$db}`.`{$o}` FROM '{$user}'@'localhost'");
+                DB::unprepared("REVOKE ALL PRIVILEGES ON `{$db}`.`{$o}` FROM '{$user}'@'{$host}'");
             }
             foreach ($prosedur as $p) {
-                DB::unprepared("REVOKE ALL PRIVILEGES ON PROCEDURE `{$db}`.`{$p}` FROM '{$user}'@'localhost'");
+                DB::unprepared("REVOKE ALL PRIVILEGES ON PROCEDURE `{$db}`.`{$p}` FROM '{$user}'@'{$host}'");
             }
             foreach ($fungsi as $f) {
-                DB::unprepared("REVOKE ALL PRIVILEGES ON FUNCTION `{$db}`.`{$f}` FROM '{$user}'@'localhost'");
+                DB::unprepared("REVOKE ALL PRIVILEGES ON FUNCTION `{$db}`.`{$f}` FROM '{$user}'@'{$host}'");
             }
         }
 

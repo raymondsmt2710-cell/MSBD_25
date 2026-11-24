@@ -22,6 +22,15 @@ return new class extends Migration
         ];
     }
 
+    /**
+     * Host akun MySQL per peran. Harus mengikuti DB_USER_HOST supaya GRANT
+     * berlaku saat database berada di container/host terpisah (mis. Railway).
+     */
+    private function userHost(): string
+    {
+        return env('DB_USER_HOST', 'localhost');
+    }
+
     public function up(): void
     {
         if (! $this->mysql()) {
@@ -29,6 +38,7 @@ return new class extends Migration
         }
 
         $db = config('database.connections.mysql.database');
+        $host = $this->userHost();
 
 
         if (! Schema::hasTable('sessions')) {
@@ -37,7 +47,7 @@ return new class extends Migration
 
         foreach ($this->accounts() as $user) {
             DB::unprepared(
-                "GRANT SELECT, INSERT, UPDATE, DELETE ON `{$db}`.`sessions` TO '{$user}'@'localhost'"
+                "GRANT SELECT, INSERT, UPDATE, DELETE ON `{$db}`.`sessions` TO '{$user}'@'{$host}'"
             );
         }
 
@@ -51,13 +61,14 @@ return new class extends Migration
         }
 
         $db = config('database.connections.mysql.database');
+        $host = $this->userHost();
 
         if (! Schema::hasTable('sessions')) {
             return;
         }
 
         foreach ($this->accounts() as $user) {
-            DB::unprepared("REVOKE ALL PRIVILEGES ON `{$db}`.`sessions` FROM '{$user}'@'localhost'");
+            DB::unprepared("REVOKE ALL PRIVILEGES ON `{$db}`.`sessions` FROM '{$user}'@'{$host}'");
         }
     }
 };

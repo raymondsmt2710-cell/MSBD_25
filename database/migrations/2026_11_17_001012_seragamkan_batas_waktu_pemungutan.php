@@ -117,6 +117,7 @@ SQL);
 
 
         $db = config('database.connections.mysql.database');
+        $host = env('DB_USER_HOST', 'localhost');
         $akun = [
             env('DB_USERNAME_ADMIN', 'admin_app'),
             env('DB_USERNAME_GURU', 'guru_app'),
@@ -124,8 +125,8 @@ SQL);
         ];
 
         foreach ($akun as $user) {
-            DB::unprepared("GRANT EXECUTE ON FUNCTION `{$db}`.`fn_boleh_memilih` TO '{$user}'@'localhost'");
-            DB::unprepared("GRANT EXECUTE ON PROCEDURE `{$db}`.`sp_rekam_suara` TO '{$user}'@'localhost'");
+            DB::unprepared("GRANT EXECUTE ON FUNCTION `{$db}`.`fn_boleh_memilih` TO '{$user}'@'{$host}'");
+            DB::unprepared("GRANT EXECUTE ON PROCEDURE `{$db}`.`sp_rekam_suara` TO '{$user}'@'{$host}'");
         }
 
         DB::unprepared('FLUSH PRIVILEGES');
@@ -163,6 +164,7 @@ END
 SQL);
 
         $db = config('database.connections.mysql.database');
+        $host = env('DB_USER_HOST', 'localhost');
         $akun = [
             env('DB_USERNAME_ADMIN', 'admin_app'),
             env('DB_USERNAME_GURU', 'guru_app'),
@@ -170,7 +172,7 @@ SQL);
         ];
 
         foreach ($akun as $user) {
-            DB::unprepared("GRANT EXECUTE ON FUNCTION `{$db}`.`fn_boleh_memilih` TO '{$user}'@'localhost'");
+            DB::unprepared("GRANT EXECUTE ON FUNCTION `{$db}`.`fn_boleh_memilih` TO '{$user}'@'{$host}'");
         }
 
         DB::unprepared('FLUSH PRIVILEGES');
